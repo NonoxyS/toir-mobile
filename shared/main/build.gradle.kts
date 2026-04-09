@@ -13,7 +13,7 @@ plugins {
 
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.main"
+    namespace = "ru.mirea.toir.main"
 }
 
 kotlin {

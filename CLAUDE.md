@@ -30,6 +30,13 @@ Each feature: 4 modules `api` → `impl` → `presentation` → `ui`.
 | `mobile-resources.mdc`      | moko-resources setup, MR usage, string key naming                                |
 | `mobile-code-rules.mdc`     | Access modifiers, class member ordering                                          |
 
+## API контракт
+
+Бэкенд: `~/IdeaProjects/toir-backend/src/main/resources/openapi/documentation.yaml`
+
+Все эндпоинты, поля DTO, коды ошибок и enum-значения — только оттуда. Не угадывай поля по названию.
+При расхождении между кодом и yaml — yaml главнее, сообщи об этом.
+
 ## Key Gotchas
 
 - Use `coRunCatching` (not `runCatching`) in suspend functions — preserves CancellationException.

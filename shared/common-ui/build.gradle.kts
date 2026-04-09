@@ -9,7 +9,7 @@ plugins {
 }
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.common.ui"
+    namespace = "ru.mirea.toir.common.ui"
 
     lint {
         // Disabled due to lint bug with nullable Composable types in ModalBottomSheetConfiguration.kt

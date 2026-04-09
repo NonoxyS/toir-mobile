@@ -6,5 +6,5 @@ plugins {
 }
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.feature.demo.second.presentation"
+    namespace = "ru.mirea.toir.feature.demo.second.presentation"
 }

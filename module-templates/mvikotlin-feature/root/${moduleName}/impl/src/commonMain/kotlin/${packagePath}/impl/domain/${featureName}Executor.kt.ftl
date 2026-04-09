@@ -5,7 +5,7 @@ import ${packageName}.api.store.${featureName}Store.Intent
 import ${packageName}.api.store.${featureName}Store.Label
 import ${packageName}.api.store.${featureName}Store.State
 import ${packageName}.impl.domain.${featureName}StoreFactory.Message
-import dev.nonoxy.kmmtemplate.core.mvikotlin.BaseExecutor
+import ru.mirea.toir.core.mvikotlin.BaseExecutor
 
 internal class ${featureName}Executor(
     mainDispatcher: CoroutineDispatcher

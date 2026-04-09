@@ -9,11 +9,11 @@ plugins {
 }
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.common.resources"
+    namespace = "ru.mirea.toir.common.resources"
 }
 
 multiplatformResources {
-    resourcesPackage.set("dev.nonoxy.kmmtemplate.res")
+    resourcesPackage.set("ru.mirea.toir.res")
     iosBaseLocalizationRegion.set("en")
     resourcesClassName.set("MR")
     resourcesVisibility.set(MRVisibility.Public)

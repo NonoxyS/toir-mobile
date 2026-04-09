@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.nonoxy.kmmtemplate.common.ui.compose.utils.CollectFlow
+import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ${packageName}.presentation.${featureName}ViewModel
 import ${packageName}.presentation.models.Ui${featureName}Label
 import org.koin.compose.viewmodel.koinViewModel

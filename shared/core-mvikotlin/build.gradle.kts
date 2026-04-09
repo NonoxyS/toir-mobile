@@ -8,7 +8,7 @@ plugins {
 }
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.core.mvikotlin"
+    namespace = "ru.mirea.toir.core.mvikotlin"
 }
 
 commonMainDependencies {

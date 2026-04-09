@@ -22,14 +22,14 @@
             <displayName>Package Name</displayName>
             <description>Base package for the feature</description>
             <type>TEXT</type>
-            <default>dev.nonoxy.kmmtemplate.feature.</default>
+            <default>ru.mirea.toir.feature.</default>
             <required>true</required>
         </parameter>
         <parameter name="packagePath">
             <displayName>Package Path</displayName>
             <description>Used for building nested package structure, must be same as package name</description>
             <type>TEXT</type>
-            <default>dev/nonoxy/kmmtemplate/feature/</default>
+            <default>ru/mirea/toir/feature/</default>
             <required>true</required>
         </parameter>
     </parameters>

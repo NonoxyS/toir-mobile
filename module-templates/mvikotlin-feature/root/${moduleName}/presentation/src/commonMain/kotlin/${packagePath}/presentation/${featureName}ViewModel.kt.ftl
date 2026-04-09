@@ -3,7 +3,7 @@ package ${packageName}.presentation
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.states
 import kotlinx.coroutines.flow.mapNotNull
-import dev.nonoxy.kmmtemplate.core.presentation.viewmodel.BaseViewModel
+import ru.mirea.toir.core.presentation.viewmodel.BaseViewModel
 import ${packageName}.api.store.${featureName}Store
 import ${packageName}.api.store.${featureName}Store.Intent
 import ${packageName}.presentation.mappers.Ui${featureName}LabelMapper

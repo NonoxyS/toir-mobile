@@ -5,5 +5,5 @@ plugins {
 }
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.common"
+    namespace = "ru.mirea.toir.common"
 }

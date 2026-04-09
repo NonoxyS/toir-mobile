@@ -8,7 +8,7 @@ plugins {
 }
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.core.storage"
+    namespace = "ru.mirea.toir.core.storage"
 }
 
 commonMainDependencies {

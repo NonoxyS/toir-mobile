@@ -5,5 +5,5 @@ plugins {
 }
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.feature.demo.second.api"
+    namespace = "ru.mirea.toir.feature.demo.second.api"
 }

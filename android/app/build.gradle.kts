@@ -21,11 +21,11 @@ kotlin {
 }
 
 android {
-    namespace = "dev.nonoxy.kmmtemplate"
+    namespace = "ru.mirea.toir"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "dev.nonoxy.kmmtemplate"
+        applicationId = "ru.mirea.toir"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = AppVersion.getVersionCode(project).get()

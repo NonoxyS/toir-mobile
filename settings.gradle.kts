@@ -1,4 +1,4 @@
-rootProject.name = "KMMTemplate"
+rootProject.name = "toir-mobile"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

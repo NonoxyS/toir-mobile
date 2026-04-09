@@ -2,7 +2,7 @@ package ${packageName}.presentation.mappers
 
 import ${packageName}.api.store.${featureName}Store
 import ${packageName}.presentation.models.Ui${featureName}Label
-import dev.nonoxy.kmmtemplate.common.mappers.Mapper
+import ru.mirea.toir.common.mappers.Mapper
 
 interface Ui${featureName}LabelMapper : Mapper<${featureName}Store.Label, Ui${featureName}Label>
 

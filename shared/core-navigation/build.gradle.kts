@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.conventionPlugin.composeMultiplatformSetup)
 }
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.core.navigation"
+    namespace = "ru.mirea.toir.core.navigation"
 }
 
 commonMainDependencies {

@@ -12,7 +12,7 @@ plugins {
 }
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.core.network"
+    namespace = "ru.mirea.toir.core.network"
 }
 
 commonMainDependencies {

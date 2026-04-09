@@ -6,5 +6,5 @@ plugins {
 }
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.core.domain"
+    namespace = "ru.mirea.toir.core.domain"
 }

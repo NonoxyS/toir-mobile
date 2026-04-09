@@ -8,7 +8,7 @@ plugins {
 }
 
 androidLibraryConfig {
-    namespace = "dev.nonoxy.kmmtemplate.core.presentation"
+    namespace = "ru.mirea.toir.core.presentation"
 }
 
 commonMainDependencies {
