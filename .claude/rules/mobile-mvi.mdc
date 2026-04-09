@@ -1,0 +1,149 @@
+---
+description: MVI patterns — Store, BaseExecutor, Reducer, StoreFactory, BaseViewModel, OneTimeEvent
+globs: **/*.{kt,kts}
+alwaysApply: false
+---
+
+# MVI Patterns
+
+## Store (api)
+
+```kotlin
+interface {Feature}Store : Store<Intent, State, Label> {
+
+    data class State(
+        val someValue: String = "",
+        val isLoading: Boolean = false,
+        val isError: Boolean = false,
+    )
+
+    sealed interface Intent {
+        data class OnValueChange(val newValue: String) : Intent
+        data object SomeAction : Intent
+    }
+
+    sealed interface Label {
+        data object NavigateToNext : Label
+    }
+}
+```
+
+- State — always `data class`, never `sealed`
+- Intent and Label — always `sealed interface`
+
+## Executor (impl)
+
+Extends `BaseExecutor` (from `core-mvikotlin`), **not** `CoroutineExecutor` directly.
+Logic goes in `suspendExecuteIntent` / `suspendExecuteAction` — already wrapped in `scope.launch` by `BaseExecutor`.
+
+**State access rules:**
+- **Before** async operation — save `state()` to a local variable for guard clauses
+- **After** async operation — always call fresh `state()`, it may have changed during the request
+
+```kotlin
+internal class {Feature}Executor(
+    mainDispatcher: CoroutineDispatcher,
+) : BaseExecutor<Intent, Nothing, State, Message, Label>(mainContext = mainDispatcher) {
+
+    override suspend fun suspendExecuteIntent(intent: Intent) {
+        when (intent) {
+            is Intent.OnValueChange -> dispatch(Message.SetValue(intent.newValue))
+            Intent.SomeAction -> publish(Label.NavigateToNext)
+        }
+    }
+}
+```
+
+## Reducer (impl)
+
+```kotlin
+internal class {Feature}Reducer : Reducer<State, Message> {
+
+    override fun State.reduce(msg: Message): State = when (msg) {
+        is Message.SetValue -> copy(someValue = msg.value)
+    }
+}
+```
+
+## StoreFactory (impl)
+
+`Message` is declared as `internal sealed interface` inside `StoreFactory`:
+
+```kotlin
+internal class {Feature}StoreFactory(
+    private val storeFactory: StoreFactory,
+    private val mainDispatcher: CoroutineDispatcher,
+) {
+
+    fun create(): {Feature}Store =
+        object :
+            {Feature}Store,
+            Store<Intent, State, Label> by storeFactory.create(
+                name = {Feature}Store::class.simpleName,
+                initialState = State(),
+                bootstrapper = null,
+                executorFactory = { {Feature}Executor(mainDispatcher) },
+                reducer = {Feature}Reducer()
+            ) {}
+
+    internal sealed interface Message {
+        data class SetValue(val value: String) : Message
+    }
+}
+```
+
+## BaseViewModel (presentation)
+
+`BaseViewModel` (from `core-presentation`) extends `ViewModel()` and exposes iOS-compatible flow wrappers from moko-mvvm:
+- `state: CStateFlow<State>` — collected with `collectAsStateWithLifecycle()` on Android
+- `label: CFlow<Label>` — one-time events via `OneTimeEvent` (buffered `Channel<T>`)
+
+`bindAndStart { }` wires store flows to ViewModel state/label inside `init`.
+
+```kotlin
+class {Feature}ViewModel internal constructor(
+    private val store: {Feature}Store,
+    private val stateMapper: Ui{Feature}StateMapper,
+    private val labelMapper: Ui{Feature}LabelMapper,
+) : BaseViewModel<Ui{Feature}State, Ui{Feature}Label>(initialState = Ui{Feature}State()) {
+
+    init {
+        bindAndStart {
+            store.states.mapNotNull(stateMapper::map) bindTo ::acceptState
+            store.labels.mapNotNull(labelMapper::map) bindTo ::acceptLabel
+        }
+    }
+
+    fun onValueChange(value: String) = store.accept(Intent.OnValueChange(value))
+    fun onSomeAction() = store.accept(Intent.SomeAction)
+
+    override fun onCleared() {
+        super.onCleared()
+        store.dispose()
+    }
+}
+```
+
+## Screen (ui)
+
+Labels (one-time events) are collected with `CollectFlow`. State is collected with `collectAsStateWithLifecycle()`:
+
+```kotlin
+@Composable
+internal fun {Feature}Screen(
+    onNavigateToNext: () -> Unit,
+    viewModel: {Feature}ViewModel = koinViewModel(),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    viewModel.label.CollectFlow { label ->
+        when (label) {
+            Ui{Feature}Label.NavigateToNext -> onNavigateToNext()
+        }
+    }
+
+    // UI content using state
+}
+```
+
+Use `CollectFlowWithLifecycle` instead of `CollectFlow` when lifecycle-aware collection is needed.

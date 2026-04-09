@@ -1,0 +1,170 @@
+[versions]
+# Build
+agp = "9.0.0"
+javaVersion = "17"
+
+# Kotlin
+kotlin = "2.3.10"
+kotlin-coroutines = "1.10.2"
+kotlin-serialization = "1.10.0"
+kotlin-datetime = "0.7.1"
+kotlin-immutableCollections = "0.4.0"
+
+# Android
+android-compileSdk = "36"
+android-minSdk = "26"
+android-targetSdk = "36"
+
+# AppVersion
+appVersion-major = "1"
+appVersion-minor = "0"
+
+# Compose Multiplatform
+compose-multiplatform = "1.10.1"
+compose-multiplatform-material3 = "1.9.0"
+compose-multiplatform-navigation = "2.9.2"
+
+# AndroidX
+androidx-activity = "1.12.4"
+androidx-appcompat = "1.7.1"
+androidx-core = "1.17.0"
+androidx-lifecycle = "2.9.6"
+androidx-datastore = "1.2.0"
+
+# Test
+androidx-espresso = "3.7.0"
+androidx-testExt = "1.3.0"
+junit = "4.13.2"
+
+# DI
+koin = "4.1.1"
+
+# Network
+ktor = "3.3.3"
+
+# Detekt
+detekt = "1.23.8"
+detekt-compose-kode = "1.4.0"
+detekt-compose-twitter = "0.0.26"
+
+# Moko
+moko-resources = "0.26.0"
+moko-mvvm = "0.16.1"
+
+# MVIKotlin
+mvikotlin = "4.3.0"
+
+# Logging
+napier = "2.7.1"
+
+[libraries]
+
+# Plugins for composite build
+gradleplugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+gradleplugin-composeCompiler = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+gradleplugin-composeMultiplatform = { module = "org.jetbrains.compose:org.jetbrains.compose.gradle.plugin", version.ref = "compose-multiplatform" }
+gradleplugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+
+# Kotlin
+kotlin-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
+kotlin-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlin-coroutines" }
+kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization" }
+kotlin-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlin-datetime" }
+kotlin-immutableCollections = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "kotlin-immutableCollections" }
+
+# Compose Multiplatform
+compose-multiplatform-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "compose-multiplatform" }
+compose-multiplatform-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "compose-multiplatform" }
+compose-multiplatform-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "compose-multiplatform" }
+compose-multiplatform-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "compose-multiplatform-material3" }
+compose-multiplatform-material = { group = "org.jetbrains.compose.material", name = "material", version.ref = "compose-multiplatform" }
+compose-multiplatform-animation = { group = "org.jetbrains.compose.animation", name = "animation", version.ref = "compose-multiplatform" }
+compose-multiplatform-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "compose-multiplatform" }
+compose-multiplatform-uiToolingPreview = { group = "org.jetbrains.compose.components", name = "components-ui-tooling-preview", version.ref = "compose-multiplatform" }
+compose-multiplatform-uiTooling = { group = "org.jetbrains.compose.ui", name = "ui-tooling", version.ref = "compose-multiplatform" }
+compose-multiplatform-backhandler = { group = "org.jetbrains.compose.ui", name = "ui-backhandler", version.ref = "compose-multiplatform" }
+compose-multiplatform-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "compose-multiplatform-navigation" }
+
+# Koin
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-core-viewmodel = { group = "io.insert-koin", name = "koin-core-viewmodel", version.ref = "koin" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-android-workmanager = { group = "io.insert-koin", name = "koin-androidx-workmanager", version.ref = "koin" }
+koin-composeMultiplatform = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
+koin-composeMultiplatform-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
+koin-composeMultiplatform-viewmodelNavigation = { group = "io.insert-koin", name = "koin-compose-viewmodel-navigation", version.ref = "koin" }
+
+# Ktor
+ktor-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-engine-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-engine-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-serializationJson = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-contentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor" }
+
+# Logging
+napier = { module = "io.github.aakira:napier", version.ref = "napier" }
+
+# MVIKotlin
+mvikotlin-core = { module = "com.arkivanov.mvikotlin:mvikotlin", version.ref = "mvikotlin" }
+mvikotlin-main = { module = "com.arkivanov.mvikotlin:mvikotlin-main", version.ref = "mvikotlin" }
+mvikotlin-logging = { module = "com.arkivanov.mvikotlin:mvikotlin-logging", version.ref = "mvikotlin" }
+mvikotlin-coroutines = { module = "com.arkivanov.mvikotlin:mvikotlin-extensions-coroutines", version.ref = "mvikotlin" }
+
+# Moko
+moko-resources-core = { module = "dev.icerock.moko:resources", version.ref = "moko-resources" }
+moko-resources-compose = { module = "dev.icerock.moko:resources-compose", version.ref = "moko-resources" }
+moko-mvvm-flow = { module = "dev.icerock.moko:mvvm-flow", version.ref = "moko-mvvm" }
+
+# Test
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+junit = { module = "junit:junit", version.ref = "junit" }
+androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-testExt" }
+androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-espresso" }
+
+# AndroidX
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+androidx-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
+
+# Detekt
+detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
+detekt-libraries = { group = "io.gitlab.arturbosch.detekt", name = "detekt-rules-libraries", version.ref = "detekt" }
+detekt-compose-kode = { module = "ru.kode:detekt-rules-compose", version.ref = "detekt-compose-kode" }
+detekt-compose-twitter = { module = "com.twitter.compose.rules:detekt", version.ref = "detekt-compose-twitter" }
+
+[plugins]
+# Convention plugins
+conventionPlugin-composeMultiplatformSetup = { id = "compose-multiplatform-setup", version = "" }
+conventionPlugin-androidLibrary = { id = "android-library", version = "" }
+conventionPlugin-kmpLibrary = { id = "kmp-library", version = "" }
+conventionPlugin-kmpLibraryLegacy = { id = "kmp-library-legacy", version = "" }
+conventionPlugin-kmpFeatureSetup = { id = "kmp-feature-setup", version = "" }
+conventionPlugin-jsonSerialization = { id = "json-serialization", version = "" }
+
+# Android
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+
+# Kotlin
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-multiplatformAndroidLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
+
+# Compsoe
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+
+# Detekt
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+
+# Moko
+moko-resources = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko-resources" }

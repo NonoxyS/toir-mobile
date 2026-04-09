@@ -1,0 +1,117 @@
+---
+description: Data layer — entities, mapping, DTO, Repository
+globs: **/*.{kt,kts}
+alwaysApply: false
+---
+
+# Data Layer
+
+## Entities (Remote / Domain / UI)
+
+Always three separate layers:
+
+| Layer         | Location                          | Purpose                               |
+|---------------|-----------------------------------|---------------------------------------|
+| RemoteEntity  | `impl/data/network/`              | DTO for serialization (Ktor/JSON)     |
+| DomainEntity  | `api/models/`                     | Business entity                       |
+| UiEntity      | `presentation/models/`            | UI model (formatted data)             |
+
+All models are **separate files** in `model/` (`models/`) folders at each layer. Nested data classes inside Store are **forbidden** — models are always top-level.
+
+Rules:
+- Repository **always** returns Domain entities
+- Remote → Domain mapping happens inside the Repository implementation
+- Domain → UI mapping happens in the Presentation mapper
+- **Forbidden** to pass Remote entities above the data layer
+
+## Mapper
+
+All mapping via mapper classes (`common/mappers/Mapper.kt`):
+
+```kotlin
+interface Mapper<From, To> {
+    fun map(item: From): To
+    fun map(list: List<From>): List<To> = list.map { item -> map(item) }
+}
+```
+
+Each mapper is a separate interface + implementation, injected via Koin.
+
+```kotlin
+// Interface
+internal interface ItemMapper : Mapper<RemoteItem, DomainItem>
+
+// Implementation
+internal class ItemMapperImpl : ItemMapper {
+    override fun map(item: RemoteItem): DomainItem = with(item) {
+        DomainItem(
+            id = id,
+            title = title,
+            isActive = isActive ?: false,
+        )
+    }
+}
+```
+
+## Remote Entities (DTO)
+
+Rules:
+- `@Serializable` is required
+- `@SerialName` is required on **every** field, even if the name matches the JSON key
+- **No default parameters** — if a field may be absent in JSON, the type must be nullable (`Type?`)
+- All fields are `val`
+
+```kotlin
+@Serializable
+internal data class RemoteItem(
+    @SerialName("id") val id: String,
+    @SerialName("title") val title: String,
+    @SerialName("is_active") val isActive: Boolean?,
+)
+```
+
+## Domain → UI Mappers (presentation layer)
+
+Location: `presentation/mappers/`
+
+**StateMapper:**
+
+```kotlin
+interface Ui{Feature}StateMapper {
+    fun map(state: {Feature}Store.State): Ui{Feature}State
+}
+
+internal class Ui{Feature}StateMapperImpl : Ui{Feature}StateMapper {
+
+    override fun map(state: {Feature}Store.State): Ui{Feature}State = with(state) {
+        Ui{Feature}State(
+            value = someValue,
+            isLoading = isLoading,
+        )
+    }
+}
+```
+
+**LabelMapper:**
+
+```kotlin
+interface Ui{Feature}LabelMapper : Mapper<{Feature}Store.Label, Ui{Feature}Label>
+
+internal class Ui{Feature}LabelMapperImpl : Ui{Feature}LabelMapper {
+
+    override fun map(item: {Feature}Store.Label): Ui{Feature}Label = when (item) {
+        {Feature}Store.Label.NavigateToNext -> Ui{Feature}Label.NavigateToNext
+    }
+}
+```
+
+## Mapping Rules
+
+- All mapping via classes: **interface** (public) + **internal implementation**
+- Interface extends `Mapper<From, To>`
+- Implementation is always `internal class`
+- Mappers are injected via Koin (never instantiated directly)
+- A mapper may depend on other mappers (composition via injection)
+- Remote entities **never leave** the data layer
+- Repository always returns only domain entities
+- Private helper `toUi()` extension functions are acceptable **inside** a mapper class

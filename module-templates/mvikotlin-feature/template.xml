@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<template>
+    <id>mvikotlin-feature</id>
+    <name>MVIKotlin Feature Module</name>
+    <description>Creates a multi-module MVIKotlin feature with API, Implementation, and Presentation layers</description>
+
+    <parameters>
+        <parameter name="featureName">
+            <displayName>Feature Name</displayName>
+            <description>Feature name in PascalCase (e.g., AwesomeVideoPlayer)</description>
+            <type>TEXT</type>
+            <required>true</required>
+        </parameter>
+        <parameter name="moduleName">
+            <displayName>Module Name</displayName>
+            <description>Base module name in kebab-case (e.g., feature-awesome-video-player)</description>
+            <type>TEXT</type>
+            <default>feature-</default>
+            <required>true</required>
+        </parameter>
+        <parameter name="packageName">
+            <displayName>Package Name</displayName>
+            <description>Base package for the feature</description>
+            <type>TEXT</type>
+            <default>dev.nonoxy.kmmtemplate.feature.</default>
+            <required>true</required>
+        </parameter>
+        <parameter name="packagePath">
+            <displayName>Package Path</displayName>
+            <description>Used for building nested package structure, must be same as package name</description>
+            <type>TEXT</type>
+            <default>dev/nonoxy/kmmtemplate/feature/</default>
+            <required>true</required>
+        </parameter>
+    </parameters>
+</template>

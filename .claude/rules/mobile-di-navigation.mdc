@@ -1,0 +1,72 @@
+---
+description: DI (Koin) and navigation — modules, registration rules, navigation
+globs: **/*.{kt,kts}
+alwaysApply: false
+---
+
+# DI (Koin) and Navigation
+
+## Koin Modules
+
+Each feature module contains its own Koin modules:
+
+- `feature{Name}ImplModule` — Repository, ApiClient, StoreFactory, data mappers
+- `feature{Name}PresentationModule` — ViewModel, UI mappers
+
+Rules:
+- Use `new(::Impl)` — Koin resolves dependencies automatically, no need to list parameters manually
+- Import: `import org.koin.core.module.dsl.new` (**not** `org.koin.dsl.new`)
+- `viewModelOf(::ViewModel)` for ViewModels
+- Grouping: `factory` for Repository, ApiClient, Mapper; `factory` for StoreFactory
+
+```kotlin
+// impl/di/
+internal val feature{Name}ImplModule = module {
+    factory<{Feature}Repository> { new(::{Feature}RepositoryImpl) }
+    factory<{Feature}ApiClient> { new(::{Feature}ApiClientImpl) }
+    factory<ItemMapper> { new(::ItemMapperImpl) }
+    factory { new(::{Feature}StoreFactory) }
+}
+
+// presentation/di/
+internal val feature{Name}PresentationModule = module {
+    factory<Ui{Feature}StateMapper> { new(::Ui{Feature}StateMapperImpl) }
+    factory<Ui{Feature}LabelMapper> { new(::Ui{Feature}LabelMapperImpl) }
+    viewModelOf(::{Feature}ViewModel)
+}
+```
+
+## Navigation
+
+Screens are defined in `core-navigation/Screen.kt`. `Screen` is a plain interface; routes are top-level `@Serializable data object`s:
+
+```kotlin
+interface Screen
+
+@Serializable
+data object {Feature}Route : Screen
+```
+
+Screen API in the `ui` module:
+
+```kotlin
+fun NavGraphBuilder.composable{Feature}Screen(
+    onNavigateToNext: () -> Unit,
+) {
+    composable<{Feature}Route> {
+        {Feature}Screen(onNavigateToNext = onNavigateToNext)
+    }
+}
+
+fun NavController.navigateTo{Feature}Screen() {
+    navigate({Feature}Route)
+}
+```
+
+In NavHost:
+
+```kotlin
+NavHost(navController = navController, startDestination = {Feature}Route) {
+    composable{Feature}Screen(onNavigateToNext = { navController.navigateTo{Next}Screen() })
+}
+```

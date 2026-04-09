@@ -1,0 +1,113 @@
+---
+description: Compose — recomposition optimization, composable splitting, screen structure
+globs: **/*.{kt,kts}
+alwaysApply: false
+---
+
+# Compose
+
+## Recomposition Optimization
+
+### @Immutable for UI models
+
+All UI data classes in `presentation/models/` are annotated with `@Immutable`:
+
+```kotlin
+@Immutable
+data class Ui{Feature}State(
+    val value: String = "",
+    val isLoading: Boolean = false,
+)
+```
+
+`@Immutable` is only placed in modules with Compose dependencies (presentation, ui). Module `common` is pure Kotlin — no Compose Runtime.
+
+### rememberUpdatedState for callbacks in effects
+
+Required for callbacks inside `LaunchedEffect` / `DisposableEffect` to always have the latest instance without restarting the effect:
+
+```kotlin
+@Composable
+private fun SomeEffect(onAction: () -> Unit) {
+    val currentOnAction by rememberUpdatedState(onAction)
+
+    LaunchedEffect(Unit) {
+        // use currentOnAction() — always fresh, no effect restart
+    }
+}
+```
+
+### remember for modifier depending on parameters
+
+```kotlin
+val modifier = remember(paddingValues) { Modifier.padding(paddingValues) }
+```
+
+### derivedStateOf for derived state
+
+Use when state is computed from another state and recomposition on every source change is not needed:
+
+```kotlin
+val showButton by remember {
+    derivedStateOf { lazyListState.firstVisibleItemIndex > 0 }
+}
+```
+
+### key for LazyColumn items
+
+Always provide `key` for `LazyColumn` items:
+
+```kotlin
+LazyColumn {
+    items(items = items, key = { it.id }) { item ->
+        ItemCard(item = item)
+    }
+}
+```
+
+## Composable Components (splitting rules)
+
+### Pass minimum required data
+
+Pass only what child composables need — not the entire state object:
+
+```kotlin
+// ✅ Correct
+{Feature}Content(
+    value = state.value,
+    isLoading = state.isLoading,
+    onNextClick = onNextClick,
+)
+
+// ❌ Wrong
+{Feature}Content(state = state)
+```
+
+### LaunchedEffect / SideEffect placement
+
+Place at the **beginning** of the composable function, before UI content. Extract complex effects into separate composables.
+
+## Preview for UI Components
+
+Every composable component in UI modules must have a `@Preview` function in the same file.
+
+Rules:
+- Name: `Preview` + component name (e.g. `PreviewItemCard`)
+- Always `@Preview(showBackground = true)`
+- Wrapped in `KmmTemplateTheme { }`
+- For components with multiple states — show variants in a `Column`
+
+```kotlin
+@Preview(showBackground = true)
+@Composable
+private fun PreviewItemCard() {
+    KmmTemplateTheme {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            ItemCard(/* example data */)
+        }
+    }
+}
+```

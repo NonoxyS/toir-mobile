@@ -1,0 +1,75 @@
+---
+description: General code rules — access modifiers, class member ordering
+globs: **/*.{kt,kts}
+alwaysApply: false
+---
+
+# General Code Rules
+
+## Basic Rules
+
+- Repository always returns `Result<T>`
+- No UseCases — Executor calls Repository directly
+- No comments in code
+- NPE-safety: forbid `!!`, `list.first()`, `list.last()`
+- Use `firstOrNull()`, `getOrNull()`, `orEmpty()`
+- Always override `onCleared()` in ViewModel and call `store.dispose()`
+
+## Access Modifiers
+
+Everything is as closed as possible by default:
+
+| Scope                          | Modifier         | Note                                                      |
+|-------------------------------|------------------|-----------------------------------------------------------|
+| Class / interface in impl      | `internal`       | Not visible outside the module                            |
+| Class / interface in api       | `public`         | Only when needed by other modules (Store, ViewModel)      |
+| Class fields                   | `private`        | Unless part of the contract                               |
+| Functions                      | `private`        | Helper functions inside a class                           |
+| Top-level                      | `internal`       | By default                                                |
+
+| Entity                    | Modifier                            | Example                                        |
+|---------------------------|-------------------------------------|------------------------------------------------|
+| Store interface           | `public`                            | `interface UserListStore`                      |
+| Repository interface      | `internal`                          | `internal interface UserListRepository`        |
+| Repository impl           | `internal`                          | `internal class UserListRepositoryImpl`        |
+| ApiClient interface       | `internal`                          | `internal interface UserListApiClient`         |
+| ApiClient impl            | `internal`                          | `internal class UserListApiClientImpl`         |
+| Mapper interface          | `internal`                          | `internal interface UserItemMapper`            |
+| Mapper impl               | `internal`                          | `internal class UserItemMapperImpl`            |
+| Remote DTO                | `internal`                          | `internal data class RemoteUser`               |
+| Executor                  | `internal`                          | `internal class UserListExecutor`              |
+| Reducer                   | `internal`                          | `internal class UserListReducer`               |
+| StoreFactory              | `internal`                          | `internal class UserListStoreFactory`          |
+| Message (sealed)          | `internal` (inside StoreFactory)    | `internal sealed interface Message`            |
+| ViewModel                 | `public`, constructor `internal`    | `class UserListViewModel internal constructor` |
+| UiState / UiLabel         | `public`                            | `data class UiUserListState`                   |
+
+**Fields and properties:**
+- All constructor dependencies — `private val`
+- `MutableStateFlow` and other mutable fields — `private`
+- Only immutable `StateFlow`/`Flow` are public for UI subscription
+
+**Functions:**
+- Helpers inside a class — `private`
+- `override` functions inherit interface visibility
+- Mapping extension functions inside a mapper — `private`
+
+## Class Member Ordering
+
+```kotlin
+class SomeClass {
+    // 1. Properties (private, internal, public)
+    // 2. Init blocks
+    // 3. Override methods
+    // 4. Public methods
+    // 5. Internal methods
+    // 6. Private methods
+    // 7. Companion object — ALWAYS last
+
+    private companion object {
+        const val SOME_CONST = 20
+    }
+}
+```
+
+**Companion object is always at the end of the class** — no exceptions.

@@ -1,0 +1,67 @@
+---
+description: General project info — tech stack, module structure, feature architecture, naming conventions
+globs: **/*.{kt,kts}
+alwaysApply: false
+---
+
+# Mobile — Compose Multiplatform
+
+## Tech Stack
+
+- Kotlin 2.3.10 + Compose Multiplatform 1.10.1
+- MVIKotlin 4.3.0 (state management)
+- Koin 4.1.1 (DI)
+- Ktor 3.3.3 (networking)
+- moko-resources 0.26.0 (strings, colors, images)
+- Compose Navigation with `@Serializable` screens
+- Android: compileSdk 36, minSdk 26, targetSdk 36
+
+## Project Structure
+
+```
+android/app/                # Android entry point
+iosApp/                     # iOS entry point
+shared/
+├── main/                   # Aggregation, Koin init, NavHost, iOS export
+├── common/                 # CoroutineDispatchers, base classes, extensions
+├── common-resources/       # moko-resources (strings, colors, images)
+├── common-ui/              # KmmTemplateTheme, design system, reusable components
+├── core-presentation/      # BaseViewModel, MVIKotlin binding
+├── core-navigation/        # Screen interface + routes
+└── feature-*/              # Feature modules (api/impl/presentation/ui)
+build-logic/                # Convention plugins
+gradle/libs.versions.toml   # Version catalog
+```
+
+## Feature Architecture (4 modules)
+
+Each feature is split into 4 submodules:
+
+| Module           | Contents                                         | Depends on              |
+|------------------|--------------------------------------------------|-------------------------|
+| **api**          | Store interface (State, Intent, Label)           | —                       |
+| **impl**         | Executor, Reducer, Repository, StoreFactory, DI  | api                     |
+| **presentation** | ViewModel, mappers, UI State/Label               | api, core-presentation  |
+| **ui**           | Composable screens, Screen API                   | presentation, common-ui |
+
+Dependency graph:
+```
+ui → presentation → api
+impl → api
+```
+
+## Naming Conventions
+
+| Entity       | Pattern                              | Example                              |
+|--------------|--------------------------------------|--------------------------------------|
+| Store        | `{Feature}Store`                     | `UserListStore`                      |
+| Executor     | `{Feature}Executor`                  | `UserListExecutor`                   |
+| Reducer      | `{Feature}Reducer`                   | `UserListReducer`                    |
+| StoreFactory | `{Feature}StoreFactory`              | `UserListStoreFactory`               |
+| ViewModel    | `{Feature}ViewModel`                 | `UserListViewModel`                  |
+| Repository   | `{Feature}Repository`                | `UserListRepository`                 |
+| Screen       | `{Feature}Screen`                    | `UserListScreen`                     |
+| UI State     | `Ui{Feature}State`                   | `UiUserListState`                    |
+| UI Label     | `Ui{Feature}Label`                   | `UiUserListLabel`                    |
+| DI impl      | `feature{Feature}ImplModule`         | `featureUserListImplModule`          |
+| DI present.  | `feature{Feature}PresentationModule` | `featureUserListPresentationModule`  |

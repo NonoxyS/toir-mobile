@@ -1,0 +1,135 @@
+---
+description: Network layer — NetworkEnvironment, Ktor HttpClient, KtorClient, ApiClient, platform DI
+globs: **/*.{kt,kts}
+alwaysApply: false
+---
+
+# Network Layer
+
+## NetworkEnvironment
+
+Environments are defined in `core-network/ktor/NetworkEnvironment.kt`:
+
+```kotlin
+enum class NetworkEnvironment(
+    val apiHost: String,
+) {
+    Dev(apiHost = "dev-back-template.com"),
+    Prod(apiHost = "prod-back-template.com"),
+}
+```
+
+Rules:
+- `NetworkEnvironment` is the **single** source of API hosts
+- Registered in Koin as `factory` via platform module (`expect/actual`)
+- Android: resolved from `BuildConfig.FLAVOR` via `AppEnvironmentQualifiers.FLAVOR`
+- iOS: injected via `EnvironmentDi.insertKoin(environment)`
+
+## DI Registration
+
+### Common
+
+```kotlin
+// core-network/di/CoreNetworkModule.kt
+internal expect val platformCoreNetworkModule: Module
+
+val coreNetworkModule = module {
+    includes(platformCoreNetworkModule)
+}
+```
+
+### Android
+
+```kotlin
+// core-network/di/CoreNetworkModule.android.kt
+internal actual val platformCoreNetworkModule = module {
+    factory<NetworkEnvironment> {
+        val flavor: String = get(named(AppEnvironmentQualifiers.FLAVOR))
+        when (flavor.lowercase()) {
+            "prod" -> NetworkEnvironment.Prod
+            else -> NetworkEnvironment.Dev
+        }
+    }
+}
+```
+
+`AppEnvironmentQualifiers.FLAVOR` is provided by `appModule` in `android/app` from `BuildConfig.FLAVOR`.
+
+### iOS
+
+```kotlin
+// core-network/di/EnvironmentDi.kt
+class EnvironmentDi : KoinComponent {
+    fun insertKoin(environment: NetworkEnvironment) {
+        getKoin().declare<NetworkEnvironment>(environment)
+    }
+}
+```
+
+## Ktor HttpClient
+
+Configured in `core-network/ktor/di/CoreNetworkKtorModule.kt`:
+
+```kotlin
+val coreNetworkKtorModule = module {
+    single<HttpClient> {
+        HttpClient {
+            // base config: Logging, ContentNegotiation/JSON, HttpResponseValidator
+            defaultRequest { setApiHost(environment = get()) }
+        }
+    }
+    factory<KtorClient> { new(::KtorClientImpl) }
+}
+```
+
+Rules:
+- `HttpClient` — `single` (one instance per app)
+- `defaultRequest` sets `url.host` and `url.protocol` from `NetworkEnvironment.apiHost`
+- SSL certificates configured via `configureCertificates()` for `Dev` environment
+
+## KtorClient
+
+`KtorClient` (from `core-network`) is the typed wrapper over raw `HttpClient`:
+
+```kotlin
+interface KtorClient {
+    suspend fun <R, D> executeQuery(
+        query: suspend () -> HttpResponse,
+        deserializer: DeserializationStrategy<D>? = null,
+        success: (D) -> Result<R>,
+        loggingErrorMessage: String,
+    ): Result<R>
+
+    suspend fun get(urlString: String, block: HttpRequestBuilder.() -> Unit = {}): HttpResponse
+    suspend fun post(urlString: String, block: HttpRequestBuilder.() -> Unit = {}): HttpResponse
+    suspend fun submitForm(urlString: String, formParameters: Parameters, block: HttpRequestBuilder.() -> Unit = {}): HttpResponse
+}
+```
+
+## ApiClient (feature module)
+
+Each feature creates its own `ApiClient` in `impl/data/network/`:
+
+```kotlin
+internal interface {Feature}ApiClient {
+    suspend fun getItems(): Result<List<RemoteItem>>
+}
+
+internal class {Feature}ApiClientImpl(
+    private val ktorClient: KtorClient,
+) : {Feature}ApiClient {
+
+    override suspend fun getItems(): Result<List<RemoteItem>> =
+        ktorClient.executeQuery(
+            query = { ktorClient.get(urlString = "/api/v1/items") },
+            deserializer = ListSerializer(RemoteItem.serializer()),
+            success = { items -> items.wrapResultSuccess() },
+            loggingErrorMessage = "getItems failed",
+        )
+}
+```
+
+Rules:
+- `ApiClient` — `internal interface` + `internal class` in `impl` module
+- Injects `KtorClient` (not raw `HttpClient`)
+- Deserialization via `DeserializationStrategy` (not inline reified)

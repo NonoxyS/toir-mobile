@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="demo_first_title">Demo Feature 1</string>
+    <string name="demo_first_number_label">Enter a number</string>
+    <string name="demo_first_next_button">Next</string>
+
+    <string name="demo_second_title">Demo Feature 2</string>
+    <string name="demo_second_error">Failed to load joke. Try again.</string>
+    <string name="demo_second_refresh_button">Refresh</string>
+    <string name="demo_second_back_button">Back</string>
+
+</resources>

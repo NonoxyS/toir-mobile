@@ -1,0 +1,72 @@
+---
+description: Resources (moko-resources) — strings, colors, images, setup, naming
+globs: **/*.{kt,kts,xml}
+alwaysApply: false
+---
+
+# Resources (moko-resources)
+
+All strings, colors, and images are placed in `moko-resources`. Hardcoded strings in Composables are forbidden.
+
+## Structure
+
+```
+shared/common-resources/
+├── build.gradle.kts
+└── src/commonMain/moko-resources/
+    └── base/
+        └── strings.xml
+```
+
+## Setup (`common-resources/build.gradle.kts`)
+
+```kotlin
+plugins {
+    alias(libs.plugins.conventionPlugin.kmpLibrary)
+    alias(libs.plugins.moko.resources)
+}
+
+multiplatformResources {
+    resourcesPackage.set("dev.nonoxy.kmmtemplate.res")
+    resourcesClassName.set("MR")
+    resourcesVisibility.set(MRVisibility.Public)
+}
+
+commonMainDependencies {
+    apis(libs.moko.resources.core)
+}
+```
+
+## strings.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <!-- Common -->
+    <string name="button_retry">Retry</string>
+    <string name="error_loading">Loading error</string>
+
+    <!-- {feature} -->
+    <string name="{feature}_title">Title</string>
+    <string name="{feature}_error_loading">Failed to load data</string>
+</resources>
+```
+
+## Usage
+
+```kotlin
+import dev.icerock.moko.resources.compose.stringResource
+import dev.nonoxy.kmmtemplate.res.MR
+
+Text(text = stringResource(MR.strings.{feature}_{element}_{description}))
+```
+
+## Key Naming Rules
+
+- `{feature}_{element}_{description}` — for feature-specific strings
+- `{element}_{description}` — for shared strings
+- Examples: `demo_first_title`, `button_retry`, `error_loading`
+
+## Dependencies
+
+`common-ui` connects `common-resources` as `api` — all UI modules automatically get access to `MR`.
