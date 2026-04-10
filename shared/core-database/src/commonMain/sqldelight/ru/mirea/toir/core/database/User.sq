@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT NOT NULL PRIMARY KEY,
+    login TEXT NOT NULL,
+    display_name TEXT NOT NULL,
+    role TEXT NOT NULL
+);
+
+upsertUser:
+INSERT OR REPLACE INTO users (id, login, display_name, role)
+VALUES (?, ?, ?, ?);
+
+selectAll:
+SELECT * FROM users;
+
+selectById:
+SELECT * FROM users WHERE id = ?;
+
+deleteAll:
+DELETE FROM users;

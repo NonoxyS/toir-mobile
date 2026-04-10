@@ -1,0 +1,33 @@
+CREATE TABLE IF NOT EXISTS checklist_item_results (
+    id TEXT NOT NULL PRIMARY KEY,
+    inspection_equipment_result_id TEXT NOT NULL,
+    checklist_item_id TEXT NOT NULL,
+    value_boolean INTEGER,
+    value_number REAL,
+    value_text TEXT,
+    value_select TEXT,
+    is_confirmed INTEGER NOT NULL DEFAULT 0,
+    answered_at TEXT,
+    sync_status TEXT NOT NULL DEFAULT 'PENDING'
+);
+
+insertOrReplaceResult:
+INSERT OR REPLACE INTO checklist_item_results (
+    id, inspection_equipment_result_id, checklist_item_id,
+    value_boolean, value_number, value_text, value_select,
+    is_confirmed, answered_at, sync_status
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectByEquipmentResultId:
+SELECT * FROM checklist_item_results WHERE inspection_equipment_result_id = ?;
+
+selectByChecklistItemAndEquipmentResult:
+SELECT * FROM checklist_item_results
+WHERE checklist_item_id = ? AND inspection_equipment_result_id = ?
+LIMIT 1;
+
+selectPending:
+SELECT * FROM checklist_item_results WHERE sync_status = 'PENDING';
+
+updateSyncStatus:
+UPDATE checklist_item_results SET sync_status = ? WHERE id = ?;

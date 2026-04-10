@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS equipment (
+    id TEXT NOT NULL PRIMARY KEY,
+    code TEXT NOT NULL,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    location_id TEXT NOT NULL
+);
+
+upsertEquipment:
+INSERT OR REPLACE INTO equipment (id, code, name, type, location_id)
+VALUES (?, ?, ?, ?, ?);
+
+selectAll:
+SELECT * FROM equipment;
+
+selectById:
+SELECT * FROM equipment WHERE id = ?;
+
+deleteAll:
+DELETE FROM equipment;

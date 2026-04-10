@@ -1,0 +1,35 @@
+CREATE TABLE IF NOT EXISTS inspection_equipment_results (
+    id TEXT NOT NULL PRIMARY KEY,
+    inspection_id TEXT NOT NULL,
+    route_point_id TEXT NOT NULL,
+    equipment_id TEXT NOT NULL,
+    status TEXT NOT NULL,
+    started_at TEXT,
+    completed_at TEXT,
+    sync_status TEXT NOT NULL DEFAULT 'PENDING'
+);
+
+insertResult:
+INSERT INTO inspection_equipment_results (
+    id, inspection_id, route_point_id, equipment_id, status, started_at, completed_at, sync_status
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectByInspectionId:
+SELECT * FROM inspection_equipment_results WHERE inspection_id = ?;
+
+selectById:
+SELECT * FROM inspection_equipment_results WHERE id = ?;
+
+selectByRoutePointAndInspection:
+SELECT * FROM inspection_equipment_results
+WHERE route_point_id = ? AND inspection_id = ?
+LIMIT 1;
+
+updateStatus:
+UPDATE inspection_equipment_results SET status = ?, started_at = ?, completed_at = ? WHERE id = ?;
+
+selectPending:
+SELECT * FROM inspection_equipment_results WHERE sync_status = 'PENDING';
+
+updateSyncStatus:
+UPDATE inspection_equipment_results SET sync_status = ? WHERE id = ?;

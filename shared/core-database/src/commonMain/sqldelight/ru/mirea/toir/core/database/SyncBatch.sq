@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS sync_batches (
+    id TEXT NOT NULL PRIMARY KEY,
+    sent_at TEXT,
+    status TEXT NOT NULL DEFAULT 'PENDING',
+    error_message TEXT
+);
+
+insertBatch:
+INSERT INTO sync_batches (id, sent_at, status, error_message) VALUES (?, ?, ?, ?);
+
+updateStatus:
+UPDATE sync_batches SET status = ?, error_message = ? WHERE id = ?;
+
+selectLatest:
+SELECT * FROM sync_batches ORDER BY sent_at DESC LIMIT 1;

@@ -2,7 +2,6 @@ import extensions.androidLibraryConfig
 import extensions.androidMainDependencies
 import extensions.apis
 import extensions.commonMainDependencies
-import extensions.commonTestDependencies
 import extensions.implementations
 import extensions.iosMainDependencies
 

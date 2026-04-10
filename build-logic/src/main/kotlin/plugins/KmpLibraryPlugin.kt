@@ -80,4 +80,3 @@ class KmpLibraryPlugin : Plugin<Project> {
         }
     }
 }
-

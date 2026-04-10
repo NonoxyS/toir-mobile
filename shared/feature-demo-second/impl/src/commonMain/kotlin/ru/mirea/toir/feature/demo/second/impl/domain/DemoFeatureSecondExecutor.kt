@@ -12,7 +12,9 @@ import ru.mirea.toir.core.mvikotlin.BaseExecutor
 internal class DemoFeatureSecondExecutor(
     mainDispatcher: CoroutineDispatcher,
     private val jokeRepository: ru.mirea.toir.feature.demo.second.impl.domain.repository.JokeRepository,
-) : BaseExecutor<Intent, ru.mirea.toir.feature.demo.second.impl.domain.DemoFeatureSecondStoreFactory.Action, State, ru.mirea.toir.feature.demo.second.impl.domain.DemoFeatureSecondStoreFactory.Message, Label>(mainContext = mainDispatcher) {
+) : BaseExecutor<Intent, ru.mirea.toir.feature.demo.second.impl.domain.DemoFeatureSecondStoreFactory.Action, State, ru.mirea.toir.feature.demo.second.impl.domain.DemoFeatureSecondStoreFactory.Message, Label>(
+    mainContext = mainDispatcher
+) {
 
     override suspend fun suspendExecuteAction(action: ru.mirea.toir.feature.demo.second.impl.domain.DemoFeatureSecondStoreFactory.Action) {
         when (action) {

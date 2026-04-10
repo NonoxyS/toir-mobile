@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS action_logs (
+    id TEXT NOT NULL PRIMARY KEY,
+    inspection_id TEXT NOT NULL,
+    action_type TEXT NOT NULL,
+    metadata TEXT,
+    created_at TEXT NOT NULL,
+    sync_status TEXT NOT NULL DEFAULT 'PENDING'
+);
+
+insertActionLog:
+INSERT INTO action_logs (id, inspection_id, action_type, metadata, created_at, sync_status)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectByInspectionId:
+SELECT * FROM action_logs WHERE inspection_id = ?;
+
+selectPending:
+SELECT * FROM action_logs WHERE sync_status = 'PENDING';
+
+updateSyncStatus:
+UPDATE action_logs SET sync_status = ? WHERE id = ?;

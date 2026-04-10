@@ -10,7 +10,11 @@ internal class JokeApiClientImpl(
 
     override suspend fun fetchJoke(): Result<ru.mirea.toir.feature.demo.second.impl.data.network.models.RemoteJokeResponse> =
         ktorClient.executeQuery(
-            query = { ktorClient.get(_root_ide_package_.ru.mirea.toir.feature.demo.second.impl.data.network.JokeApiClient.Companion.URL_JOKE) },
+            query = {
+                ktorClient.get(
+                    _root_ide_package_.ru.mirea.toir.feature.demo.second.impl.data.network.JokeApiClient.Companion.URL_JOKE
+                )
+            },
             deserializer = _root_ide_package_.ru.mirea.toir.feature.demo.second.impl.data.network.models.RemoteJokeResponse.serializer(),
             success = { dto -> dto.wrapResultSuccess() },
             loggingErrorMessage = "JokeApiClientImpl: failed to fetch joke",

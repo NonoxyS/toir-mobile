@@ -9,6 +9,7 @@ import ru.mirea.toir.core.domain.di.coreDomainModule
 import ru.mirea.toir.core.mvikotlin.di.coreMVIKotlinModule
 import ru.mirea.toir.core.network.di.coreNetworkModule
 import ru.mirea.toir.core.network.ktor.di.coreNetworkKtorModule
+import ru.mirea.toir.core.database.di.coreDatabaseModule
 import ru.mirea.toir.core.storage.di.coreStorageModule
 import io.github.aakira.napier.Napier
 import org.koin.core.context.startKoin
@@ -27,6 +28,7 @@ fun initKoin(appDeclaration: KoinAppDeclaration) {
             coreNetworkModule,
             coreNetworkKtorModule,
             coreStorageModule,
+            coreDatabaseModule,
 
             featureDemoFirstImplModule,
             featureDemoFirstPresentationModule,

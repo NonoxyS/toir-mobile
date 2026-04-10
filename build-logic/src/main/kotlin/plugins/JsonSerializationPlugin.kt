@@ -14,7 +14,6 @@ class JsonSerializationPlugin : Plugin<Project> {
             with(pluginManager) {
                 apply(libs.plugins.kotlin.serialization.get().pluginId)
 
-
                 when {
                     hasPlugin(libs.plugins.kotlin.multiplatform.get().pluginId) -> {
                         commonMainDependencies {
@@ -22,8 +21,8 @@ class JsonSerializationPlugin : Plugin<Project> {
                         }
                     }
 
-                    hasPlugin(libs.plugins.androidLibrary.get().pluginId)
-                        || hasPlugin(libs.plugins.androidApplication.get().pluginId) -> {
+                    hasPlugin(libs.plugins.androidLibrary.get().pluginId) ||
+                        hasPlugin(libs.plugins.androidApplication.get().pluginId) -> {
 
                         dependencies {
                             implementation(libs.kotlin.serialization.json)

@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS routes (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT
+);
+
+upsertRoute:
+INSERT OR REPLACE INTO routes (id, name, description)
+VALUES (?, ?, ?);
+
+selectAll:
+SELECT * FROM routes;
+
+selectById:
+SELECT * FROM routes WHERE id = ?;
+
+deleteAll:
+DELETE FROM routes;

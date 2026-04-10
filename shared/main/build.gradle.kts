@@ -11,7 +11,6 @@ plugins {
     alias(libs.plugins.moko.resources)
 }
 
-
 androidLibraryConfig {
     namespace = "ru.mirea.toir.main"
 }
@@ -100,4 +99,4 @@ val changeGitHooksDir by tasks.registering(Exec::class) {
     }
 }
 
-//tasks.getByPath(":shared:main:preBuild").dependsOn(changeGitHooksDir)
+// tasks.getByPath(":shared:main:preBuild").dependsOn(changeGitHooksDir)

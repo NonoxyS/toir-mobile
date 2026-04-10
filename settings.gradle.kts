@@ -46,6 +46,7 @@ include(":shared:core-presentation")
 include(":shared:core-storage")
 include(":shared:core-network")
 include(":shared:core-navigation")
+include(":shared:core-database")
 
 // Shared feature modules
 

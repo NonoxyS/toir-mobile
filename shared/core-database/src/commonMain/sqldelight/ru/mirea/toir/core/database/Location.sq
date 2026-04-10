@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS locations (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT
+);
+
+upsertLocation:
+INSERT OR REPLACE INTO locations (id, name, description)
+VALUES (?, ?, ?);
+
+selectAll:
+SELECT * FROM locations;
+
+selectById:
+SELECT * FROM locations WHERE id = ?;
+
+deleteAll:
+DELETE FROM locations;

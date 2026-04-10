@@ -1,7 +1,6 @@
 import extensions.androidLibraryConfig
 import extensions.apis
 import extensions.commonMainDependencies
-import extensions.implementations
 
 plugins {
     alias(libs.plugins.conventionPlugin.kmpLibrary)

@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS inspections (
+    id TEXT NOT NULL PRIMARY KEY,
+    assignment_id TEXT NOT NULL,
+    route_id TEXT NOT NULL,
+    status TEXT NOT NULL,
+    started_at TEXT NOT NULL,
+    completed_at TEXT,
+    sync_status TEXT NOT NULL DEFAULT 'PENDING'
+);
+
+insertInspection:
+INSERT INTO inspections (id, assignment_id, route_id, status, started_at, completed_at, sync_status)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectByAssignmentId:
+SELECT * FROM inspections WHERE assignment_id = ?;
+
+selectById:
+SELECT * FROM inspections WHERE id = ?;
+
+updateStatus:
+UPDATE inspections SET status = ?, completed_at = ? WHERE id = ?;
+
+selectPending:
+SELECT * FROM inspections WHERE sync_status = 'PENDING';
+
+updateSyncStatus:
+UPDATE inspections SET sync_status = ? WHERE id = ?;

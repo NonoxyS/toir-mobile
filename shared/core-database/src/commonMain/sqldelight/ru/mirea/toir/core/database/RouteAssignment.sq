@@ -1,0 +1,24 @@
+CREATE TABLE IF NOT EXISTS route_assignments (
+    id TEXT NOT NULL PRIMARY KEY,
+    route_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    status TEXT NOT NULL,
+    assigned_at TEXT NOT NULL,
+    due_date TEXT
+);
+
+upsertRouteAssignment:
+INSERT OR REPLACE INTO route_assignments (id, route_id, user_id, status, assigned_at, due_date)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectAll:
+SELECT * FROM route_assignments;
+
+selectById:
+SELECT * FROM route_assignments WHERE id = ?;
+
+updateStatus:
+UPDATE route_assignments SET status = ? WHERE id = ?;
+
+deleteAll:
+DELETE FROM route_assignments;
