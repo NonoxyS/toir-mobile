@@ -13,20 +13,24 @@ import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BearerTokens
+import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.http.URLProtocol
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import org.koin.core.module.dsl.new
 import org.koin.dsl.module
+import ru.mirea.toir.core.network.auth.TokenProvider
 
 val coreNetworkKtorModule = module {
 
     single<HttpClient> {
         httpClient(environment = get()) {
             initBaseHttpConfig()
+            installBearerAuth(tokenProvider = get())
 
             defaultRequest { setTemplateApiHost(environment = get()) }
         }
@@ -67,7 +71,25 @@ private fun HttpClientConfig<*>.initBaseHttpConfig() {
     }
 }
 
-private fun httpClient(environment: NetworkEnvironment, config: HttpClientConfig<*>.() -> Unit): HttpClient = HttpClient {
+private fun HttpClientConfig<*>.installBearerAuth(tokenProvider: TokenProvider) {
+    install(Auth) {
+        bearer {
+            loadTokens {
+                val token = tokenProvider.getAccessToken()
+                BearerTokens(accessToken = token.orEmpty(), refreshToken = "")
+            }
+            refreshTokens {
+                val newToken = tokenProvider.refreshAndGetAccessToken()
+                BearerTokens(accessToken = newToken.orEmpty(), refreshToken = "")
+            }
+        }
+    }
+}
+
+private fun httpClient(
+    environment: NetworkEnvironment,
+    config: HttpClientConfig<*>.() -> Unit,
+): HttpClient = HttpClient {
     config(this)
 
     if (environment == NetworkEnvironment.Dev) {
@@ -76,6 +98,6 @@ private fun httpClient(environment: NetworkEnvironment, config: HttpClientConfig
 }
 
 private fun DefaultRequest.DefaultRequestBuilder.setTemplateApiHost(environment: NetworkEnvironment) {
-    url.protocol = URLProtocol.HTTPS
+    url.protocol = environment.protocol
     url.host = environment.apiHost
 }

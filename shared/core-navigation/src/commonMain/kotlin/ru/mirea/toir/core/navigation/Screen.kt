@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 interface Screen
 
 @Serializable
+data object AuthRoute : Screen
+
+@Serializable
 data object DemoFirstRoute : Screen
 
 @Serializable

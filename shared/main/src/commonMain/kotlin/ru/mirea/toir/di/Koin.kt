@@ -1,5 +1,7 @@
 package ru.mirea.toir.di
 
+import ru.mirea.toir.feature.auth.impl.di.featureAuthImplModule
+import ru.mirea.toir.feature.auth.presentation.di.featureAuthPresentationModule
 import ru.mirea.toir.feature.demo.first.impl.di.featureDemoFirstImplModule
 import ru.mirea.toir.feature.demo.first.presentation.di.featureDemoFirstPresentationModule
 import ru.mirea.toir.feature.demo.second.presentation.di.featureDemoSecondPresentationModule
@@ -29,6 +31,9 @@ fun initKoin(appDeclaration: KoinAppDeclaration) {
             coreNetworkKtorModule,
             coreStorageModule,
             coreDatabaseModule,
+
+            featureAuthImplModule,
+            featureAuthPresentationModule,
 
             featureDemoFirstImplModule,
             featureDemoFirstPresentationModule,

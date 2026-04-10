@@ -22,6 +22,7 @@ commonMainDependencies {
         libs.ktor.logging,
         libs.ktor.contentNegotiation,
         libs.ktor.serializationJson,
+        libs.ktor.auth,
     )
 
     apis(

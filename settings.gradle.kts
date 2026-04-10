@@ -50,6 +50,11 @@ include(":shared:core-database")
 
 // Shared feature modules
 
+include(":shared:feature-auth:api")
+include(":shared:feature-auth:impl")
+include(":shared:feature-auth:presentation")
+include(":shared:feature-auth:ui")
+
 include(":shared:feature-demo-first:impl")
 include(":shared:feature-demo-first:api")
 include(":shared:feature-demo-first:presentation")
