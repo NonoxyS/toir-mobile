@@ -13,9 +13,9 @@ internal val LocalToirThemeShapes = staticCompositionLocalOf<ToirShapes> {
 
 @Immutable
 class ToirShapes internal constructor(
-    val xs: CornerBasedShape = RoundedCornerShape(4.dp), // чекбоксы, бейджи
-    val sm: CornerBasedShape = RoundedCornerShape(6.dp), // поля ввода, кнопки
-    val md: CornerBasedShape = RoundedCornerShape(10.dp), // карточки, панели
-    val lg: CornerBasedShape = RoundedCornerShape(14.dp), // модальные окна, bottomsheet
-    val pill: CornerBasedShape = RoundedCornerShape(999.dp), // статус-бейджи, переключатели
+    val xs: CornerBasedShape = RoundedCornerShape(4.dp),
+    val sm: CornerBasedShape = RoundedCornerShape(6.dp),
+    val md: CornerBasedShape = RoundedCornerShape(10.dp),
+    val lg: CornerBasedShape = RoundedCornerShape(14.dp),
+    val pill: CornerBasedShape = RoundedCornerShape(999.dp),
 )

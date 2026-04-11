@@ -59,8 +59,11 @@ internal fun LoginPasswordField(
             IconButton(onClick = onTogglePasswordVisibility) {
                 Icon(
                     painter = painterResource(
-                        imageResource = if (passwordVisible) MR.images.visibility_off
-                        else MR.images.visibility
+                        imageResource = if (passwordVisible) {
+                            MR.images.visibility_off
+                        } else {
+                            MR.images.visibility
+                        }
                     ),
                     contentDescription = null,
                     tint = colors.textSecondary,

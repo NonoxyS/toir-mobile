@@ -70,7 +70,6 @@ private val darkColorScheme = ToirColorScheme(
     selectedBackground = Color(0x1AD8DBE6),
 )
 
-// Light theme is a stub — only dark theme is currently designed per DS MASTER.md
 internal fun getLightColorScheme(): ToirColorScheme = darkColorScheme
 
 internal fun getDarkColorScheme(): ToirColorScheme = darkColorScheme

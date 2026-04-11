@@ -60,13 +60,3 @@ include(":shared:feature-bootstrap:api")
 include(":shared:feature-bootstrap:impl")
 include(":shared:feature-bootstrap:presentation")
 include(":shared:feature-bootstrap:ui")
-
-include(":shared:feature-demo-first:impl")
-include(":shared:feature-demo-first:api")
-include(":shared:feature-demo-first:presentation")
-include(":shared:feature-demo-first:ui")
-
-include(":shared:feature-demo-second:impl")
-include(":shared:feature-demo-second:api")
-include(":shared:feature-demo-second:presentation")
-include(":shared:feature-demo-second:ui")
