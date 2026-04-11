@@ -1,15 +1,16 @@
 package ru.mirea.toir.feature.auth.impl.domain
 
 import com.arkivanov.mvikotlin.core.store.Reducer
-import ru.mirea.toir.feature.auth.api.store.AuthStore
+import ru.mirea.toir.feature.auth.api.store.AuthStore.State
+import ru.mirea.toir.feature.auth.impl.domain.AuthStoreFactory.Message
 
-internal class AuthReducer : Reducer<AuthStore.State, AuthStoreFactory.Message> {
+internal class AuthReducer : Reducer<State, Message> {
 
-    override fun AuthStore.State.reduce(msg: AuthStoreFactory.Message): AuthStore.State = when (msg) {
-        is AuthStoreFactory.Message.SetLogin -> copy(login = msg.value)
-        is AuthStoreFactory.Message.SetPassword -> copy(password = msg.value)
-        AuthStoreFactory.Message.SetLoading -> copy(isLoading = true, errorMessage = null)
-        is AuthStoreFactory.Message.SetError -> copy(isLoading = false, errorMessage = msg.message)
-        AuthStoreFactory.Message.ClearLoading -> copy(isLoading = false)
+    override fun State.reduce(msg: Message): State = when (msg) {
+        is Message.SetLogin -> copy(login = msg.value)
+        is Message.SetPassword -> copy(password = msg.value)
+        Message.SetLoading -> copy(isLoading = true, errorMessage = null)
+        is Message.SetError -> copy(isLoading = false, errorMessage = msg.message)
+        Message.ClearLoading -> copy(isLoading = false)
     }
 }

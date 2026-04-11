@@ -2,38 +2,41 @@ package ru.mirea.toir.feature.auth.impl.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
-import ru.mirea.toir.feature.auth.api.store.AuthStore
-import ru.mirea.toir.feature.auth.impl.domain.repository.AuthRepository
+import ru.mirea.toir.feature.auth.api.store.AuthStore.Intent
+import ru.mirea.toir.feature.auth.api.store.AuthStore.Label
+import ru.mirea.toir.feature.auth.api.store.AuthStore.State
+import ru.mirea.toir.feature.auth.impl.domain.AuthStoreFactory.Message
+import ru.mirea.toir.core.auth.repository.AuthRepository
 
 internal class AuthExecutor(
     private val authRepository: AuthRepository,
     mainDispatcher: CoroutineDispatcher,
-) : BaseExecutor<AuthStore.Intent, Nothing, AuthStore.State, AuthStoreFactory.Message, AuthStore.Label>(
+) : BaseExecutor<Intent, Nothing, State, Message, Label>(
     mainContext = mainDispatcher,
 ) {
-    override suspend fun suspendExecuteIntent(intent: AuthStore.Intent) {
+    override suspend fun suspendExecuteIntent(intent: Intent) {
         when (intent) {
-            is AuthStore.Intent.OnLoginChange -> dispatch(AuthStoreFactory.Message.SetLogin(intent.value))
-            is AuthStore.Intent.OnPasswordChange -> dispatch(AuthStoreFactory.Message.SetPassword(intent.value))
-            AuthStore.Intent.OnLoginClick -> handleLogin()
+            is Intent.OnLoginChange -> dispatch(Message.SetLogin(intent.value))
+            is Intent.OnPasswordChange -> dispatch(Message.SetPassword(intent.value))
+            Intent.OnLoginClick -> handleLogin()
         }
     }
 
     private suspend fun handleLogin() {
         val currentState = state()
         if (currentState.isLoading) return
-        dispatch(AuthStoreFactory.Message.SetLoading)
+        dispatch(Message.SetLoading)
 
         authRepository.login(
             login = currentState.login,
             password = currentState.password,
         ).fold(
             onSuccess = {
-                dispatch(AuthStoreFactory.Message.ClearLoading)
-                publish(AuthStore.Label.NavigateToMain)
+                dispatch(Message.ClearLoading)
+                publish(Label.NavigateToMain)
             },
             onFailure = { throwable ->
-                dispatch(AuthStoreFactory.Message.SetError(throwable.message ?: "Ошибка авторизации"))
+                dispatch(Message.SetError(throwable.message ?: "Ошибка авторизации"))
             },
         )
     }

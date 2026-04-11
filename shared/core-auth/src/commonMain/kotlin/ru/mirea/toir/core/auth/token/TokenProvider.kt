@@ -1,4 +1,4 @@
-package ru.mirea.toir.core.network.auth
+package ru.mirea.toir.core.auth.token
 
 interface TokenProvider {
     suspend fun getAccessToken(): String?

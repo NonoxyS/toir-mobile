@@ -23,7 +23,7 @@ import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import org.koin.core.module.dsl.new
 import org.koin.dsl.module
-import ru.mirea.toir.core.network.auth.TokenProvider
+import ru.mirea.toir.core.auth.token.TokenProvider
 
 val coreNetworkKtorModule = module {
 

@@ -18,6 +18,7 @@ commonMainDependencies {
     implementations(
         projects.shared.common,
         projects.shared.coreDomain,
+        projects.shared.coreAuth,
 
         libs.ktor.logging,
         libs.ktor.contentNegotiation,

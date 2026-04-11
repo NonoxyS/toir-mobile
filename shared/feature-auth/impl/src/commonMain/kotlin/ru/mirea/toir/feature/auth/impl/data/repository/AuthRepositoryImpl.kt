@@ -6,12 +6,13 @@ import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
 import ru.mirea.toir.common.extensions.wrapResultSuccess
-import ru.mirea.toir.feature.auth.api.models.DomainAuthUser
+import ru.mirea.toir.core.auth.model.DomainAuthUser
+import ru.mirea.toir.core.auth.model.RefreshToken
+import ru.mirea.toir.core.auth.repository.AuthRepository
+import ru.mirea.toir.core.auth.storage.TokenStorage
 import ru.mirea.toir.feature.auth.impl.data.mappers.AuthUserMapper
 import ru.mirea.toir.feature.auth.impl.data.network.AuthApiClient
 import ru.mirea.toir.feature.auth.impl.data.network.models.RemoteLoginRequest
-import ru.mirea.toir.feature.auth.impl.data.storage.TokenStorage
-import ru.mirea.toir.feature.auth.impl.domain.repository.AuthRepository
 
 internal class AuthRepositoryImpl(
     private val apiClient: AuthApiClient,
@@ -37,7 +38,7 @@ internal class AuthRepositoryImpl(
 
                     tokenStorage.saveTokens(
                         accessToken = response.accessToken.orEmpty(),
-                        refreshToken = response.refreshToken.orEmpty(),
+                        refreshToken = RefreshToken(response.refreshToken.orEmpty()),
                     )
 
                     userMapper.map(response.user ?: error("No user in login response")).wrapResultSuccess()
@@ -49,9 +50,15 @@ internal class AuthRepositoryImpl(
             )
         }
 
-    override suspend fun getStoredAccessToken(): String? =
+    override suspend fun getStoredAccessToken(): Result<String?> =
         withContext(coroutineDispatchers.io) {
-            tokenStorage.getAccessToken()
+            coRunCatching(
+                tryBlock = { tokenStorage.getAccessToken().wrapResultSuccess() },
+                catchBlock = { throwable ->
+                    Napier.e(message = "getStoredAccessToken failed", throwable = throwable)
+                    throwable.wrapResultFailure()
+                },
+            )
         }
 
     override suspend fun refreshAccessToken(): Result<Unit> =
@@ -60,10 +67,10 @@ internal class AuthRepositoryImpl(
                 tryBlock = {
                     val refreshToken = tokenStorage.getRefreshToken()
                         ?: error("No refresh token stored")
-                    val response = apiClient.refresh(refreshToken).getOrThrow()
+                    val response = apiClient.refresh(refreshToken.value).getOrThrow()
                     tokenStorage.saveTokens(
                         accessToken = response.accessToken.orEmpty(),
-                        refreshToken = response.refreshToken.orEmpty(),
+                        refreshToken = RefreshToken(response.refreshToken.orEmpty()),
                     )
                     Unit.wrapResultSuccess()
                 },
@@ -74,7 +81,17 @@ internal class AuthRepositoryImpl(
             )
         }
 
-    override suspend fun logout() {
-        withContext(coroutineDispatchers.io) { tokenStorage.clearTokens() }
-    }
+    override suspend fun logout(): Result<Unit> =
+        withContext(coroutineDispatchers.io) {
+            coRunCatching(
+                tryBlock = {
+                    tokenStorage.clearTokens()
+                    Unit.wrapResultSuccess()
+                },
+                catchBlock = { throwable ->
+                    Napier.e(message = "logout failed", throwable = throwable)
+                    throwable.wrapResultFailure()
+                },
+            )
+        }
 }

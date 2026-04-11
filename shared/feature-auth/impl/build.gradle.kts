@@ -13,6 +13,7 @@ androidLibraryConfig {
 
 commonMainDependencies {
     implementations(
+        projects.shared.coreAuth,
         projects.shared.coreNetwork,
         projects.shared.coreStorage,
         projects.shared.coreDatabase,
