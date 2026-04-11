@@ -5,7 +5,7 @@ import ru.mirea.toir.core.database.Route_points
 import ru.mirea.toir.core.database.Routes
 import ru.mirea.toir.core.database.ToirDatabase
 
-internal class RouteDao(db: ToirDatabase) {
+class RouteDao(db: ToirDatabase) {
     private val routeQueries = db.routeQueries
     private val pointQueries = db.routePointQueries
     private val assignmentQueries = db.routeAssignmentQueries

@@ -3,12 +3,12 @@ package ru.mirea.toir.ui
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import ru.mirea.toir.feature.demo.first.ui.api.composableDemoFirstScreen
-import ru.mirea.toir.feature.demo.second.ui.api.composableDemoSecondScreen
-import ru.mirea.toir.feature.demo.second.ui.api.navigateToDemoSecondScreen
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
-import ru.mirea.toir.core.navigation.DemoFirstRoute
-import ru.mirea.toir.core.navigation.popBackStackOnResumed
+import ru.mirea.toir.core.navigation.AuthRoute
+import ru.mirea.toir.core.navigation.BootstrapRoute
+import ru.mirea.toir.core.navigation.RoutesListRoute
+import ru.mirea.toir.feature.auth.ui.api.composableAuthScreen
+import ru.mirea.toir.feature.bootstrap.ui.api.composableBootstrapScreen
 
 @Composable
 fun App() {
@@ -16,10 +16,28 @@ fun App() {
         val navController = rememberNavController()
         NavHost(
             navController = navController,
-            startDestination = DemoFirstRoute,
+            startDestination = AuthRoute,
         ) {
-            composableDemoFirstScreen(onNavigateToSecond = navController::navigateToDemoSecondScreen)
-            composableDemoSecondScreen(onNavigateBack = navController::popBackStackOnResumed)
+            composableAuthScreen(
+                onNavigateToMain = {
+                    navController.navigate(BootstrapRoute) {
+                        popUpTo(AuthRoute) { inclusive = true }
+                    }
+                },
+            )
+            composableBootstrapScreen(
+                onNavigateToRoutesList = {
+                    navController.navigate(RoutesListRoute) {
+                        popUpTo(BootstrapRoute) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate(AuthRoute) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+            )
+            // composableRoutesListScreen(...) — добавить в Waypoint 04
         }
     }
 }

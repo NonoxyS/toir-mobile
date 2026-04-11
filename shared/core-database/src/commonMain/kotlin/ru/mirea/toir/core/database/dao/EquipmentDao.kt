@@ -3,7 +3,7 @@ package ru.mirea.toir.core.database.dao
 import ru.mirea.toir.core.database.Equipment
 import ru.mirea.toir.core.database.ToirDatabase
 
-internal class EquipmentDao(db: ToirDatabase) {
+class EquipmentDao(db: ToirDatabase) {
     private val queries = db.equipmentQueries
 
     fun upsert(id: String, code: String, name: String, type: String, locationId: String) {

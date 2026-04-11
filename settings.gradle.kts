@@ -56,6 +56,11 @@ include(":shared:feature-auth:impl")
 include(":shared:feature-auth:presentation")
 include(":shared:feature-auth:ui")
 
+include(":shared:feature-bootstrap:api")
+include(":shared:feature-bootstrap:impl")
+include(":shared:feature-bootstrap:presentation")
+include(":shared:feature-bootstrap:ui")
+
 include(":shared:feature-demo-first:impl")
 include(":shared:feature-demo-first:api")
 include(":shared:feature-demo-first:presentation")

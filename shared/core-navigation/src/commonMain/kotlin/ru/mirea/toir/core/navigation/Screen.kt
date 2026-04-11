@@ -8,6 +8,12 @@ interface Screen
 data object AuthRoute : Screen
 
 @Serializable
+data object BootstrapRoute : Screen
+
+@Serializable
+data object RoutesListRoute : Screen
+
+@Serializable
 data object DemoFirstRoute : Screen
 
 @Serializable
