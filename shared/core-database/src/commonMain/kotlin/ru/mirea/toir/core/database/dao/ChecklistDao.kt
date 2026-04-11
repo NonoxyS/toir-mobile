@@ -4,7 +4,7 @@ import ru.mirea.toir.core.database.Checklist_items
 import ru.mirea.toir.core.database.Checklists
 import ru.mirea.toir.core.database.ToirDatabase
 
-internal class ChecklistDao(db: ToirDatabase) {
+class ChecklistDao(db: ToirDatabase) {
     private val checklistQueries = db.checklistQueries
     private val itemQueries = db.checklistItemQueries
 

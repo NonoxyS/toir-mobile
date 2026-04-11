@@ -2,7 +2,7 @@ package ru.mirea.toir.core.database.dao
 
 import ru.mirea.toir.core.database.ToirDatabase
 
-internal class SyncMetaDao(db: ToirDatabase) {
+class SyncMetaDao(db: ToirDatabase) {
     private val queries = db.syncMetaQueries
 
     fun upsert(key: String, value: String) {

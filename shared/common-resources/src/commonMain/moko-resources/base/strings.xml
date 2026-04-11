@@ -18,4 +18,9 @@
     <string name="auth_forgot_password">Забыли пароль?</string>
     <string name="auth_error_invalid_credentials">Неверный логин или пароль</string>
 
+    <!-- bootstrap -->
+    <string name="bootstrap_loading">Загрузка данных…</string>
+    <string name="bootstrap_error_title">Не удалось загрузить данные</string>
+    <string name="bootstrap_button_retry">Повторить</string>
+
 </resources>

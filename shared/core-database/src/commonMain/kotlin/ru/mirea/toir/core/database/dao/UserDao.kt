@@ -3,7 +3,7 @@ package ru.mirea.toir.core.database.dao
 import ru.mirea.toir.core.database.ToirDatabase
 import ru.mirea.toir.core.database.Users
 
-internal class UserDao(db: ToirDatabase) {
+class UserDao(db: ToirDatabase) {
     private val queries = db.userQueries
 
     fun upsert(id: String, login: String, displayName: String, role: String) {
