@@ -8,4 +8,5 @@ data class UiAuthState(
     val password: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val passwordVisible: Boolean = false,
 )

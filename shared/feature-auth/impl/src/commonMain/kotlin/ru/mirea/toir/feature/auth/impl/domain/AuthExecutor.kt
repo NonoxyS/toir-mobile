@@ -19,6 +19,7 @@ internal class AuthExecutor(
             is Intent.OnLoginChange -> dispatch(Message.SetLogin(intent.value))
             is Intent.OnPasswordChange -> dispatch(Message.SetPassword(intent.value))
             Intent.OnLoginClick -> handleLogin()
+            Intent.TogglePasswordVisibility -> dispatch(Message.TogglePasswordVisibility)
         }
     }
 

@@ -14,13 +14,13 @@ internal val LocalToirThemeTypography = staticCompositionLocalOf<ToirTypography>
 
 @Immutable
 class ToirTypography internal constructor(
-    val displayLarge: TextStyle,   // 24sp 600 — заголовок экрана
-    val displayMedium: TextStyle,  // 20sp 600 — заголовок карточки
-    val headline: TextStyle,       // 17sp 600 — подзаголовок секции
-    val bodyLarge: TextStyle,      // 16sp 400 — основной текст, поля ввода
-    val bodyMedium: TextStyle,     // 14sp 400 — вторичный текст
-    val label: TextStyle,          // 13sp 500 — лейблы полей, кнопки
-    val caption: TextStyle,        // 12sp 400 — метки, мета
+    val displayLarge: TextStyle, // 24sp 600 — заголовок экрана
+    val displayMedium: TextStyle, // 20sp 600 — заголовок карточки
+    val headline: TextStyle, // 17sp 600 — подзаголовок секции
+    val bodyLarge: TextStyle, // 16sp 400 — основной текст, поля ввода
+    val bodyMedium: TextStyle, // 14sp 400 — вторичный текст
+    val label: TextStyle, // 13sp 500 — лейблы полей, кнопки
+    val caption: TextStyle, // 12sp 400 — метки, мета
 )
 
 @Composable

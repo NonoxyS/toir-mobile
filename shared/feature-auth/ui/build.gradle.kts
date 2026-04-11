@@ -8,5 +8,3 @@ plugins {
 androidLibraryConfig {
     namespace = "ru.mirea.toir.feature.auth.ui"
 }
-
-

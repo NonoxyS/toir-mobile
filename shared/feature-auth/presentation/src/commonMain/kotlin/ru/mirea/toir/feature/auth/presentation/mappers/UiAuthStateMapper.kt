@@ -14,6 +14,7 @@ internal class UiAuthStateMapperImpl : UiAuthStateMapper {
             password = password,
             isLoading = isLoading,
             errorMessage = errorMessage,
+            passwordVisible = passwordVisible,
         )
     }
 }

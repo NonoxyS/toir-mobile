@@ -10,7 +10,7 @@
     <string name="demo_second_back_button">Back</string>
 
     <!-- auth -->
-    <string name="auth_title">TOIR</string>
+    <string name="auth_title">ТОИР</string>
     <string name="auth_subtitle">Система технического обхода</string>
     <string name="auth_login_hint">Логин</string>
     <string name="auth_password_hint">Пароль</string>

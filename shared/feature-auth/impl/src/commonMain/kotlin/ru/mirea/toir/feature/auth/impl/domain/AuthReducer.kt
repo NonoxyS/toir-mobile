@@ -12,5 +12,6 @@ internal class AuthReducer : Reducer<State, Message> {
         Message.SetLoading -> copy(isLoading = true, errorMessage = null)
         is Message.SetError -> copy(isLoading = false, errorMessage = msg.message)
         Message.ClearLoading -> copy(isLoading = false)
+        Message.TogglePasswordVisibility -> copy(passwordVisible = !passwordVisible)
     }
 }

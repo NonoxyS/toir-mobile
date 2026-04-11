@@ -9,12 +9,14 @@ interface AuthStore : Store<AuthStore.Intent, AuthStore.State, AuthStore.Label> 
         val password: String = "",
         val isLoading: Boolean = false,
         val errorMessage: String? = null,
+        val passwordVisible: Boolean = false,
     )
 
     sealed interface Intent {
         data class OnLoginChange(val value: String) : Intent
         data class OnPasswordChange(val value: String) : Intent
         data object OnLoginClick : Intent
+        data object TogglePasswordVisibility : Intent
     }
 
     sealed interface Label {

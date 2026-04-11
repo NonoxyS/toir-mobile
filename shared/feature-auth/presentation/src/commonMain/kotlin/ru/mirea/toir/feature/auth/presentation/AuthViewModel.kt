@@ -26,6 +26,7 @@ class AuthViewModel internal constructor(
     fun onLoginChange(value: String) = store.accept(AuthStore.Intent.OnLoginChange(value))
     fun onPasswordChange(value: String) = store.accept(AuthStore.Intent.OnPasswordChange(value))
     fun onLoginClick() = store.accept(AuthStore.Intent.OnLoginClick)
+    fun onTogglePasswordVisibility() = store.accept(AuthStore.Intent.TogglePasswordVisibility)
 
     override fun onCleared() {
         store.dispose()
