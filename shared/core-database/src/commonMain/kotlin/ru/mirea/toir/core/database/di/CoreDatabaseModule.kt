@@ -12,6 +12,7 @@ import ru.mirea.toir.core.database.dao.PhotoDao
 import ru.mirea.toir.core.database.dao.RouteDao
 import ru.mirea.toir.core.database.dao.SyncMetaDao
 import ru.mirea.toir.core.database.dao.UserDao
+import ru.mirea.toir.core.database.driver.DatabaseDriverFactory
 
 internal expect val platformCoreDatabaseModule: Module
 
@@ -19,9 +20,7 @@ val coreDatabaseModule = module {
     includes(platformCoreDatabaseModule)
 
     single<ToirDatabase> {
-        ToirDatabase(
-        driver = get<ru.mirea.toir.core.database.driver.DatabaseDriverFactory>().create()
-    )
+        ToirDatabase(driver = get<DatabaseDriverFactory>().create())
     }
 
     factory { new(::UserDao) }

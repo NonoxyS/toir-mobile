@@ -6,7 +6,7 @@ import ru.mirea.toir.feature.auth.api.store.AuthStore.Intent
 import ru.mirea.toir.feature.auth.api.store.AuthStore.Label
 import ru.mirea.toir.feature.auth.api.store.AuthStore.State
 import ru.mirea.toir.feature.auth.impl.domain.AuthStoreFactory.Message
-import ru.mirea.toir.core.auth.repository.AuthRepository
+import ru.mirea.toir.core.auth.domain.repository.AuthRepository
 
 internal class AuthExecutor(
     private val authRepository: AuthRepository,

@@ -6,8 +6,10 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import ru.mirea.toir.core.auth.model.RefreshToken
-import ru.mirea.toir.core.auth.storage.TokenStorage
+import ru.mirea.toir.core.auth.domain.models.AccessToken
+import ru.mirea.toir.core.auth.domain.models.BearerTokens
+import ru.mirea.toir.core.auth.domain.models.RefreshToken
+import ru.mirea.toir.core.auth.data.storage.TokenStorage
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -15,18 +17,26 @@ internal class TokenStorageImpl(
     private val dataStore: DataStore<Preferences>,
 ) : TokenStorage {
 
-    override suspend fun saveTokens(accessToken: String, refreshToken: RefreshToken) {
+    override suspend fun saveTokens(bearerTokens: BearerTokens) {
         dataStore.edit { prefs ->
-            prefs[KEY_ACCESS_TOKEN] = accessToken
-            prefs[KEY_REFRESH_TOKEN] = refreshToken.value
+            prefs[KEY_ACCESS_TOKEN] = bearerTokens.accessToken.value
+            prefs[KEY_REFRESH_TOKEN] = bearerTokens.refreshToken.value
         }
     }
 
-    override suspend fun getAccessToken(): String? =
-        dataStore.data.map { it[KEY_ACCESS_TOKEN] }.firstOrNull()
+    override suspend fun getBearerTokens(): BearerTokens? {
+        return dataStore.data.map { prefs ->
+            val accessToken = prefs[KEY_ACCESS_TOKEN]
+                ?.let(::AccessToken)
+                ?: return@map null
 
-    override suspend fun getRefreshToken(): RefreshToken? =
-        dataStore.data.map { it[KEY_REFRESH_TOKEN] }.firstOrNull()?.let(::RefreshToken)
+            val refreshToken = prefs[KEY_REFRESH_TOKEN]
+                ?.let(::RefreshToken)
+                ?: return@map null
+
+            BearerTokens(accessToken = accessToken, refreshToken = refreshToken)
+        }.firstOrNull()
+    }
 
     override suspend fun clearTokens() {
         dataStore.edit { prefs ->

@@ -4,11 +4,12 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import ru.mirea.toir.common.extensions.wrapResultSuccess
+import ru.mirea.toir.core.auth.domain.models.RefreshToken
 import ru.mirea.toir.core.network.ktor.KtorClient
-import ru.mirea.toir.feature.auth.impl.data.network.models.RemoteLoginRequest
-import ru.mirea.toir.feature.auth.impl.data.network.models.RemoteLoginResponse
-import ru.mirea.toir.feature.auth.impl.data.network.models.RemoteRefreshRequest
-import ru.mirea.toir.feature.auth.impl.data.network.models.RemoteRefreshResponse
+import ru.mirea.toir.feature.auth.impl.data.network.models.request.RemoteLoginRequest
+import ru.mirea.toir.feature.auth.impl.data.network.models.request.RemoteRefreshTokensRequest
+import ru.mirea.toir.feature.auth.impl.data.network.models.response.RemoteLoginResponse
+import ru.mirea.toir.feature.auth.impl.data.network.models.response.RemoteRefreshTokensResponse
 
 internal class AuthApiClientImpl(
     private val ktorClient: KtorClient,
@@ -23,20 +24,20 @@ internal class AuthApiClientImpl(
                 }
             },
             deserializer = RemoteLoginResponse.serializer(),
-            success = { it.wrapResultSuccess() },
+            success = { response -> response.wrapResultSuccess() },
             loggingErrorMessage = "auth login failed",
         )
 
-    override suspend fun refresh(refreshToken: String): Result<RemoteRefreshResponse> =
+    override suspend fun refresh(refreshToken: RefreshToken): Result<RemoteRefreshTokensResponse> =
         ktorClient.executeQuery(
             query = {
                 ktorClient.post("/api/v1/auth/refresh") {
                     contentType(ContentType.Application.Json)
-                    setBody(RemoteRefreshRequest(refreshToken = refreshToken))
+                    setBody(RemoteRefreshTokensRequest(refreshToken = refreshToken.value))
                 }
             },
-            deserializer = RemoteRefreshResponse.serializer(),
-            success = { it.wrapResultSuccess() },
+            deserializer = RemoteRefreshTokensResponse.serializer(),
+            success = { response -> response.wrapResultSuccess() },
             loggingErrorMessage = "auth refresh failed",
         )
 }

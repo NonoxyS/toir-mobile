@@ -2,8 +2,8 @@ package ru.mirea.toir.feature.auth.impl.di
 
 import org.koin.core.module.dsl.new
 import org.koin.dsl.module
-import ru.mirea.toir.core.auth.repository.AuthRepository
-import ru.mirea.toir.core.auth.storage.TokenStorage
+import ru.mirea.toir.core.auth.domain.repository.AuthRepository
+import ru.mirea.toir.core.auth.data.storage.TokenStorage
 import ru.mirea.toir.feature.auth.impl.data.mappers.AuthUserMapper
 import ru.mirea.toir.feature.auth.impl.data.mappers.AuthUserMapperImpl
 import ru.mirea.toir.feature.auth.impl.data.network.AuthApiClient

@@ -11,7 +11,6 @@ dependencies {
     compileOnly(libs.gradleplugin.android)
     compileOnly(libs.gradleplugin.composeCompiler)
     compileOnly(libs.gradleplugin.composeMultiplatform)
-    compileOnly(libs.gradleplugin.sqldelight)
 }
 
 gradlePlugin {

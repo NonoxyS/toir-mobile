@@ -1,7 +1,7 @@
 package ru.mirea.toir.feature.auth.impl.data.mappers
 
 import ru.mirea.toir.common.mappers.Mapper
-import ru.mirea.toir.core.auth.model.DomainAuthUser
+import ru.mirea.toir.core.auth.domain.models.DomainAuthUser
 import ru.mirea.toir.feature.auth.impl.data.network.models.RemoteUser
 
 internal interface AuthUserMapper : Mapper<RemoteUser, DomainAuthUser>

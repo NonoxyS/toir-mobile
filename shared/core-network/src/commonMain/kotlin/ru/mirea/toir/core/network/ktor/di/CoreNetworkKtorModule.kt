@@ -1,21 +1,16 @@
 package ru.mirea.toir.core.network.ktor.di
 
-import ru.mirea.toir.core.domain.exception.NetworkUnavailableException
-import ru.mirea.toir.core.network.ktor.KtorClient
-import ru.mirea.toir.core.network.ktor.KtorClientImpl
-import ru.mirea.toir.core.network.ktor.NetworkEnvironment
-import ru.mirea.toir.core.network.ktor.certificates.configureCertificates
 import io.github.aakira.napier.Napier
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpResponseValidator
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
@@ -23,15 +18,20 @@ import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
 import org.koin.core.module.dsl.new
 import org.koin.dsl.module
-import ru.mirea.toir.core.auth.token.TokenProvider
+import ru.mirea.toir.core.auth.domain.models.BearerTokens as DomainBearerTokens
+import ru.mirea.toir.core.auth.domain.repository.AuthRepository
+import ru.mirea.toir.core.domain.exception.NetworkUnavailableException
+import ru.mirea.toir.core.network.ktor.KtorClient
+import ru.mirea.toir.core.network.ktor.KtorClientImpl
+import ru.mirea.toir.core.network.ktor.NetworkEnvironment
+import ru.mirea.toir.core.network.ktor.certificates.configureCertificates
 
 val coreNetworkKtorModule = module {
 
     single<HttpClient> {
         httpClient(environment = get()) {
             initBaseHttpConfig()
-            installBearerAuth(tokenProvider = get())
-
+            installBearerAuth(authRepository = get())
             defaultRequest { setTemplateApiHost(environment = get()) }
         }
     }
@@ -71,20 +71,26 @@ private fun HttpClientConfig<*>.initBaseHttpConfig() {
     }
 }
 
-private fun HttpClientConfig<*>.installBearerAuth(tokenProvider: TokenProvider) {
+private fun HttpClientConfig<*>.installBearerAuth(authRepository: AuthRepository) {
     install(Auth) {
         bearer {
             loadTokens {
-                val token = tokenProvider.getAccessToken()
-                BearerTokens(accessToken = token.orEmpty(), refreshToken = "")
+                authRepository.getBearerTokens().getOrNull()?.toKtor()
             }
             refreshTokens {
-                val newToken = tokenProvider.refreshAndGetAccessToken()
-                BearerTokens(accessToken = newToken.orEmpty(), refreshToken = "")
+                authRepository.refreshBearerTokens().fold(
+                    onSuccess = { it.toKtor() },
+                    onFailure = { null },
+                )
             }
         }
     }
 }
+
+private fun DomainBearerTokens.toKtor() = BearerTokens(
+    accessToken = accessToken.value,
+    refreshToken = refreshToken.value,
+)
 
 private fun httpClient(
     environment: NetworkEnvironment,

@@ -6,13 +6,17 @@ import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
 import ru.mirea.toir.common.extensions.wrapResultSuccess
-import ru.mirea.toir.core.auth.model.DomainAuthUser
-import ru.mirea.toir.core.auth.model.RefreshToken
-import ru.mirea.toir.core.auth.repository.AuthRepository
-import ru.mirea.toir.core.auth.storage.TokenStorage
+import ru.mirea.toir.core.auth.domain.models.AccessToken
+import ru.mirea.toir.core.auth.domain.models.BearerTokens
+import ru.mirea.toir.core.auth.domain.models.DomainAuthUser
+import ru.mirea.toir.core.auth.domain.models.RefreshToken
+import ru.mirea.toir.core.auth.domain.repository.AuthRepository
+import ru.mirea.toir.core.auth.data.storage.TokenStorage
 import ru.mirea.toir.feature.auth.impl.data.mappers.AuthUserMapper
 import ru.mirea.toir.feature.auth.impl.data.network.AuthApiClient
-import ru.mirea.toir.feature.auth.impl.data.network.models.RemoteLoginRequest
+import ru.mirea.toir.feature.auth.impl.data.network.models.request.RemoteLoginRequest
+import ru.mirea.toir.feature.auth.impl.data.network.models.response.RemoteLoginResponse
+import ru.mirea.toir.feature.auth.impl.data.network.models.response.RemoteRefreshTokensResponse
 
 internal class AuthRepositoryImpl(
     private val apiClient: AuthApiClient,
@@ -36,12 +40,9 @@ internal class AuthRepositoryImpl(
                         )
                     ).getOrThrow()
 
-                    tokenStorage.saveTokens(
-                        accessToken = response.accessToken.orEmpty(),
-                        refreshToken = RefreshToken(response.refreshToken.orEmpty()),
-                    )
+                    tokenStorage.saveTokens(bearerTokens = response.toBearerTokens())
 
-                    userMapper.map(response.user ?: error("No user in login response")).wrapResultSuccess()
+                    userMapper.map(response.user).wrapResultSuccess()
                 },
                 catchBlock = { throwable ->
                     Napier.e(message = "login failed", throwable = throwable)
@@ -50,32 +51,30 @@ internal class AuthRepositoryImpl(
             )
         }
 
-    override suspend fun getStoredAccessToken(): Result<String?> =
+    override suspend fun getBearerTokens(): Result<BearerTokens?> =
         withContext(coroutineDispatchers.io) {
             coRunCatching(
-                tryBlock = { tokenStorage.getAccessToken().wrapResultSuccess() },
+                tryBlock = { tokenStorage.getBearerTokens().wrapResultSuccess() },
                 catchBlock = { throwable ->
-                    Napier.e(message = "getStoredAccessToken failed", throwable = throwable)
+                    Napier.e(message = "getBearerTokens failed", throwable = throwable)
                     throwable.wrapResultFailure()
                 },
             )
         }
 
-    override suspend fun refreshAccessToken(): Result<Unit> =
+    override suspend fun refreshBearerTokens(): Result<BearerTokens> =
         withContext(coroutineDispatchers.io) {
             coRunCatching(
                 tryBlock = {
-                    val refreshToken = tokenStorage.getRefreshToken()
+                    val refreshToken = tokenStorage.getBearerTokens()?.refreshToken
                         ?: error("No refresh token stored")
-                    val response = apiClient.refresh(refreshToken.value).getOrThrow()
-                    tokenStorage.saveTokens(
-                        accessToken = response.accessToken.orEmpty(),
-                        refreshToken = RefreshToken(response.refreshToken.orEmpty()),
-                    )
-                    Unit.wrapResultSuccess()
+                    val response = apiClient.refresh(refreshToken).getOrThrow()
+                    val bearerTokens = response.toBearerTokens()
+                    tokenStorage.saveTokens(bearerTokens)
+                    bearerTokens.wrapResultSuccess()
                 },
                 catchBlock = { throwable ->
-                    Napier.e(message = "refreshAccessToken failed", throwable = throwable)
+                    Napier.e(message = "refreshBearerTokens failed", throwable = throwable)
                     throwable.wrapResultFailure()
                 },
             )
@@ -94,4 +93,18 @@ internal class AuthRepositoryImpl(
                 },
             )
         }
+
+    private fun RemoteRefreshTokensResponse.toBearerTokens(): BearerTokens {
+        return BearerTokens(
+            accessToken = AccessToken(accessToken),
+            refreshToken = RefreshToken(refreshToken)
+        )
+    }
+
+    private fun RemoteLoginResponse.toBearerTokens(): BearerTokens {
+        return BearerTokens(
+            accessToken = AccessToken(accessToken),
+            refreshToken = RefreshToken(refreshToken)
+        )
+    }
 }

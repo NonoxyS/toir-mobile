@@ -1,4 +1,4 @@
-package ru.mirea.toir.core.auth.model
+package ru.mirea.toir.core.auth.domain.models
 
 data class DomainAuthUser(
     val id: String,
