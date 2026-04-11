@@ -10,10 +10,12 @@
     <string name="demo_second_back_button">Back</string>
 
     <!-- auth -->
-    <string name="auth_title">Авторизация</string>
+    <string name="auth_title">TOIR</string>
+    <string name="auth_subtitle">Система технического обхода</string>
     <string name="auth_login_hint">Логин</string>
     <string name="auth_password_hint">Пароль</string>
     <string name="auth_button_login">Войти</string>
+    <string name="auth_forgot_password">Забыли пароль?</string>
     <string name="auth_error_invalid_credentials">Неверный логин или пароль</string>
 
 </resources>
