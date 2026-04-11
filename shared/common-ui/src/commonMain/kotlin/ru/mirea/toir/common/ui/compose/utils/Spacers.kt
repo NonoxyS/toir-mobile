@@ -1,3 +1,5 @@
+@file:Suppress("ComposableFunctionName")
+
 package ru.mirea.toir.common.ui.compose.utils
 
 import androidx.compose.foundation.layout.ColumnScope
