@@ -25,7 +25,7 @@ fun ToirTheme(
             LocalToirThemeShapes provides ToirShapes(),
         ) {
             ProvideTextStyle(
-                value = ToirTheme.typography.textMD.copy(color = ToirTheme.colors.textPrimary),
+                value = ToirTheme.typography.bodyMedium.copy(color = ToirTheme.colors.textPrimary),
                 content = content
             )
         }

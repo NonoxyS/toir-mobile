@@ -48,7 +48,7 @@ internal fun DemoFirstScreen(
     ) {
         Text(
             text = stringResource(MR.strings.demo_first_title),
-            style = ToirTheme.typography.headlineMD,
+            style = ToirTheme.typography.displayLarge,
         )
         Spacer(modifier = Modifier.height(24.dp))
 

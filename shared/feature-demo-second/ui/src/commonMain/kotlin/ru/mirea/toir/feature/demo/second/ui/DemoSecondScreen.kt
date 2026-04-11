@@ -42,7 +42,7 @@ internal fun DemoSecondScreen(
     ) {
         Text(
             text = stringResource(MR.strings.demo_second_title),
-            style = ToirTheme.typography.headlineMD,
+            style = ToirTheme.typography.displayLarge,
         )
         Spacer(modifier = Modifier.height(32.dp))
         Box(
@@ -55,12 +55,12 @@ internal fun DemoSecondScreen(
                 state.isLoading -> CircularProgressIndicator()
                 state.isError -> Text(
                     text = stringResource(MR.strings.demo_second_error),
-                    style = ToirTheme.typography.bodyLG,
+                    style = ToirTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                 )
                 state.joke != null -> Text(
                     text = state.joke!!,
-                    style = ToirTheme.typography.bodyLG,
+                    style = ToirTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                 )
             }
