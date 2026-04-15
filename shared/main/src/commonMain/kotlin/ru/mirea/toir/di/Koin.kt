@@ -16,6 +16,8 @@ import ru.mirea.toir.feature.auth.impl.di.featureAuthImplModule
 import ru.mirea.toir.feature.auth.presentation.di.featureAuthPresentationModule
 import ru.mirea.toir.feature.bootstrap.impl.di.featureBootstrapImplModule
 import ru.mirea.toir.feature.bootstrap.presentation.di.featureBootstrapPresentationModule
+import ru.mirea.toir.feature.routes.list.impl.di.featureRoutesListImplModule
+import ru.mirea.toir.feature.routes.list.presentation.di.featureRoutesListPresentationModule
 
 fun initKoin(appDeclaration: KoinAppDeclaration) {
     Napier.d(message = "initKoin")
@@ -38,6 +40,9 @@ fun initKoin(appDeclaration: KoinAppDeclaration) {
 
             featureBootstrapImplModule,
             featureBootstrapPresentationModule,
+
+            featureRoutesListImplModule,
+            featureRoutesListPresentationModule,
         )
     }
 }

@@ -60,3 +60,8 @@ include(":shared:feature-bootstrap:api")
 include(":shared:feature-bootstrap:impl")
 include(":shared:feature-bootstrap:presentation")
 include(":shared:feature-bootstrap:ui")
+
+include(":shared:feature-routes-list:api")
+include(":shared:feature-routes-list:impl")
+include(":shared:feature-routes-list:presentation")
+include(":shared:feature-routes-list:ui")

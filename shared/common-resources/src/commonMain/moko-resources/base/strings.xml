@@ -23,4 +23,19 @@
     <string name="bootstrap_error_title">Не удалось загрузить данные</string>
     <string name="bootstrap_button_retry">Повторить</string>
 
+    <!-- routes_list -->
+    <string name="routes_list_title">Назначенные маршруты</string>
+    <string name="routes_list_empty_title">Нет назначенных маршрутов</string>
+    <string name="routes_list_empty_subtitle">Обновите список или обратитесь к диспетчеру</string>
+    <string name="routes_list_error_title">Не удалось загрузить маршруты</string>
+    <string name="routes_list_button_refresh">Обновить</string>
+    <string name="routes_list_button_retry">Повторить</string>
+    <string name="routes_list_button_start">Начать</string>
+    <string name="routes_list_button_continue">Продолжить</string>
+    <string name="routes_list_status_assigned">Не начат</string>
+    <string name="routes_list_status_in_progress">В работе</string>
+    <string name="routes_list_status_completed">Завершён</string>
+    <string name="routes_list_progress">%1$d / %2$d точек</string>
+    <string name="routes_list_route_number">Маршрут #%1$s</string>
+
 </resources>
