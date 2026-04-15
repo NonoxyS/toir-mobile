@@ -1,8 +1,10 @@
+import ru.mirea.toir.core.database.models.LocalRouteStatus;
+
 CREATE TABLE IF NOT EXISTS route_assignments (
     id TEXT NOT NULL PRIMARY KEY,
     route_id TEXT NOT NULL,
     user_id TEXT NOT NULL,
-    status TEXT NOT NULL,
+    status TEXT AS LocalRouteStatus NOT NULL,
     assigned_at TEXT NOT NULL,
     due_date TEXT
 );

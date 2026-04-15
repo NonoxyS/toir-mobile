@@ -14,6 +14,9 @@ data object BootstrapRoute : Screen
 data object RoutesListRoute : Screen
 
 @Serializable
+data class RoutePointsRoute(val inspectionId: String) : Screen
+
+@Serializable
 data object DemoFirstRoute : Screen
 
 @Serializable

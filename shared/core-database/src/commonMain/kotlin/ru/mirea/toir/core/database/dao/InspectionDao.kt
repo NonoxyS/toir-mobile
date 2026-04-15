@@ -4,13 +4,21 @@ import ru.mirea.toir.core.database.Checklist_item_results
 import ru.mirea.toir.core.database.Inspection_equipment_results
 import ru.mirea.toir.core.database.Inspections
 import ru.mirea.toir.core.database.ToirDatabase
+import ru.mirea.toir.core.database.models.LocalRouteStatus
+import ru.mirea.toir.core.database.models.LocalSyncStatus
 
-internal class InspectionDao(db: ToirDatabase) {
+class InspectionDao(db: ToirDatabase) {
     private val inspectionQueries = db.inspectionQueries
     private val equipmentResultQueries = db.inspectionEquipmentResultQueries
     private val checklistItemResultQueries = db.checklistItemResultQueries
 
-    fun insertInspection(id: String, assignmentId: String, routeId: String, status: String, startedAt: String) {
+    fun insertInspection(
+        id: String,
+        assignmentId: String,
+        routeId: String,
+        status: LocalRouteStatus,
+        startedAt: String
+    ) {
         inspectionQueries.insertInspection(
             id = id,
             assignment_id = assignmentId,
@@ -18,7 +26,7 @@ internal class InspectionDao(db: ToirDatabase) {
             status = status,
             started_at = startedAt,
             completed_at = null,
-            sync_status = "PENDING",
+            sync_status = LocalSyncStatus.PENDING,
         )
     }
 
@@ -27,14 +35,14 @@ internal class InspectionDao(db: ToirDatabase) {
 
     fun selectById(id: String): Inspections? = inspectionQueries.selectById(id).executeAsOneOrNull()
 
-    fun updateInspectionStatus(id: String, status: String, completedAt: String?) {
+    fun updateInspectionStatus(id: String, status: LocalRouteStatus, completedAt: String?) {
         inspectionQueries.updateStatus(status = status, completed_at = completedAt, id = id)
     }
 
     fun selectPendingInspections(): List<Inspections> =
         inspectionQueries.selectPending().executeAsList()
 
-    fun updateInspectionSyncStatus(id: String, syncStatus: String) {
+    fun updateInspectionSyncStatus(id: String, syncStatus: LocalSyncStatus) {
         inspectionQueries.updateSyncStatus(sync_status = syncStatus, id = id)
     }
 

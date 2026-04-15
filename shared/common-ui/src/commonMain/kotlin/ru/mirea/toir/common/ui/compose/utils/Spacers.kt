@@ -52,6 +52,10 @@ fun ColumnScope.Spacer8(modifier: Modifier = Modifier) =
     Spacer(modifier = Modifier.height(8.dp).then(modifier))
 
 @Composable
+fun ColumnScope.Spacer10(modifier: Modifier = Modifier) =
+    Spacer(modifier = Modifier.height(10.dp).then(modifier))
+
+@Composable
 fun ColumnScope.Spacer12(modifier: Modifier = Modifier) =
     Spacer(modifier = Modifier.height(12.dp).then(modifier))
 

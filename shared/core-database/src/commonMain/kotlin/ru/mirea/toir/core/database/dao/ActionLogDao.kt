@@ -6,7 +6,13 @@ import ru.mirea.toir.core.database.ToirDatabase
 internal class ActionLogDao(db: ToirDatabase) {
     private val queries = db.actionLogQueries
 
-    fun insert(id: String, inspectionId: String, actionType: String, metadata: String?, createdAt: String) {
+    fun insert(
+        id: String,
+        inspectionId: String,
+        actionType: String,
+        metadata: String?,
+        createdAt: String
+    ) {
         queries.insertActionLog(
             id = id,
             inspection_id = inspectionId,

@@ -2,7 +2,6 @@ package ru.mirea.toir.feature.bootstrap.impl.data.repository
 
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
@@ -11,6 +10,7 @@ import ru.mirea.toir.common.extensions.wrapResultSuccess
 import ru.mirea.toir.core.database.dao.ChecklistDao
 import ru.mirea.toir.core.database.dao.EquipmentDao
 import ru.mirea.toir.core.database.dao.RouteDao
+import ru.mirea.toir.core.database.models.LocalRouteStatus
 import ru.mirea.toir.core.database.dao.SyncMetaDao
 import ru.mirea.toir.core.database.dao.UserDao
 import ru.mirea.toir.feature.bootstrap.impl.data.network.BootstrapApiClient
@@ -74,7 +74,7 @@ internal class BootstrapRepositoryImpl(
                             id = assignment.id.orEmpty(),
                             routeId = assignment.routeId.orEmpty(),
                             userId = assignment.userId.orEmpty(),
-                            status = assignment.status.orEmpty(),
+                            status = LocalRouteStatus.fromString(assignment.status.orEmpty()),
                             assignedAt = assignment.assignedAt.orEmpty(),
                             dueDate = assignment.dueDate,
                         )

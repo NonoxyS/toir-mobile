@@ -1,11 +1,14 @@
+import ru.mirea.toir.core.database.models.LocalRouteStatus;
+import ru.mirea.toir.core.database.models.LocalSyncStatus;
+
 CREATE TABLE IF NOT EXISTS inspections (
     id TEXT NOT NULL PRIMARY KEY,
     assignment_id TEXT NOT NULL,
     route_id TEXT NOT NULL,
-    status TEXT NOT NULL,
+    status TEXT AS LocalRouteStatus NOT NULL,
     started_at TEXT NOT NULL,
     completed_at TEXT,
-    sync_status TEXT NOT NULL DEFAULT 'PENDING'
+    sync_status TEXT AS LocalSyncStatus NOT NULL DEFAULT 'PENDING'
 );
 
 insertInspection:

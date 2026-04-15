@@ -7,8 +7,10 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.core.navigation.AuthRoute
 import ru.mirea.toir.core.navigation.BootstrapRoute
 import ru.mirea.toir.core.navigation.RoutesListRoute
+import ru.mirea.toir.core.navigation.RoutePointsRoute
 import ru.mirea.toir.feature.auth.ui.api.composableAuthScreen
 import ru.mirea.toir.feature.bootstrap.ui.api.composableBootstrapScreen
+import ru.mirea.toir.feature.routes.list.ui.api.composableRoutesListScreen
 
 @Composable
 fun App() {
@@ -37,7 +39,11 @@ fun App() {
                     }
                 },
             )
-            // composableRoutesListScreen(...) — добавить в Waypoint 04
+            composableRoutesListScreen(
+                onNavigateToRoutePoints = { inspectionId ->
+                    navController.navigate(RoutePointsRoute(inspectionId))
+                },
+            )
         }
     }
 }
