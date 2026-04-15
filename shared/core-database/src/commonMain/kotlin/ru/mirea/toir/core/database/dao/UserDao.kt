@@ -6,8 +6,18 @@ import ru.mirea.toir.core.database.Users
 class UserDao(db: ToirDatabase) {
     private val queries = db.userQueries
 
-    fun upsert(id: String, login: String, displayName: String, role: String) {
-        queries.upsertUser(id = id, login = login, display_name = displayName, role = role)
+    fun upsert(
+        id: String,
+        login: String,
+        displayName: String,
+        role: String
+    ) {
+        queries.upsertUser(
+            id = id,
+            login = login,
+            display_name = displayName,
+            role = role
+        )
     }
 
     fun selectAll(): List<Users> = queries.selectAll().executeAsList()

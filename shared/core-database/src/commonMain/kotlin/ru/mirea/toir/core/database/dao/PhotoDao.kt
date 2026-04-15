@@ -6,7 +6,12 @@ import ru.mirea.toir.core.database.ToirDatabase
 internal class PhotoDao(db: ToirDatabase) {
     private val queries = db.photoQueries
 
-    fun insert(id: String, checklistItemResultId: String, fileUri: String, takenAt: String) {
+    fun insert(
+        id: String,
+        checklistItemResultId: String,
+        fileUri: String,
+        takenAt: String
+    ) {
         queries.insertPhoto(
             id = id,
             checklist_item_result_id = checklistItemResultId,

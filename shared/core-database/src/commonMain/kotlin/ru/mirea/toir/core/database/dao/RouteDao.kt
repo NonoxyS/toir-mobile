@@ -4,13 +4,18 @@ import ru.mirea.toir.core.database.Route_assignments
 import ru.mirea.toir.core.database.Route_points
 import ru.mirea.toir.core.database.Routes
 import ru.mirea.toir.core.database.ToirDatabase
+import ru.mirea.toir.core.database.models.LocalRouteStatus
 
 class RouteDao(db: ToirDatabase) {
     private val routeQueries = db.routeQueries
     private val pointQueries = db.routePointQueries
     private val assignmentQueries = db.routeAssignmentQueries
 
-    fun upsertRoute(id: String, name: String, description: String?) {
+    fun upsertRoute(
+        id: String,
+        name: String,
+        description: String?
+    ) {
         routeQueries.upsertRoute(id = id, name = name, description = description)
     }
 
@@ -18,7 +23,13 @@ class RouteDao(db: ToirDatabase) {
 
     fun selectRouteById(id: String): Routes? = routeQueries.selectById(id).executeAsOneOrNull()
 
-    fun upsertRoutePoint(id: String, routeId: String, equipmentId: String, checklistId: String, orderIndex: Long) {
+    fun upsertRoutePoint(
+        id: String,
+        routeId: String,
+        equipmentId: String,
+        checklistId: String,
+        orderIndex: Long
+    ) {
         pointQueries.upsertRoutePoint(
             id = id,
             route_id = routeId,
@@ -38,7 +49,7 @@ class RouteDao(db: ToirDatabase) {
         id: String,
         routeId: String,
         userId: String,
-        status: String,
+        status: LocalRouteStatus,
         assignedAt: String,
         dueDate: String?,
     ) {
@@ -56,7 +67,7 @@ class RouteDao(db: ToirDatabase) {
 
     fun selectAssignmentById(id: String): Route_assignments? = assignmentQueries.selectById(id).executeAsOneOrNull()
 
-    fun updateAssignmentStatus(id: String, status: String) {
+    fun updateAssignmentStatus(id: String, status: LocalRouteStatus) {
         assignmentQueries.updateStatus(status = status, id = id)
     }
 
