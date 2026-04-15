@@ -12,7 +12,13 @@ class InspectionDao(db: ToirDatabase) {
     private val equipmentResultQueries = db.inspectionEquipmentResultQueries
     private val checklistItemResultQueries = db.checklistItemResultQueries
 
-    fun insertInspection(id: String, assignmentId: String, routeId: String, status: LocalRouteStatus, startedAt: String) {
+    fun insertInspection(
+        id: String,
+        assignmentId: String,
+        routeId: String,
+        status: LocalRouteStatus,
+        startedAt: String
+    ) {
         inspectionQueries.insertInspection(
             id = id,
             assignment_id = assignmentId,

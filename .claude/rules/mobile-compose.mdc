@@ -8,10 +8,6 @@ alwaysApply: false
 
 ## Recomposition Optimization
 
-### @Immutable for UI models
-
-All UI data classes in `presentation/models/` are annotated with `@Immutable`:
-
 ```kotlin
 @Immutable
 data class Ui{Feature}State(
@@ -19,8 +15,6 @@ data class Ui{Feature}State(
     val isLoading: Boolean = false,
 )
 ```
-
-`@Immutable` is only placed in modules with Compose dependencies (presentation, ui). Module `common` is pure Kotlin — no Compose Runtime.
 
 ### rememberUpdatedState for callbacks in effects
 
@@ -83,6 +77,26 @@ Pass only what child composables need — not the entire state object:
 {Feature}Content(state = state)
 ```
 
+### Spacer extensions
+
+Always use Spacer extensions from `ru.mirea.toir.common.ui.compose.utils` instead of raw `Spacer(modifier = Modifier.height/width(Ndp))`:
+
+```kotlin
+// ✅ Column — vertical gap
+Column {
+    Spacer8()
+    Spacer12()
+}
+// ✅ Row — horizontal gap
+Row { Spacer8() }
+
+// ❌ Wrong
+Spacer(modifier = Modifier.height(8.dp))
+Spacer(modifier = Modifier.width(8.dp))
+```
+
+Available: `Spacer4`, `Spacer8`, `Spacer10`, `Spacer12`, `Spacer16`, `Spacer24`, `Spacer32`, `Spacer48` (both `ColumnScope` and `RowScope`).
+
 ### LaunchedEffect / SideEffect placement
 
 Place at the **beginning** of the composable function, before UI content. Extract complex effects into separate composables.
@@ -110,4 +124,28 @@ private fun PreviewItemCard() {
         }
     }
 }
+```
+
+## Components Package
+
+Sub-composables (Content, Loading, Empty, Error, Items, Card) go in a `components/` sub-package inside the `ui/` module with `internal` visibility. Only `{Feature}Screen` and `{Feature}TopBar` stay at the `ui/` package root.
+
+```
+ui/
+  {Feature}Screen.kt       // internal: Screen + TopBar only
+  components/
+    {Feature}Content.kt    // internal: state dispatcher + sub-states
+    {Feature}Card.kt       // internal: list item + private sub-composables
+```
+
+## No Logic in UI Composables
+
+UI composables must not compute derived values. Percentages, formatted strings, and combined flags must be precomputed in the mapper and stored as fields in the UI model.
+
+```kotlin
+// ✅ Correct — computed in mapper, stored in UiModel
+LinearProgressIndicator(progress = { item.progress })
+
+// ❌ Wrong — logic in composable
+val progress = if (item.totalPoints > 0) item.completedPoints / item.totalPoints else 0f
 ```
