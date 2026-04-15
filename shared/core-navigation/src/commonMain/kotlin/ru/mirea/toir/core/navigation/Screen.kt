@@ -17,6 +17,15 @@ data object RoutesListRoute : Screen
 data class RoutePointsRoute(val inspectionId: String) : Screen
 
 @Serializable
+data class EquipmentCardRoute(
+    val inspectionId: String,
+    val routePointId: String,
+) : Screen
+
+@Serializable
+data class ChecklistRoute(val equipmentResultId: String) : Screen
+
+@Serializable
 data object DemoFirstRoute : Screen
 
 @Serializable
