@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.Spacer4
 import ru.mirea.toir.common.ui.compose.utils.Spacer8
@@ -110,6 +111,63 @@ private fun StatusBadge(
             text = label,
             style = ToirTheme.typography.caption,
             color = textColor,
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewRoutePointCardCompleted() {
+    ToirTheme {
+        RoutePointCard(
+            item = UiRoutePoint(
+                routePointId = "1",
+                equipmentCode = "EQ-001",
+                equipmentName = "Насос циркуляционный",
+                locationName = "Котельная",
+                status = UiEquipmentResultStatus.COMPLETED,
+                hasIssues = false,
+                equipmentResultId = "res-1",
+            ),
+            onClick = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewRoutePointCardInProgress() {
+    ToirTheme {
+        RoutePointCard(
+            item = UiRoutePoint(
+                routePointId = "2",
+                equipmentCode = "EQ-002",
+                equipmentName = "Вентилятор приточный",
+                locationName = "Машинное отделение",
+                status = UiEquipmentResultStatus.IN_PROGRESS,
+                hasIssues = false,
+                equipmentResultId = "res-2",
+            ),
+            onClick = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewRoutePointCardSkipped() {
+    ToirTheme {
+        RoutePointCard(
+            item = UiRoutePoint(
+                routePointId = "3",
+                equipmentCode = "EQ-003",
+                equipmentName = "Трансформатор ТМ-100",
+                locationName = "",
+                status = UiEquipmentResultStatus.SKIPPED,
+                hasIssues = true,
+                equipmentResultId = "res-3",
+            ),
+            onClick = {},
         )
     }
 }

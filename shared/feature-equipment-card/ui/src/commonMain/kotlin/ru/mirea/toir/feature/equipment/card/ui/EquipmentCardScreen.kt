@@ -18,12 +18,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.icerock.moko.resources.compose.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.feature.equipment.card.presentation.EquipmentCardViewModel
 import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentCardLabel
+import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentCardState
+import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentResultStatus
 import ru.mirea.toir.feature.equipment.card.ui.components.EquipmentCardContent
 import ru.mirea.toir.feature.equipment.card.ui.components.EquipmentCardOpenChecklistButton
 
@@ -105,5 +108,40 @@ internal fun EquipmentCardScreen(
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewEquipmentCardScreenLoading() {
+    ToirTheme {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator(color = ToirTheme.colors.textSecondary)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewEquipmentCardScreenContent() {
+    ToirTheme {
+        EquipmentCardContent(
+            state = UiEquipmentCardState(
+                code = "EQ-001",
+                name = "Насос циркуляционный",
+                type = "Насос",
+                locationName = "Котельная, 2 этаж",
+                status = UiEquipmentResultStatus.IN_PROGRESS,
+                equipmentResultId = "res-001",
+                isLoading = false,
+                isError = false,
+            ),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+        )
     }
 }

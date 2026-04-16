@@ -29,12 +29,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.icerock.moko.resources.compose.stringResource
+import kotlinx.collections.immutable.persistentListOf
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.common.ui.compose.utils.Spacer4
 import ru.mirea.toir.feature.route.points.presentation.RoutePointsViewModel
 import ru.mirea.toir.feature.route.points.presentation.models.UiEquipmentResultStatus
+import ru.mirea.toir.feature.route.points.presentation.models.UiRoutePoint
 import ru.mirea.toir.feature.route.points.presentation.models.UiRoutePointsLabel
 import ru.mirea.toir.feature.route.points.presentation.models.UiRoutePointsState
 import ru.mirea.toir.feature.route.points.ui.components.RoutePointCard
@@ -148,7 +151,7 @@ private fun RoutePointsProgressHeader(state: UiRoutePointsState) {
 }
 
 @Composable
-private fun RoutePointsContent(
+internal fun RoutePointsContent(
     state: UiRoutePointsState,
     onPointClick: (routePointId: String) -> Unit,
 ) {
@@ -188,5 +191,93 @@ private fun RoutePointsFinishButton(onClick: () -> Unit) {
                 style = ToirTheme.typography.label,
             )
         }
+    }
+}
+
+private val previewPoints = persistentListOf(
+    UiRoutePoint(
+        routePointId = "1",
+        equipmentCode = "EQ-001",
+        equipmentName = "Насос циркуляционный",
+        locationName = "Котельная",
+        status = UiEquipmentResultStatus.COMPLETED,
+        hasIssues = false,
+        equipmentResultId = "res-1",
+    ),
+    UiRoutePoint(
+        routePointId = "2",
+        equipmentCode = "EQ-002",
+        equipmentName = "Вентилятор приточный",
+        locationName = "Машинное отделение",
+        status = UiEquipmentResultStatus.IN_PROGRESS,
+        hasIssues = false,
+        equipmentResultId = "res-2",
+    ),
+    UiRoutePoint(
+        routePointId = "3",
+        equipmentCode = "EQ-003",
+        equipmentName = "Трансформатор ТМ-100",
+        locationName = "",
+        status = UiEquipmentResultStatus.NOT_STARTED,
+        hasIssues = false,
+        equipmentResultId = null,
+    ),
+)
+
+@Preview
+@Composable
+private fun PreviewRoutePointsScreenLoading() {
+    ToirTheme {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator(color = ToirTheme.colors.textSecondary)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewRoutePointsScreenContent() {
+    ToirTheme {
+        RoutePointsContent(
+            state = UiRoutePointsState(
+                routeName = "Обход северного крыла",
+                points = previewPoints,
+                isLoading = false,
+                canFinish = false,
+                isError = false,
+            ),
+            onPointClick = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewRoutePointsScreenContentCanFinish() {
+    val points = persistentListOf(
+        UiRoutePoint(
+            routePointId = "1",
+            equipmentCode = "EQ-001",
+            equipmentName = "Насос циркуляционный",
+            locationName = "Котельная",
+            status = UiEquipmentResultStatus.COMPLETED,
+            hasIssues = false,
+            equipmentResultId = "res-1",
+        ),
+    )
+    ToirTheme {
+        RoutePointsContent(
+            state = UiRoutePointsState(
+                routeName = "Мини-маршрут",
+                points = points,
+                isLoading = false,
+                canFinish = true,
+                isError = false,
+            ),
+            onPointClick = {},
+        )
     }
 }
