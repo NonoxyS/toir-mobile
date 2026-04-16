@@ -11,6 +11,7 @@ import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.feature.equipment.card.api.models.DomainEquipmentCard
+import ru.mirea.toir.feature.equipment.card.api.models.EquipmentResultStatus
 import ru.mirea.toir.feature.equipment.card.impl.domain.repository.EquipmentCardRepository
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -56,7 +57,7 @@ internal class EquipmentCardRepositoryImpl(
                         type = equipment.type,
                         locationName = equipment.locationId,
                         equipmentResultId = result.id,
-                        inspectionStatus = result.status.name,
+                        inspectionStatus = EquipmentResultStatus.fromString(result.status.name),
                     ).wrapResultSuccess()
                 },
                 catchBlock = { throwable ->

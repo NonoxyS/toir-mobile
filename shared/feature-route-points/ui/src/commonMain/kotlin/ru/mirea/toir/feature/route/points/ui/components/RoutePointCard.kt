@@ -16,9 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import dev.icerock.moko.resources.compose.stringResource
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.Spacer4
 import ru.mirea.toir.common.ui.compose.utils.Spacer8
+import ru.mirea.toir.feature.route.points.presentation.models.UiEquipmentResultStatus
 import ru.mirea.toir.feature.route.points.presentation.models.UiRoutePoint
 
 @Composable
@@ -30,17 +32,17 @@ internal fun RoutePointCard(
     val colors = ToirTheme.colors
     val shapes = ToirTheme.shapes
 
-    val accentColor = when (item.statusColor) {
-        "success" -> colors.success
-        "warning" -> colors.warning
-        "error" -> colors.error
-        else -> colors.textDisabled
+    val accentColor = when (item.status) {
+        UiEquipmentResultStatus.NOT_STARTED -> colors.textDisabled
+        UiEquipmentResultStatus.IN_PROGRESS -> colors.warning
+        UiEquipmentResultStatus.COMPLETED -> colors.success
+        UiEquipmentResultStatus.SKIPPED -> colors.error
     }
-    val badgeBackground = when (item.statusColor) {
-        "success" -> colors.successSubtle
-        "warning" -> colors.warningSubtle
-        "error" -> colors.errorSubtle
-        else -> colors.surface2
+    val badgeBackground = when (item.status) {
+        UiEquipmentResultStatus.NOT_STARTED -> colors.surface2
+        UiEquipmentResultStatus.IN_PROGRESS -> colors.warningSubtle
+        UiEquipmentResultStatus.COMPLETED -> colors.successSubtle
+        UiEquipmentResultStatus.SKIPPED -> colors.errorSubtle
     }
 
     Box(
@@ -83,7 +85,7 @@ internal fun RoutePointCard(
             }
             Spacer8()
             StatusBadge(
-                label = item.statusLabel,
+                label = stringResource(item.status.labelRes),
                 background = badgeBackground,
                 textColor = accentColor,
             )

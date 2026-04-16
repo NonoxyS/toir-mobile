@@ -7,5 +7,5 @@ data class DomainEquipmentCard(
     val type: String,
     val locationName: String,
     val equipmentResultId: String,
-    val inspectionStatus: String,
+    val inspectionStatus: EquipmentResultStatus,
 )

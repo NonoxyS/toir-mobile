@@ -14,6 +14,7 @@ import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.feature.route.points.api.models.DomainRoutePoint
+import ru.mirea.toir.feature.route.points.api.models.EquipmentResultStatus
 import ru.mirea.toir.feature.route.points.impl.domain.repository.RoutePointsRepository
 
 internal class RoutePointsRepositoryImpl(
@@ -43,7 +44,9 @@ internal class RoutePointsRepositoryImpl(
                             equipmentName = equipment?.name.orEmpty(),
                             locationName = equipment?.locationId.orEmpty(),
                             equipmentResultId = result?.id,
-                            status = result?.status?.name ?: LocalEquipmentResultStatus.NOT_STARTED.name,
+                            status = EquipmentResultStatus.fromString(
+                                result?.status?.name ?: LocalEquipmentResultStatus.NOT_STARTED.name
+                            ),
                             hasIssues = result?.status == LocalEquipmentResultStatus.SKIPPED,
                         )
                     }

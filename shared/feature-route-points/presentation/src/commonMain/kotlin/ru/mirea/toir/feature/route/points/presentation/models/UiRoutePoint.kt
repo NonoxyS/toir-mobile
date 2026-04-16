@@ -8,8 +8,7 @@ data class UiRoutePoint(
     val equipmentCode: String,
     val equipmentName: String,
     val locationName: String,
-    val statusLabel: String,
-    val statusColor: String, // "default" | "success" | "warning" | "error"
+    val status: UiEquipmentResultStatus,
     val hasIssues: Boolean,
     val equipmentResultId: String?,
 )

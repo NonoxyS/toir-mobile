@@ -7,6 +7,6 @@ data class DomainRoutePoint(
     val equipmentName: String,
     val locationName: String,
     val equipmentResultId: String?,
-    val status: String,
+    val status: EquipmentResultStatus,
     val hasIssues: Boolean,
 )

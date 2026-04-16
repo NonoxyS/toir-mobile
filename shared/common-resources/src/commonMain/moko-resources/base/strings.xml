@@ -44,6 +44,10 @@
     <string name="route_points_status_in_progress">В работе</string>
     <string name="route_points_status_completed">Завершено</string>
     <string name="route_points_status_skipped">Пропущено</string>
+    <string name="equipment_result_status_not_started">Не начато</string>
+    <string name="equipment_result_status_in_progress">В работе</string>
+    <string name="equipment_result_status_completed">Завершено</string>
+    <string name="equipment_result_status_skipped">Пропущено</string>
     <string name="route_points_progress">Точка %1$d из %2$d</string>
 
     <!-- equipment_card -->
@@ -51,6 +55,7 @@
     <string name="equipment_card_name">Наименование</string>
     <string name="equipment_card_type">Тип</string>
     <string name="equipment_card_location">Локация</string>
+    <string name="equipment_card_status">Локация</string>
     <string name="equipment_card_button_open_checklist">Открыть чек-лист</string>
     <string name="equipment_card_status_not_checked">Оборудование не проверено</string>
     <string name="equipment_card_status_in_progress">Проверка в процессе</string>

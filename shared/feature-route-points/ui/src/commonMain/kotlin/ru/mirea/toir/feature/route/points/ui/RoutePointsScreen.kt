@@ -34,6 +34,7 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.common.ui.compose.utils.Spacer4
 import ru.mirea.toir.feature.route.points.presentation.RoutePointsViewModel
+import ru.mirea.toir.feature.route.points.presentation.models.UiEquipmentResultStatus
 import ru.mirea.toir.feature.route.points.presentation.models.UiRoutePointsLabel
 import ru.mirea.toir.feature.route.points.presentation.models.UiRoutePointsState
 import ru.mirea.toir.feature.route.points.ui.components.RoutePointCard
@@ -113,7 +114,7 @@ private fun RoutePointsTopBar(state: UiRoutePointsState) {
 @Composable
 private fun RoutePointsProgressHeader(state: UiRoutePointsState) {
     val colors = ToirTheme.colors
-    val completed = state.points.count { it.statusColor == "success" }
+    val completed = state.points.count { it.status == UiEquipmentResultStatus.COMPLETED }
     val total = state.points.size
     val progress = if (total > 0) completed.toFloat() / total.toFloat() else 0f
 
