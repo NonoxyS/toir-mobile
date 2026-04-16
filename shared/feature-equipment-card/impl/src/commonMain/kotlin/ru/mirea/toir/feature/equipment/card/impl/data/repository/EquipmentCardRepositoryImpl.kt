@@ -6,18 +6,19 @@ import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
 import ru.mirea.toir.common.extensions.wrapResultSuccess
-import ru.mirea.toir.core.database.dao.EquipmentDao
-import ru.mirea.toir.core.database.dao.InspectionDao
-import ru.mirea.toir.core.database.dao.RouteDao
+import ru.mirea.toir.core.database.storage.equipment.EquipmentStorage
+import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
+import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
+import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.feature.equipment.card.api.models.DomainEquipmentCard
 import ru.mirea.toir.feature.equipment.card.impl.domain.repository.EquipmentCardRepository
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 internal class EquipmentCardRepositoryImpl(
-    private val inspectionDao: InspectionDao,
-    private val routeDao: RouteDao,
-    private val equipmentDao: EquipmentDao,
+    private val inspectionStorage: InspectionStorage,
+    private val routeStorage: RouteStorage,
+    private val equipmentStorage: EquipmentStorage,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : EquipmentCardRepository {
 
@@ -29,22 +30,22 @@ internal class EquipmentCardRepositoryImpl(
         withContext(coroutineDispatchers.io) {
             coRunCatching(
                 tryBlock = {
-                    val routePoint = routeDao.selectPointById(routePointId)
+                    val routePoint = routeStorage.selectPointById(routePointId)
                         ?: error("RoutePoint not found: $routePointId")
-                    val equipment = equipmentDao.selectById(routePoint.equipment_id)
-                        ?: error("Equipment not found: ${routePoint.equipment_id}")
+                    val equipment = equipmentStorage.selectById(routePoint.equipmentId)
+                        ?: error("Equipment not found: ${routePoint.equipmentId}")
 
-                    var result = inspectionDao.selectEquipmentResultByRoutePoint(routePointId, inspectionId)
+                    var result = inspectionStorage.selectEquipmentResultByRoutePoint(routePointId, inspectionId)
                     if (result == null) {
                         val newId = Uuid.random().toString()
-                        inspectionDao.insertEquipmentResult(
+                        inspectionStorage.insertEquipmentResult(
                             id = newId,
                             inspectionId = inspectionId,
                             routePointId = routePointId,
                             equipmentId = equipment.id,
-                            status = "IN_PROGRESS",
+                            status = LocalEquipmentResultStatus.IN_PROGRESS,
                         )
-                        result = inspectionDao.selectEquipmentResultById(newId)
+                        result = inspectionStorage.selectEquipmentResultById(newId)
                             ?: error("Failed to create equipment result")
                     }
 
@@ -53,9 +54,9 @@ internal class EquipmentCardRepositoryImpl(
                         code = equipment.code,
                         name = equipment.name,
                         type = equipment.type,
-                        locationName = equipment.location_id,
+                        locationName = equipment.locationId,
                         equipmentResultId = result.id,
-                        inspectionStatus = result.status,
+                        inspectionStatus = result.status.name,
                     ).wrapResultSuccess()
                 },
                 catchBlock = { throwable ->

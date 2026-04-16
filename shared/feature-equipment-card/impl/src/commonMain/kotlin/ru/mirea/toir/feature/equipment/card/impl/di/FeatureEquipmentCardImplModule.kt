@@ -10,9 +10,9 @@ import ru.mirea.toir.feature.equipment.card.impl.domain.repository.EquipmentCard
 val featureEquipmentCardImplModule = module {
     factory<EquipmentCardRepository> {
         EquipmentCardRepositoryImpl(
-            inspectionDao = get(),
-            routeDao = get(),
-            equipmentDao = get(),
+            inspectionStorage = get(),
+            routeStorage = get(),
+            equipmentStorage = get(),
             coroutineDispatchers = get(),
         )
     }

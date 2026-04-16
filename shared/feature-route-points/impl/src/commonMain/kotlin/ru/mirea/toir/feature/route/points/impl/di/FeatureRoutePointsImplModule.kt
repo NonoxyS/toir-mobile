@@ -10,9 +10,9 @@ import ru.mirea.toir.feature.route.points.impl.domain.repository.RoutePointsRepo
 val featureRoutePointsImplModule = module {
     factory<RoutePointsRepository> {
         RoutePointsRepositoryImpl(
-            inspectionDao = get(),
-            routeDao = get(),
-            equipmentDao = get(),
+            inspectionStorage = get(),
+            routeStorage = get(),
+            equipmentStorage = get(),
             coroutineDispatchers = get(),
         )
     }
