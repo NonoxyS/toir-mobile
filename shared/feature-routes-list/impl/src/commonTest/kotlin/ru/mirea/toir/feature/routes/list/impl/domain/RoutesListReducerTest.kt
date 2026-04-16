@@ -5,7 +5,6 @@ import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore
 import ru.mirea.toir.feature.routes.list.impl.domain.RoutesListStoreFactory.Message
 import kotlin.test.Test
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class RoutesListReducerTest {
@@ -19,12 +18,12 @@ class RoutesListReducerTest {
     }
 
     @Test
-    fun `SetError sets errorMessage and clears loading`() {
+    fun `SetError sets isError and clears loading`() {
         val result = with(reducer) {
-            initial.copy(isLoading = true).reduce(Message.SetError("Ошибка"))
+            initial.copy(isLoading = true).reduce(Message.SetError)
         }
         assertFalse(result.isLoading)
-        assertNotNull(result.errorMessage)
+        assertTrue(result.isError)
     }
 
     @Test

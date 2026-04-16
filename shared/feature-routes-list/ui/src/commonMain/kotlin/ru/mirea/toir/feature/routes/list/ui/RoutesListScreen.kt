@@ -42,7 +42,7 @@ internal fun RoutesListScreen(
     ) { paddingValues ->
         RoutesListContent(
             isLoading = state.isLoading,
-            errorMessage = state.errorMessage,
+            isError = state.isError,
             assignments = state.assignments,
             onRetry = viewModel::onRefresh,
             onRefresh = viewModel::onRefresh,
@@ -86,7 +86,7 @@ private fun PreviewRoutesListScreenLoading() {
         ) { paddingValues ->
             RoutesListContent(
                 isLoading = true,
-                errorMessage = null,
+                isError = false,
                 assignments = persistentListOf(),
                 onRetry = {},
                 onRefresh = {},
@@ -148,7 +148,7 @@ private fun PreviewRoutesListScreenContent() {
         ) { paddingValues ->
             RoutesListContent(
                 isLoading = false,
-                errorMessage = null,
+                isError = false,
                 assignments = previewAssignments,
                 onRetry = {},
                 onRefresh = {},
@@ -171,7 +171,7 @@ private fun PreviewRoutesListScreenError() {
         ) { paddingValues ->
             RoutesListContent(
                 isLoading = false,
-                errorMessage = "Не удалось загрузить маршруты",
+                isError = true,
                 assignments = persistentListOf(),
                 onRetry = {},
                 onRefresh = {},

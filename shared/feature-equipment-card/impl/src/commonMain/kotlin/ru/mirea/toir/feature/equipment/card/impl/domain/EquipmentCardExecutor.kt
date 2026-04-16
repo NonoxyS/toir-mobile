@@ -29,7 +29,7 @@ internal class EquipmentCardExecutor(
         repository.getOrCreateEquipmentResult(inspectionId, routePointId).fold(
             onSuccess = { card -> dispatch(Message.SetCard(card)) },
             onFailure = { throwable ->
-                dispatch(Message.SetError(throwable.message ?: "Ошибка загрузки"))
+                dispatch(Message.SetError)
             },
         )
     }

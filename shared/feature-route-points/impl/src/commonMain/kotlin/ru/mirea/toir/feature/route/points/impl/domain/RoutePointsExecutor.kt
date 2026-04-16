@@ -37,7 +37,7 @@ internal class RoutePointsExecutor(
                 )
             },
             onFailure = { throwable ->
-                dispatch(Message.SetError(throwable.message ?: "Ошибка загрузки"))
+                dispatch(Message.SetError)
             },
         )
     }
@@ -47,7 +47,7 @@ internal class RoutePointsExecutor(
         repository.finishInspection(inspectionId).fold(
             onSuccess = { publish(Label.InspectionFinished) },
             onFailure = { throwable ->
-                dispatch(Message.SetError(throwable.message ?: "Ошибка завершения"))
+                dispatch(Message.SetError)
             },
         )
     }

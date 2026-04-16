@@ -8,7 +8,7 @@ interface EquipmentCardStore : Store<EquipmentCardStore.Intent, EquipmentCardSto
     data class State(
         val card: DomainEquipmentCard? = null,
         val isLoading: Boolean = true,
-        val errorMessage: String? = null,
+        val isError: Boolean = false,
     )
 
     sealed interface Intent {

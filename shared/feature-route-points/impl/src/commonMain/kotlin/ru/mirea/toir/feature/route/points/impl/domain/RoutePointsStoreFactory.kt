@@ -28,7 +28,7 @@ internal class RoutePointsStoreFactory(
 
     internal sealed interface Message {
         data object SetLoading : Message
-        data class SetError(val message: String) : Message
+        data object SetError : Message
         data class SetData(
             val inspectionId: String,
             val routeName: String,

@@ -11,7 +11,7 @@ interface RoutePointsStore : Store<RoutePointsStore.Intent, RoutePointsStore.Sta
         val points: List<DomainRoutePoint> = emptyList(),
         val isLoading: Boolean = true,
         val canFinish: Boolean = false,
-        val errorMessage: String? = null,
+        val isError: Boolean = false,
     )
 
     sealed interface Intent {

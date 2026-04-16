@@ -29,7 +29,7 @@ internal class RoutesListStoreFactory(
 
     internal sealed interface Message {
         data object SetLoading : Message
-        data class SetError(val message: String) : Message
+        data object SetError : Message
         data class SetAssignments(val list: List<DomainRouteAssignment>) : Message
     }
 }

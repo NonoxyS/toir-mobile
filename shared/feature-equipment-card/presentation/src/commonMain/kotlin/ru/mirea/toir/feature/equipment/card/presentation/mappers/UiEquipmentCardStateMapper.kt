@@ -20,7 +20,7 @@ internal class UiEquipmentCardStateMapperImpl : UiEquipmentCardStateMapper {
             status = card?.inspectionStatus?.toUi() ?: UiEquipmentResultStatus.NOT_STARTED,
             equipmentResultId = card?.equipmentResultId,
             isLoading = state.isLoading,
-            errorMessage = state.errorMessage,
+            isError = state.isError,
         )
     }
 

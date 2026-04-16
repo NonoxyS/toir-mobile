@@ -10,5 +10,5 @@ data class UiRoutePointsState(
     val points: ImmutableList<UiRoutePoint> = persistentListOf(),
     val isLoading: Boolean = true,
     val canFinish: Boolean = false,
-    val errorMessage: String? = null,
+    val isError: Boolean = false,
 )

@@ -18,7 +18,7 @@ internal class UiRoutePointsStateMapperImpl : UiRoutePointsStateMapper {
         points = state.points.map { it.toUi() }.toImmutableList(),
         isLoading = state.isLoading,
         canFinish = state.canFinish,
-        errorMessage = state.errorMessage,
+        isError = state.isError,
     )
 
     private fun DomainRoutePoint.toUi(): UiRoutePoint = UiRoutePoint(

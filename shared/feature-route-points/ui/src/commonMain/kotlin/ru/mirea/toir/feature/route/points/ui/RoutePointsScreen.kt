@@ -81,6 +81,11 @@ internal fun RoutePointsScreen(
                 state.isLoading -> CircularProgressIndicator(
                     color = ToirTheme.colors.textSecondary,
                 )
+                state.isError -> Text(
+                    text = stringResource(MR.strings.error_generic),
+                    style = ToirTheme.typography.bodyMedium,
+                    color = ToirTheme.colors.error,
+                )
                 else -> RoutePointsContent(
                     state = state,
                     onPointClick = { routePointId -> viewModel.onPointClick(routePointId) },

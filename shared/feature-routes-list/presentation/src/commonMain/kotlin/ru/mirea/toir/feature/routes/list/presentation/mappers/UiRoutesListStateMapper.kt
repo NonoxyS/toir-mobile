@@ -16,7 +16,7 @@ internal class UiRoutesListStateMapperImpl : UiRoutesListStateMapper {
     override fun map(state: RoutesListStore.State): UiRoutesListState = UiRoutesListState(
         assignments = state.assignments.map { it.toUi() }.toImmutableList(),
         isLoading = state.isLoading,
-        errorMessage = state.errorMessage,
+        isError = state.isError,
     )
 
     private fun DomainRouteAssignment.toUi(): UiRouteAssignment = UiRouteAssignment(

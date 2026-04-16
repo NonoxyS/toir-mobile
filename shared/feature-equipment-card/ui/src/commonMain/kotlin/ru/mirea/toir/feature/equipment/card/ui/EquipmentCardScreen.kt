@@ -17,8 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.icerock.moko.resources.compose.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
+import ru.mirea.toir.res.MR
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.feature.equipment.card.presentation.EquipmentCardViewModel
 import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentCardLabel
@@ -89,8 +91,8 @@ internal fun EquipmentCardScreen(
                     color = ToirTheme.colors.textSecondary,
                 )
 
-                state.errorMessage != null -> Text(
-                    text = state.errorMessage.orEmpty(),
+                state.isError -> Text(
+                    text = stringResource(MR.strings.error_generic),
                     style = ToirTheme.typography.bodyMedium,
                     color = ToirTheme.colors.error,
                 )

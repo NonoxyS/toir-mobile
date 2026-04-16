@@ -13,7 +13,7 @@ import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteAssignment
 @Composable
 internal fun RoutesListContent(
     isLoading: Boolean,
-    errorMessage: String?,
+    isError: Boolean,
     assignments: ImmutableList<UiRouteAssignment>,
     onRetry: () -> Unit,
     onRefresh: () -> Unit,
@@ -23,7 +23,7 @@ internal fun RoutesListContent(
 ) {
     when {
         isLoading -> RoutesListLoading(modifier = modifier)
-        errorMessage != null -> RoutesListError(onRetry = onRetry, modifier = modifier)
+        isError -> RoutesListError(onRetry = onRetry, modifier = modifier)
         assignments.isEmpty() -> RoutesListEmpty(onRefresh = onRefresh, modifier = modifier)
         else -> RoutesListItems(
             assignments = assignments,

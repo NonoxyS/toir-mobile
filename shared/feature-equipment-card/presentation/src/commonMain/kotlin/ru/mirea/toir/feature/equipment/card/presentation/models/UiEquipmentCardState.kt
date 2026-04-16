@@ -8,5 +8,5 @@ data class UiEquipmentCardState(
     val status: UiEquipmentResultStatus = UiEquipmentResultStatus.NOT_STARTED,
     val equipmentResultId: String? = null,
     val isLoading: Boolean = true,
-    val errorMessage: String? = null,
+    val isError: Boolean = false,
 )
