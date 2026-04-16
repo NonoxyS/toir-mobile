@@ -1,17 +1,16 @@
 package ru.mirea.toir.feature.equipment.card.presentation.mappers
 
+import ru.mirea.toir.common.mappers.Mapper
 import ru.mirea.toir.feature.equipment.card.api.models.EquipmentResultStatus
 import ru.mirea.toir.feature.equipment.card.api.store.EquipmentCardStore
 import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentCardState
 import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentResultStatus
 
-interface UiEquipmentCardStateMapper {
-    fun map(state: EquipmentCardStore.State): UiEquipmentCardState
-}
+interface UiEquipmentCardStateMapper : Mapper<EquipmentCardStore.State, UiEquipmentCardState>
 
 internal class UiEquipmentCardStateMapperImpl : UiEquipmentCardStateMapper {
-    override fun map(state: EquipmentCardStore.State): UiEquipmentCardState {
-        val card = state.card
+    override fun map(item: EquipmentCardStore.State): UiEquipmentCardState {
+        val card = item.card
         return UiEquipmentCardState(
             code = card?.code.orEmpty(),
             name = card?.name.orEmpty(),
@@ -19,8 +18,8 @@ internal class UiEquipmentCardStateMapperImpl : UiEquipmentCardStateMapper {
             locationName = card?.locationName.orEmpty(),
             status = card?.inspectionStatus?.toUi() ?: UiEquipmentResultStatus.NOT_STARTED,
             equipmentResultId = card?.equipmentResultId,
-            isLoading = state.isLoading,
-            isError = state.isError,
+            isLoading = item.isLoading,
+            isError = item.isError,
         )
     }
 

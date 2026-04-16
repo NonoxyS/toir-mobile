@@ -1,6 +1,7 @@
 package ru.mirea.toir.feature.route.points.presentation.mappers
 
 import kotlinx.collections.immutable.toImmutableList
+import ru.mirea.toir.common.mappers.Mapper
 import ru.mirea.toir.feature.route.points.api.models.DomainRoutePoint
 import ru.mirea.toir.feature.route.points.api.models.EquipmentResultStatus
 import ru.mirea.toir.feature.route.points.api.store.RoutePointsStore
@@ -8,17 +9,15 @@ import ru.mirea.toir.feature.route.points.presentation.models.UiEquipmentResultS
 import ru.mirea.toir.feature.route.points.presentation.models.UiRoutePoint
 import ru.mirea.toir.feature.route.points.presentation.models.UiRoutePointsState
 
-interface UiRoutePointsStateMapper {
-    fun map(state: RoutePointsStore.State): UiRoutePointsState
-}
+interface UiRoutePointsStateMapper : Mapper<RoutePointsStore.State, UiRoutePointsState>
 
 internal class UiRoutePointsStateMapperImpl : UiRoutePointsStateMapper {
-    override fun map(state: RoutePointsStore.State): UiRoutePointsState = UiRoutePointsState(
-        routeName = state.routeName,
-        points = state.points.map { it.toUi() }.toImmutableList(),
-        isLoading = state.isLoading,
-        canFinish = state.canFinish,
-        isError = state.isError,
+    override fun map(item: RoutePointsStore.State): UiRoutePointsState = UiRoutePointsState(
+        routeName = item.routeName,
+        points = item.points.map { it.toUi() }.toImmutableList(),
+        isLoading = item.isLoading,
+        canFinish = item.canFinish,
+        isError = item.isError,
     )
 
     private fun DomainRoutePoint.toUi(): UiRoutePoint = UiRoutePoint(
