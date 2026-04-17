@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class RemoteUser(
-    @SerialName("id") val id: String?,
-    @SerialName("displayName") val displayName: String?,
-    @SerialName("role") val role: String?,
+    @SerialName("id") val id: String,
+    @SerialName("displayName") val displayName: String,
+    @SerialName("role") val role: RemoteUserRole,
 )
