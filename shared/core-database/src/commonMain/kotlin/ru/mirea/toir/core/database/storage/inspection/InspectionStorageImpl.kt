@@ -126,7 +126,7 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
             value_select = valueSelect,
             is_confirmed = isConfirmed,
             answered_at = answeredAt,
-            sync_status = LocalSyncStatus.PENDING.name,
+            sync_status = LocalSyncStatus.PENDING,
         )
     }
 
@@ -147,7 +147,7 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
         checklistItemResultQueries.selectPending().executeAsList().map { it.toLocal() }
 
     override fun updateChecklistItemResultSyncStatus(id: String, syncStatus: LocalSyncStatus) {
-        checklistItemResultQueries.updateSyncStatus(sync_status = syncStatus.name, id = id)
+        checklistItemResultQueries.updateSyncStatus(sync_status = syncStatus, id = id)
     }
 
     private fun Inspections.toLocal() = LocalInspection(
@@ -181,6 +181,6 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
         valueSelect = value_select,
         isConfirmed = is_confirmed,
         answeredAt = answered_at,
-        syncStatus = LocalSyncStatus.fromString(sync_status),
+        syncStatus = sync_status,
     )
 }

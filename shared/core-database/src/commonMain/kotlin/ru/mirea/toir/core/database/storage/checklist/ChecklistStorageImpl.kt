@@ -9,8 +9,16 @@ internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
     private val checklistQueries = db.checklistQueries
     private val itemQueries = db.checklistItemQueries
 
-    override fun upsertChecklist(id: String, name: String, equipmentId: String?) {
-        checklistQueries.upsertChecklist(id = id, name = name, equipment_id = equipmentId)
+    override fun upsertChecklist(
+        id: String,
+        name: String,
+        equipmentId: String?
+    ) {
+        checklistQueries.upsertChecklist(
+            id = id,
+            name = name,
+            equipment_id = equipmentId
+        )
     }
 
     override fun selectChecklistById(id: String): LocalChecklist? =
@@ -41,7 +49,10 @@ internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
     }
 
     override fun selectItemsByChecklistId(checklistId: String): List<LocalChecklistItem> =
-        itemQueries.selectByChecklistId(checklistId).executeAsList().map { it.toLocal() }
+        itemQueries
+            .selectByChecklistId(checklistId)
+            .executeAsList()
+            .map { it.toLocal() }
 
     override fun selectItemById(id: String): LocalChecklistItem? =
         itemQueries.selectById(id).executeAsOneOrNull()?.toLocal()

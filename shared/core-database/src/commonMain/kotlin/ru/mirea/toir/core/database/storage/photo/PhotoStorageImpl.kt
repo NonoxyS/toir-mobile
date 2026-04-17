@@ -19,19 +19,33 @@ internal class PhotoStorageImpl(db: ToirDatabase) : PhotoStorage {
             checklist_item_result_id = checklistItemResultId,
             file_uri = fileUri,
             taken_at = takenAt,
-            sync_status = LocalSyncStatus.PENDING.name,
+            sync_status = LocalSyncStatus.PENDING,
             storage_key = null,
         )
     }
 
     override fun selectByChecklistItemResultId(checklistItemResultId: String): List<LocalPhoto> =
-        queries.selectByChecklistItemResultId(checklistItemResultId).executeAsList().map { it.toLocal() }
+        queries
+            .selectByChecklistItemResultId(checklistItemResultId)
+            .executeAsList()
+            .map { it.toLocal() }
 
     override fun selectPending(): List<LocalPhoto> =
-        queries.selectPending().executeAsList().map { it.toLocal() }
+        queries
+            .selectPending()
+            .executeAsList()
+            .map { it.toLocal() }
 
-    override fun updateSyncStatus(id: String, syncStatus: LocalSyncStatus, storageKey: String?) {
-        queries.updateSyncStatus(sync_status = syncStatus.name, storage_key = storageKey, id = id)
+    override fun updateSyncStatus(
+        id: String,
+        syncStatus: LocalSyncStatus,
+        storageKey: String?
+    ) {
+        queries.updateSyncStatus(
+            sync_status = syncStatus,
+            storage_key = storageKey,
+            id = id
+        )
     }
 
     private fun Photos.toLocal() = LocalPhoto(
@@ -39,7 +53,7 @@ internal class PhotoStorageImpl(db: ToirDatabase) : PhotoStorage {
         checklistItemResultId = checklist_item_result_id,
         fileUri = file_uri,
         takenAt = taken_at,
-        syncStatus = LocalSyncStatus.fromString(sync_status),
+        syncStatus = sync_status,
         storageKey = storage_key,
     )
 }

@@ -30,7 +30,9 @@ internal class EquipmentStorageImpl(db: ToirDatabase) : EquipmentStorage {
     override fun selectById(id: String): LocalEquipment? =
         queries.selectById(id).executeAsOneOrNull()?.toLocal()
 
-    override fun deleteAll() = queries.deleteAll()
+    override fun deleteAll() {
+        queries.deleteAll()
+    }
 
     private fun Equipment.toLocal() = LocalEquipment(
         id = id,

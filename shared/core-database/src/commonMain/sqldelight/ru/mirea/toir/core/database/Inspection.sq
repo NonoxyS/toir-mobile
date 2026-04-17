@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS inspections (
     status TEXT AS LocalRouteStatus NOT NULL,
     started_at TEXT NOT NULL,
     completed_at TEXT,
-    sync_status TEXT AS LocalSyncStatus NOT NULL DEFAULT 'PENDING'
+    sync_status TEXT AS LocalSyncStatus NOT NULL
 );
 
 insertInspection:
@@ -25,7 +25,7 @@ updateStatus:
 UPDATE inspections SET status = ?, completed_at = ? WHERE id = ?;
 
 selectPending:
-SELECT * FROM inspections WHERE sync_status = 'PENDING';
+SELECT * FROM inspections WHERE sync_status = 'pending';
 
 updateSyncStatus:
 UPDATE inspections SET sync_status = ? WHERE id = ?;

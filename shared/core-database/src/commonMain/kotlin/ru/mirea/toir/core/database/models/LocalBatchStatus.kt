@@ -1,9 +1,10 @@
 package ru.mirea.toir.core.database.models
 
-enum class LocalSyncStatus(
+enum class LocalBatchStatus(
     override val localValue: String
 ) : LocalEnum {
 
     PENDING("pending"),
-    SYNCED("synced");
+    SENT("sent"),
+    FAILED("failed");
 }

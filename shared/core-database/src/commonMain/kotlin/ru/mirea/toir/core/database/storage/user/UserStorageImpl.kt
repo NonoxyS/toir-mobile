@@ -23,7 +23,9 @@ internal class UserStorageImpl(db: ToirDatabase) : UserStorage {
     override fun selectById(id: String): LocalUser? =
         queries.selectById(id).executeAsOneOrNull()?.toLocal()
 
-    override fun deleteAll() = queries.deleteAll()
+    override fun deleteAll() {
+        queries.deleteAll()
+    }
 
     private fun Users.toLocal() = LocalUser(
         id = id,

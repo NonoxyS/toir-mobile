@@ -1,7 +1,9 @@
+import ru.mirea.toir.core.database.models.LocalBatchStatus;
+
 CREATE TABLE IF NOT EXISTS sync_batches (
     id TEXT NOT NULL PRIMARY KEY,
     sent_at TEXT,
-    status TEXT NOT NULL DEFAULT 'PENDING',
+    status TEXT AS LocalBatchStatus NOT NULL,
     error_message TEXT
 );
 

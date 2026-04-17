@@ -21,7 +21,7 @@ internal class ActionLogStorageImpl(db: ToirDatabase) : ActionLogStorage {
             action_type = actionType,
             metadata = metadata,
             created_at = createdAt,
-            sync_status = LocalSyncStatus.PENDING.name,
+            sync_status = LocalSyncStatus.PENDING,
         )
     }
 
@@ -29,7 +29,7 @@ internal class ActionLogStorageImpl(db: ToirDatabase) : ActionLogStorage {
         queries.selectPending().executeAsList().map { it.toLocal() }
 
     override fun updateSyncStatus(id: String, syncStatus: LocalSyncStatus) {
-        queries.updateSyncStatus(sync_status = syncStatus.name, id = id)
+        queries.updateSyncStatus(sync_status = syncStatus, id = id)
     }
 
     private fun Action_logs.toLocal() = LocalActionLog(
@@ -38,6 +38,6 @@ internal class ActionLogStorageImpl(db: ToirDatabase) : ActionLogStorage {
         actionType = action_type,
         metadata = metadata,
         createdAt = created_at,
-        syncStatus = LocalSyncStatus.fromString(sync_status),
+        syncStatus = sync_status,
     )
 }

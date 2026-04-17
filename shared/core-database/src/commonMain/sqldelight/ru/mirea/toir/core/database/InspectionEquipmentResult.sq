@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS inspection_equipment_results (
     status TEXT AS LocalEquipmentResultStatus NOT NULL,
     started_at TEXT,
     completed_at TEXT,
-    sync_status TEXT AS LocalSyncStatus NOT NULL DEFAULT 'PENDING'
+    sync_status TEXT AS LocalSyncStatus NOT NULL
 );
 
 insertResult:
@@ -32,7 +32,7 @@ updateStatus:
 UPDATE inspection_equipment_results SET status = ?, started_at = ?, completed_at = ? WHERE id = ?;
 
 selectPending:
-SELECT * FROM inspection_equipment_results WHERE sync_status = 'PENDING';
+SELECT * FROM inspection_equipment_results WHERE sync_status = 'pending';
 
 updateSyncStatus:
 UPDATE inspection_equipment_results SET sync_status = ? WHERE id = ?;
