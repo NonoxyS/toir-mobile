@@ -55,7 +55,7 @@ internal class EquipmentCardRepositoryImpl(
                         code = equipment.code,
                         name = equipment.name,
                         type = equipment.type,
-                        locationName = equipment.locationId,
+                        locationName = equipment.locationId.orEmpty(),
                         equipmentResultId = result.id,
                         inspectionStatus = EquipmentResultStatus.fromString(result.status.name),
                     ).wrapResultSuccess()

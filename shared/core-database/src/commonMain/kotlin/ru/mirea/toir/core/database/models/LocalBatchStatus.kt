@@ -6,5 +6,5 @@ enum class LocalBatchStatus(
 
     PENDING("pending"),
     SENT("sent"),
-    FAILED("failed");
+    FAILED("failed")
 }

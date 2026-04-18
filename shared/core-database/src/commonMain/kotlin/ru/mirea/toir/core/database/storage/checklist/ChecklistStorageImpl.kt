@@ -3,6 +3,8 @@ package ru.mirea.toir.core.database.storage.checklist
 import ru.mirea.toir.core.database.Checklist_items
 import ru.mirea.toir.core.database.Checklists
 import ru.mirea.toir.core.database.ToirDatabase
+import ru.mirea.toir.core.database.storage.checklist.models.LocalChecklist
+import ru.mirea.toir.core.database.storage.checklist.models.LocalChecklistItem
 
 internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
 

@@ -75,11 +75,17 @@ internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
         assignmentQueries.updateStatus(status = status, id = id)
     }
 
-    override fun deleteAllRoutes() = routeQueries.deleteAll()
+    override fun deleteAllRoutes() {
+        routeQueries.deleteAll()
+    }
 
-    override fun deleteAllPoints() = pointQueries.deleteAll()
+    override fun deleteAllPoints() {
+        pointQueries.deleteAll()
+    }
 
-    override fun deleteAllAssignments() = assignmentQueries.deleteAll()
+    override fun deleteAllAssignments() {
+        assignmentQueries.deleteAll()
+    }
 
     private fun Routes.toLocal() = LocalRoute(
         id = id,

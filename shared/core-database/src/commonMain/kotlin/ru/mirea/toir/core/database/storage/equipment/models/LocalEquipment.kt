@@ -5,5 +5,5 @@ data class LocalEquipment(
     val code: String,
     val name: String,
     val type: String,
-    val locationId: String,
+    val locationId: String?,
 )
