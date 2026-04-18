@@ -14,7 +14,9 @@ import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorage
 import ru.mirea.toir.core.database.storage.user.UserStorage
 import ru.mirea.toir.feature.bootstrap.impl.data.network.BootstrapApiClient
+import ru.mirea.toir.feature.bootstrap.impl.data.network.models.enums.RemoteAnswerType
 import ru.mirea.toir.feature.bootstrap.impl.data.network.models.enums.RemoteAssignmentStatus
+import ru.mirea.toir.feature.bootstrap.impl.data.network.models.enums.RemoteUserRole
 import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapRepository
 
 internal class BootstrapRepositoryImpl(
@@ -24,6 +26,7 @@ internal class BootstrapRepositoryImpl(
     private val routeStorage: RouteStorage,
     private val checklistStorage: ChecklistStorage,
     private val syncMetaStorage: SyncMetaStorage,
+    private val json: Json,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : BootstrapRepository {
 
@@ -38,7 +41,7 @@ internal class BootstrapRepositoryImpl(
                             id = remoteUser.id,
                             login = remoteUser.login,
                             displayName = remoteUser.displayName,
-                            role = remoteUser.role.name.lowercase(),
+                            role = remoteUser.role.toDbValue(),
                         )
                     }
 
@@ -95,10 +98,10 @@ internal class BootstrapRepositoryImpl(
                             checklistId = item.checklistId,
                             title = item.title,
                             description = item.description,
-                            answerType = item.answerType.name.lowercase(),
+                            answerType = item.answerType.toDbValue(),
                             isRequired = if (item.isRequired) 1L else 0L,
                             requiresPhoto = if (item.requiresPhoto) 1L else 0L,
-                            selectOptions = item.selectOptions?.let { Json.encodeToString(it) },
+                            selectOptions = item.selectOptions?.let { json.encodeToString(it) },
                             orderIndex = item.orderIndex.toLong(),
                         )
                     }
@@ -121,6 +124,24 @@ internal class BootstrapRepositoryImpl(
         RemoteAssignmentStatus.ASSIGNED -> LocalRouteStatus.ASSIGNED
         RemoteAssignmentStatus.IN_PROGRESS -> LocalRouteStatus.IN_PROGRESS
         RemoteAssignmentStatus.COMPLETED -> LocalRouteStatus.COMPLETED
-        RemoteAssignmentStatus.UNKNOWN -> LocalRouteStatus.ASSIGNED
+        RemoteAssignmentStatus.UNKNOWN -> {
+            Napier.e(message = "Unknown RemoteAssignmentStatus received, defaulting to ASSIGNED")
+            LocalRouteStatus.ASSIGNED
+        }
+    }
+
+    private fun RemoteUserRole.toDbValue(): String = when (this) {
+        RemoteUserRole.EXECUTOR -> "executor"
+        RemoteUserRole.ADMIN -> "admin"
+        RemoteUserRole.UNKNOWN -> "unknown"
+    }
+
+    private fun RemoteAnswerType.toDbValue(): String = when (this) {
+        RemoteAnswerType.BOOLEAN -> "boolean"
+        RemoteAnswerType.NUMBER -> "number"
+        RemoteAnswerType.TEXT -> "text"
+        RemoteAnswerType.SELECT -> "select"
+        RemoteAnswerType.CONFIRM -> "confirm"
+        RemoteAnswerType.UNKNOWN -> "unknown"
     }
 }
