@@ -9,7 +9,7 @@ interface EquipmentStorage {
         code: String,
         name: String,
         type: String,
-        locationId: String,
+        locationId: String?,
     )
 
     fun selectAll(): List<LocalEquipment>

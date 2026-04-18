@@ -7,22 +7,23 @@ import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
 import ru.mirea.toir.common.extensions.wrapResultSuccess
-import ru.mirea.toir.core.database.dao.ChecklistDao
-import ru.mirea.toir.core.database.dao.EquipmentDao
-import ru.mirea.toir.core.database.dao.RouteDao
 import ru.mirea.toir.core.database.models.LocalRouteStatus
-import ru.mirea.toir.core.database.dao.SyncMetaDao
-import ru.mirea.toir.core.database.dao.UserDao
+import ru.mirea.toir.core.database.storage.checklist.ChecklistStorage
+import ru.mirea.toir.core.database.storage.equipment.EquipmentStorage
+import ru.mirea.toir.core.database.storage.route.RouteStorage
+import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorage
+import ru.mirea.toir.core.database.storage.user.UserStorage
 import ru.mirea.toir.feature.bootstrap.impl.data.network.BootstrapApiClient
+import ru.mirea.toir.feature.bootstrap.impl.data.network.models.enums.RemoteAssignmentStatus
 import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapRepository
 
 internal class BootstrapRepositoryImpl(
     private val apiClient: BootstrapApiClient,
-    private val userDao: UserDao,
-    private val equipmentDao: EquipmentDao,
-    private val routeDao: RouteDao,
-    private val checklistDao: ChecklistDao,
-    private val syncMetaDao: SyncMetaDao,
+    private val userStorage: UserStorage,
+    private val equipmentStorage: EquipmentStorage,
+    private val routeStorage: RouteStorage,
+    private val checklistStorage: ChecklistStorage,
+    private val syncMetaStorage: SyncMetaStorage,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : BootstrapRepository {
 
@@ -33,78 +34,78 @@ internal class BootstrapRepositoryImpl(
                     val response = apiClient.fetchBootstrap().getOrThrow()
 
                     response.user?.let { remoteUser ->
-                        userDao.upsert(
-                            id = remoteUser.id.orEmpty(),
-                            login = remoteUser.login.orEmpty(),
-                            displayName = remoteUser.displayName.orEmpty(),
-                            role = remoteUser.role.orEmpty(),
+                        userStorage.upsert(
+                            id = remoteUser.id,
+                            login = remoteUser.login,
+                            displayName = remoteUser.displayName,
+                            role = remoteUser.role.name.lowercase(),
                         )
                     }
 
-                    response.equipment.orEmpty().forEach { eq ->
-                        equipmentDao.upsert(
-                            id = eq.id.orEmpty(),
-                            code = eq.code.orEmpty(),
-                            name = eq.name.orEmpty(),
-                            type = eq.type.orEmpty(),
-                            locationId = eq.locationId.orEmpty(),
+                    response.equipment.forEach { eq ->
+                        equipmentStorage.upsert(
+                            id = eq.id,
+                            code = eq.code,
+                            name = eq.name,
+                            type = eq.type,
+                            locationId = eq.locationId,
                         )
                     }
 
-                    response.routes.orEmpty().forEach { route ->
-                        routeDao.upsertRoute(
-                            id = route.id.orEmpty(),
-                            name = route.name.orEmpty(),
+                    response.routes.forEach { route ->
+                        routeStorage.upsertRoute(
+                            id = route.id,
+                            name = route.name,
                             description = route.description,
                         )
                     }
 
-                    response.routePoints.orEmpty().forEach { point ->
-                        routeDao.upsertRoutePoint(
-                            id = point.id.orEmpty(),
-                            routeId = point.routeId.orEmpty(),
-                            equipmentId = point.equipmentId.orEmpty(),
-                            checklistId = point.checklistId.orEmpty(),
-                            orderIndex = point.orderIndex?.toLong() ?: 0L,
+                    response.routePoints.forEach { point ->
+                        routeStorage.upsertRoutePoint(
+                            id = point.id,
+                            routeId = point.routeId,
+                            equipmentId = point.equipmentId,
+                            checklistId = point.checklistId,
+                            orderIndex = point.orderIndex.toLong(),
                         )
                     }
 
-                    response.assignments.orEmpty().forEach { assignment ->
-                        routeDao.upsertAssignment(
-                            id = assignment.id.orEmpty(),
-                            routeId = assignment.routeId.orEmpty(),
-                            userId = assignment.userId.orEmpty(),
-                            status = LocalRouteStatus.fromString(assignment.status.orEmpty()),
-                            assignedAt = assignment.assignedAt.orEmpty(),
+                    response.assignments.forEach { assignment ->
+                        routeStorage.upsertAssignment(
+                            id = assignment.id,
+                            routeId = assignment.routeId,
+                            userId = assignment.userId,
+                            status = assignment.status.toLocal(),
+                            assignedAt = assignment.assignedAt,
                             dueDate = assignment.dueDate,
                         )
                     }
 
-                    response.checklists.orEmpty().forEach { cl ->
-                        checklistDao.upsertChecklist(
-                            id = cl.id.orEmpty(),
-                            name = cl.name.orEmpty(),
+                    response.checklists.forEach { cl ->
+                        checklistStorage.upsertChecklist(
+                            id = cl.id,
+                            name = cl.name,
                             equipmentId = cl.equipmentId,
                         )
                     }
 
-                    response.checklistItems.orEmpty().forEach { item ->
-                        checklistDao.upsertItem(
-                            id = item.id.orEmpty(),
-                            checklistId = item.checklistId.orEmpty(),
-                            title = item.title.orEmpty(),
+                    response.checklistItems.forEach { item ->
+                        checklistStorage.upsertItem(
+                            id = item.id,
+                            checklistId = item.checklistId,
+                            title = item.title,
                             description = item.description,
-                            answerType = item.answerType.orEmpty(),
-                            isRequired = if (item.isRequired == true) 1L else 0L,
-                            requiresPhoto = if (item.requiresPhoto == true) 1L else 0L,
+                            answerType = item.answerType.name.lowercase(),
+                            isRequired = if (item.isRequired) 1L else 0L,
+                            requiresPhoto = if (item.requiresPhoto) 1L else 0L,
                             selectOptions = item.selectOptions?.let { Json.encodeToString(it) },
-                            orderIndex = item.orderIndex?.toLong() ?: 0L,
+                            orderIndex = item.orderIndex.toLong(),
                         )
                     }
 
-                    syncMetaDao.upsert(
-                        key = SyncMetaDao.KEY_LAST_SYNC_TIME,
-                        value = response.serverTime.orEmpty(),
+                    syncMetaStorage.upsert(
+                        key = SyncMetaStorage.KEY_LAST_SYNC_TIME,
+                        value = response.serverTime,
                     )
 
                     Unit.wrapResultSuccess()
@@ -115,4 +116,11 @@ internal class BootstrapRepositoryImpl(
                 },
             )
         }
+
+    private fun RemoteAssignmentStatus.toLocal(): LocalRouteStatus = when (this) {
+        RemoteAssignmentStatus.ASSIGNED -> LocalRouteStatus.ASSIGNED
+        RemoteAssignmentStatus.IN_PROGRESS -> LocalRouteStatus.IN_PROGRESS
+        RemoteAssignmentStatus.COMPLETED -> LocalRouteStatus.COMPLETED
+        RemoteAssignmentStatus.UNKNOWN -> LocalRouteStatus.ASSIGNED
+    }
 }

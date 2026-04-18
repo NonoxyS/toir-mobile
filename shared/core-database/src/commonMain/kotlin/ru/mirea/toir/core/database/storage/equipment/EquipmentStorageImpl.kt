@@ -13,7 +13,7 @@ internal class EquipmentStorageImpl(db: ToirDatabase) : EquipmentStorage {
         code: String,
         name: String,
         type: String,
-        locationId: String,
+        locationId: String?,
     ) {
         queries.upsertEquipment(
             id = id,
