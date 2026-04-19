@@ -16,6 +16,10 @@ import ru.mirea.toir.feature.auth.impl.di.featureAuthImplModule
 import ru.mirea.toir.feature.auth.presentation.di.featureAuthPresentationModule
 import ru.mirea.toir.feature.bootstrap.impl.di.featureBootstrapImplModule
 import ru.mirea.toir.feature.bootstrap.presentation.di.featureBootstrapPresentationModule
+import ru.mirea.toir.feature.equipment.card.impl.di.featureEquipmentCardImplModule
+import ru.mirea.toir.feature.equipment.card.presentation.di.featureEquipmentCardPresentationModule
+import ru.mirea.toir.feature.route.points.impl.di.featureRoutePointsImplModule
+import ru.mirea.toir.feature.route.points.presentation.di.featureRoutePointsPresentationModule
 import ru.mirea.toir.feature.routes.list.impl.di.featureRoutesListImplModule
 import ru.mirea.toir.feature.routes.list.presentation.di.featureRoutesListPresentationModule
 
@@ -43,6 +47,12 @@ fun initKoin(appDeclaration: KoinAppDeclaration) {
 
             featureRoutesListImplModule,
             featureRoutesListPresentationModule,
+
+            featureRoutePointsImplModule,
+            featureRoutePointsPresentationModule,
+
+            featureEquipmentCardImplModule,
+            featureEquipmentCardPresentationModule,
         )
     }
 }

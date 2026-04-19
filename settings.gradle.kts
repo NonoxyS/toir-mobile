@@ -65,3 +65,13 @@ include(":shared:feature-routes-list:api")
 include(":shared:feature-routes-list:impl")
 include(":shared:feature-routes-list:presentation")
 include(":shared:feature-routes-list:ui")
+
+include(":shared:feature-route-points:api")
+include(":shared:feature-route-points:impl")
+include(":shared:feature-route-points:presentation")
+include(":shared:feature-route-points:ui")
+
+include(":shared:feature-equipment-card:api")
+include(":shared:feature-equipment-card:impl")
+include(":shared:feature-equipment-card:presentation")
+include(":shared:feature-equipment-card:ui")

@@ -1,6 +1,7 @@
 package ru.mirea.toir.feature.routes.list.presentation.mappers
 
 import kotlinx.collections.immutable.toImmutableList
+import ru.mirea.toir.common.mappers.Mapper
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.RouteAssignmentStatus
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore
@@ -8,15 +9,13 @@ import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteAssignment
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteStatus
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRoutesListState
 
-interface UiRoutesListStateMapper {
-    fun map(state: RoutesListStore.State): UiRoutesListState
-}
+interface UiRoutesListStateMapper : Mapper<RoutesListStore.State, UiRoutesListState>
 
 internal class UiRoutesListStateMapperImpl : UiRoutesListStateMapper {
-    override fun map(state: RoutesListStore.State): UiRoutesListState = UiRoutesListState(
-        assignments = state.assignments.map { it.toUi() }.toImmutableList(),
-        isLoading = state.isLoading,
-        errorMessage = state.errorMessage,
+    override fun map(item: RoutesListStore.State): UiRoutesListState = UiRoutesListState(
+        assignments = item.assignments.map { it.toUi() }.toImmutableList(),
+        isLoading = item.isLoading,
+        isError = item.isError,
     )
 
     private fun DomainRouteAssignment.toUi(): UiRouteAssignment = UiRouteAssignment(

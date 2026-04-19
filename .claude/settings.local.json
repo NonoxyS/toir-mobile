@@ -4,5 +4,6 @@
       "Bash(xargs -I{} cat {})",
       "Bash(xargs cat:*)"
     ]
-  }
+  },
+  "prefersReducedMotion": false
 }

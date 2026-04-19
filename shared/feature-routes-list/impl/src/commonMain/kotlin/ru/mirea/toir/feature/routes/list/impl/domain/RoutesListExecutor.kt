@@ -35,7 +35,7 @@ internal class RoutesListExecutor(
                 dispatch(Message.SetAssignments(list))
             },
             onFailure = { throwable ->
-                dispatch(Message.SetError(throwable.message ?: "Ошибка загрузки"))
+                dispatch(Message.SetError)
             },
         )
     }
@@ -46,7 +46,7 @@ internal class RoutesListExecutor(
                 publish(Label.NavigateToRoutePoints(inspectionId))
             },
             onFailure = { throwable ->
-                dispatch(Message.SetError(throwable.message ?: "Ошибка старта обхода"))
+                dispatch(Message.SetError)
             },
         )
     }

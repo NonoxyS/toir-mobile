@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class RemoteDevice(
-    @SerialName("id") val id: String?,
-    @SerialName("deviceCode") val deviceCode: String?,
+    @SerialName("id") val id: String,
+    @SerialName("deviceCode") val deviceCode: String,
 )

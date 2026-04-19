@@ -1,12 +1,15 @@
+import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus;
+import ru.mirea.toir.core.database.models.LocalSyncStatus;
+
 CREATE TABLE IF NOT EXISTS inspection_equipment_results (
     id TEXT NOT NULL PRIMARY KEY,
     inspection_id TEXT NOT NULL,
     route_point_id TEXT NOT NULL,
     equipment_id TEXT NOT NULL,
-    status TEXT NOT NULL,
+    status TEXT AS LocalEquipmentResultStatus NOT NULL,
     started_at TEXT,
     completed_at TEXT,
-    sync_status TEXT NOT NULL DEFAULT 'PENDING'
+    sync_status TEXT AS LocalSyncStatus NOT NULL
 );
 
 insertResult:
@@ -29,7 +32,7 @@ updateStatus:
 UPDATE inspection_equipment_results SET status = ?, started_at = ?, completed_at = ? WHERE id = ?;
 
 selectPending:
-SELECT * FROM inspection_equipment_results WHERE sync_status = 'PENDING';
+SELECT * FROM inspection_equipment_results WHERE sync_status = 'pending';
 
 updateSyncStatus:
 UPDATE inspection_equipment_results SET sync_status = ? WHERE id = ?;

@@ -1,9 +1,11 @@
+import ru.mirea.toir.core.database.models.LocalSyncStatus;
+
 CREATE TABLE IF NOT EXISTS photos (
     id TEXT NOT NULL PRIMARY KEY,
     checklist_item_result_id TEXT NOT NULL,
     file_uri TEXT NOT NULL,
     taken_at TEXT NOT NULL,
-    sync_status TEXT NOT NULL DEFAULT 'PENDING',
+    sync_status TEXT AS LocalSyncStatus NOT NULL,
     storage_key TEXT
 );
 
@@ -15,7 +17,7 @@ selectByChecklistItemResultId:
 SELECT * FROM photos WHERE checklist_item_result_id = ?;
 
 selectPending:
-SELECT * FROM photos WHERE sync_status = 'PENDING';
+SELECT * FROM photos WHERE sync_status = 'pending';
 
 updateSyncStatus:
 UPDATE photos SET sync_status = ?, storage_key = ? WHERE id = ?;

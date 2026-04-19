@@ -8,10 +8,11 @@ import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
 import ru.mirea.toir.common.extensions.wrapResultSuccess
-import ru.mirea.toir.core.database.dao.InspectionDao
-import ru.mirea.toir.core.database.dao.RouteDao
 import ru.mirea.toir.core.database.models.LocalRouteStatus
 import ru.mirea.toir.core.database.models.LocalSyncStatus
+import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
+import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
+import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
 import ru.mirea.toir.feature.routes.list.impl.data.mappers.RouteAssignmentMapper
 import ru.mirea.toir.feature.routes.list.impl.domain.repository.RoutesListRepository
@@ -19,8 +20,8 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 internal class RoutesListRepositoryImpl(
-    private val routeDao: RouteDao,
-    private val inspectionDao: InspectionDao,
+    private val routeStorage: RouteStorage,
+    private val inspectionStorage: InspectionStorage,
     private val mapper: RouteAssignmentMapper,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : RoutesListRepository {
@@ -29,18 +30,18 @@ internal class RoutesListRepositoryImpl(
         withContext(coroutineDispatchers.io) {
             coRunCatching(
                 tryBlock = {
-                    val assignments = routeDao.selectAllAssignments()
+                    val assignments = routeStorage.selectAllAssignments()
                     val result = assignments.map { assignment ->
-                        val route = routeDao.selectRouteById(assignment.route_id)
-                        val points = routeDao.selectPointsByRouteId(assignment.route_id)
-                        val inspection = inspectionDao.selectByAssignmentId(assignment.id)
+                        val route = routeStorage.selectRouteById(assignment.routeId)
+                        val points = routeStorage.selectPointsByRouteId(assignment.routeId)
+                        val inspection = inspectionStorage.selectInspectionByAssignmentId(assignment.id)
                         val completedCount = if (inspection != null) {
-                            inspectionDao.selectEquipmentResultsByInspectionId(inspection.id)
-                                .count { it.status == "COMPLETED" }
+                            inspectionStorage.selectEquipmentResultsByInspectionId(inspection.id)
+                                .count { it.status == LocalEquipmentResultStatus.COMPLETED }
                         } else {
                             0
                         }
-                        val hasPendingSync = inspection?.sync_status == LocalSyncStatus.PENDING &&
+                        val hasPendingSync = inspection?.syncStatus == LocalSyncStatus.PENDING &&
                             inspection.status == LocalRouteStatus.COMPLETED
                         mapper.map(
                             assignment = assignment,
@@ -65,20 +66,20 @@ internal class RoutesListRepositoryImpl(
         withContext(coroutineDispatchers.io) {
             coRunCatching(
                 tryBlock = {
-                    val existing = inspectionDao.selectByAssignmentId(assignmentId)
+                    val existing = inspectionStorage.selectInspectionByAssignmentId(assignmentId)
                     if (existing != null) return@coRunCatching existing.id.wrapResultSuccess()
 
-                    val assignment = routeDao.selectAssignmentById(assignmentId)
+                    val assignment = routeStorage.selectAssignmentById(assignmentId)
                         ?: error("Assignment not found: $assignmentId")
                     val inspectionId = Uuid.random().toString()
-                    inspectionDao.insertInspection(
+                    inspectionStorage.insertInspection(
                         id = inspectionId,
                         assignmentId = assignmentId,
-                        routeId = assignment.route_id,
+                        routeId = assignment.routeId,
                         status = LocalRouteStatus.IN_PROGRESS,
                         startedAt = Clock.System.now().toString(),
                     )
-                    routeDao.updateAssignmentStatus(
+                    routeStorage.updateAssignmentStatus(
                         id = assignmentId,
                         status = LocalRouteStatus.IN_PROGRESS,
                     )

@@ -11,7 +11,7 @@ interface RoutesListStore : Store<Intent, State, Label> {
     data class State(
         val assignments: List<DomainRouteAssignment> = emptyList(),
         val isLoading: Boolean = true,
-        val errorMessage: String? = null,
+        val isError: Boolean = false,
     )
 
     sealed interface Intent {

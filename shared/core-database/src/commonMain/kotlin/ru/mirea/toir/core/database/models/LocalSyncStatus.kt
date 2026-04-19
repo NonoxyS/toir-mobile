@@ -1,11 +1,9 @@
 package ru.mirea.toir.core.database.models
 
-enum class LocalSyncStatus {
-    PENDING,
-    SYNCED;
+enum class LocalSyncStatus(
+    override val localValue: String
+) : LocalEnum {
 
-    companion object Companion {
-        fun fromString(value: String): LocalSyncStatus =
-            entries.firstOrNull { it.name == value } ?: PENDING
-    }
+    PENDING("pending"),
+    SYNCED("synced")
 }
