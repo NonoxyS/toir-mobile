@@ -1,7 +1,7 @@
-package ru.mirea.toir.sync.api
+package ru.mirea.toir.sync.data.network
 
-import ru.mirea.toir.sync.api.models.RemoteSyncPushRequest
-import ru.mirea.toir.sync.api.models.RemoteSyncPushResponse
+import ru.mirea.toir.sync.data.network.models.RemoteSyncPushRequest
+import ru.mirea.toir.sync.data.network.models.RemoteSyncPushResponse
 
 internal interface SyncApiClient {
     suspend fun pushSync(request: RemoteSyncPushRequest): Result<RemoteSyncPushResponse>

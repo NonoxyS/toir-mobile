@@ -1,9 +1,7 @@
-package ru.mirea.toir.sync
+package ru.mirea.toir.sync.data.repository
 
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.withContext
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
@@ -14,13 +12,17 @@ import ru.mirea.toir.core.database.storage.action_log.ActionLogStorage
 import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
 import ru.mirea.toir.core.database.storage.photo.PhotoStorage
 import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorage
-import ru.mirea.toir.sync.api.SyncApiClient
-import ru.mirea.toir.sync.api.models.RemoteSyncActionLog
-import ru.mirea.toir.sync.api.models.RemoteSyncChecklistItemResult
-import ru.mirea.toir.sync.api.models.RemoteSyncEquipmentResult
-import ru.mirea.toir.sync.api.models.RemoteSyncInspection
-import ru.mirea.toir.sync.api.models.RemoteSyncPushRequest
-import ru.mirea.toir.sync.api.readFileBytes
+import ru.mirea.toir.sync.data.network.SyncApiClient
+import ru.mirea.toir.sync.data.network.models.RemoteSyncActionLog
+import ru.mirea.toir.sync.data.network.models.RemoteSyncChecklistItemResult
+import ru.mirea.toir.sync.data.network.models.RemoteSyncEquipmentResult
+import ru.mirea.toir.sync.data.network.models.RemoteSyncInspection
+import ru.mirea.toir.sync.data.network.models.RemoteSyncPushRequest
+import ru.mirea.toir.sync.data.readFileBytes
+import ru.mirea.toir.sync.domain.models.SyncResult
+import ru.mirea.toir.sync.domain.repository.SyncRepository
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -48,32 +50,35 @@ internal class SyncRepositoryImpl(
                     if (pendingInspections.isEmpty() && pendingEquipmentResults.isEmpty() &&
                         pendingChecklistResults.isEmpty() && pendingLogs.isEmpty()
                     ) {
-                        return@coRunCatching SyncResult(0, 0).wrapResultSuccess()
+                        return@coRunCatching SyncResult(
+                            acceptedCount = 0,
+                            rejectedCount = 0,
+                        ).wrapResultSuccess()
                     }
 
                     val request = RemoteSyncPushRequest(
-                        clientBatchId = Uuid.random().toString(),
+                        clientBatchId = Uuid.Companion.random().toString(),
                         deviceId = deviceId,
                         sentAt = Clock.System.now().toString(),
-                        inspections = pendingInspections.map { insp ->
+                        inspections = pendingInspections.map { inspection ->
                             RemoteSyncInspection(
-                                id = insp.id,
-                                assignmentId = insp.assignmentId,
-                                routeId = insp.routeId,
-                                status = insp.status.localValue,
-                                startedAt = insp.startedAt,
-                                completedAt = insp.completedAt,
+                                id = inspection.id,
+                                assignmentId = inspection.assignmentId,
+                                routeId = inspection.routeId,
+                                status = inspection.status.localValue,
+                                startedAt = inspection.startedAt,
+                                completedAt = inspection.completedAt,
                             )
                         }.takeIf { it.isNotEmpty() },
-                        inspectionEquipmentResults = pendingEquipmentResults.map { r ->
+                        inspectionEquipmentResults = pendingEquipmentResults.map { result ->
                             RemoteSyncEquipmentResult(
-                                id = r.id,
-                                inspectionId = r.inspectionId,
-                                routePointId = r.routePointId,
-                                equipmentId = r.equipmentId,
-                                status = r.status.localValue,
-                                startedAt = r.startedAt,
-                                completedAt = r.completedAt,
+                                id = result.id,
+                                inspectionId = result.inspectionId,
+                                routePointId = result.routePointId,
+                                equipmentId = result.equipmentId,
+                                status = result.status.localValue,
+                                startedAt = result.startedAt,
+                                completedAt = result.completedAt,
                             )
                         }.takeIf { it.isNotEmpty() },
                         checklistItemResults = pendingChecklistResults.map { r ->
@@ -101,16 +106,19 @@ internal class SyncRepositoryImpl(
                     )
 
                     val response = syncApiClient.pushSync(request).getOrThrow()
-                    val acceptedInspections = response.accepted?.inspections.orEmpty()
-                    val acceptedEquipment = response.accepted?.inspectionEquipmentResults.orEmpty()
-                    val acceptedChecklist = response.accepted?.checklistItemResults.orEmpty()
-                    val acceptedLogs = response.accepted?.actionLogs.orEmpty()
+                    val acceptedInspections = response.accepted.inspections
+                    val acceptedEquipment = response.accepted.inspectionEquipmentResults
+                    val acceptedChecklist = response.accepted.checklistItemResults
+                    val acceptedLogs = response.accepted.actionLogs
 
                     acceptedInspections.forEach {
                         inspectionStorage.updateInspectionSyncStatus(it, LocalSyncStatus.SYNCED)
                     }
                     acceptedEquipment.forEach {
-                        inspectionStorage.updateEquipmentResultSyncStatus(it, LocalSyncStatus.SYNCED)
+                        inspectionStorage.updateEquipmentResultSyncStatus(
+                            id = it,
+                            syncStatus = LocalSyncStatus.SYNCED
+                        )
                     }
                     acceptedChecklist.forEach {
                         inspectionStorage.updateChecklistItemResultSyncStatus(it, LocalSyncStatus.SYNCED)
@@ -119,7 +127,7 @@ internal class SyncRepositoryImpl(
 
                     val totalAccepted = acceptedInspections.size + acceptedEquipment.size +
                         acceptedChecklist.size + acceptedLogs.size
-                    val totalRejected = response.rejected.orEmpty().size
+                    val totalRejected = response.rejected.size
 
                     SyncResult(acceptedCount = totalAccepted, rejectedCount = totalRejected).wrapResultSuccess()
                 },
@@ -161,10 +169,10 @@ internal class SyncRepositoryImpl(
         withContext(coroutineDispatchers.io) {
             coRunCatching(
                 tryBlock = {
-                    val lastSync = syncMetaStorage.selectByKey(SyncMetaStorage.KEY_LAST_SYNC_TIME)
+                    val lastSync = syncMetaStorage.selectByKey(SyncMetaStorage.Companion.KEY_LAST_SYNC_TIME)
                         ?: "2000-01-01T00:00:00Z"
                     syncApiClient.fetchConfigChanges(lastSync).getOrThrow()
-                    syncMetaStorage.upsert(SyncMetaStorage.KEY_LAST_SYNC_TIME, Clock.System.now().toString())
+                    syncMetaStorage.upsert(SyncMetaStorage.Companion.KEY_LAST_SYNC_TIME, Clock.System.now().toString())
                     Unit.wrapResultSuccess()
                 },
                 catchBlock = { throwable ->

@@ -1,10 +1,10 @@
-package ru.mirea.toir.sync.api
+package ru.mirea.toir.sync.data
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.readBytes
 import platform.Foundation.NSData
 import platform.Foundation.NSURL
 import platform.Foundation.dataWithContentsOfURL
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.readBytes
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun readFileBytes(fileUri: String): ByteArray {

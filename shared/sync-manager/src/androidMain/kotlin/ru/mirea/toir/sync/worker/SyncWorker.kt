@@ -5,7 +5,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import ru.mirea.toir.sync.SyncManager
+import ru.mirea.toir.common.extensions.coRunCatching
+import ru.mirea.toir.sync.domain.SyncManager
 
 class SyncWorker(
     context: Context,
@@ -15,11 +16,14 @@ class SyncWorker(
     private val syncManager: SyncManager by inject()
 
     override suspend fun doWork(): Result {
-        return try {
-            syncManager.syncNow()
-            Result.success()
-        } catch (e: Exception) {
-            Result.retry()
-        }
+        return coRunCatching(
+            tryBlock = {
+                syncManager.syncNow()
+                Result.success()
+            },
+            catchBlock = {
+                Result.retry()
+            }
+        )
     }
 }

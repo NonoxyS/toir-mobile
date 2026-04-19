@@ -1,4 +1,4 @@
-package ru.mirea.toir.sync.api.models
+package ru.mirea.toir.sync.data.network.models
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -9,7 +9,6 @@ import ru.mirea.toir.core.network.deserializer.enumSerializerWithFallback
 @Serializable(with = RemoteSyncResultSerializer::class)
 internal enum class RemoteSyncResult {
     ACCEPTED,
-    REJECTED,
     UNKNOWN,
 }
 
@@ -18,7 +17,6 @@ internal object RemoteSyncResultSerializer : KSerializer<RemoteSyncResult> {
         fallbackEnum = RemoteSyncResult.UNKNOWN,
         serialNameMapping = mapOf(
             RemoteSyncResult.ACCEPTED to "accepted",
-            RemoteSyncResult.REJECTED to "rejected",
         )
     )
     override val descriptor = delegate.descriptor

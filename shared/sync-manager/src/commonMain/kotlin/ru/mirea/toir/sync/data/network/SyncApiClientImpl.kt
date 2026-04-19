@@ -1,4 +1,4 @@
-package ru.mirea.toir.sync.api
+package ru.mirea.toir.sync.data.network
 
 import io.github.aakira.napier.Napier
 import io.ktor.client.request.forms.formData
@@ -12,8 +12,8 @@ import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
 import ru.mirea.toir.common.extensions.wrapResultSuccess
 import ru.mirea.toir.core.network.ktor.KtorClient
-import ru.mirea.toir.sync.api.models.RemoteSyncPushRequest
-import ru.mirea.toir.sync.api.models.RemoteSyncPushResponse
+import ru.mirea.toir.sync.data.network.models.RemoteSyncPushRequest
+import ru.mirea.toir.sync.data.network.models.RemoteSyncPushResponse
 
 internal class SyncApiClientImpl(
     private val ktorClient: KtorClient,

@@ -1,14 +1,15 @@
-package ru.mirea.toir.sync
+package ru.mirea.toir.sync.domain
 
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
+import ru.mirea.toir.sync.domain.repository.SyncRepository
 
 class SyncManager internal constructor(
     private val syncRepository: SyncRepository,
-    private val coroutineDispatchers: CoroutineDispatchers,
+    coroutineDispatchers: CoroutineDispatchers,
 ) {
     private val scope = CoroutineScope(coroutineDispatchers.io + SupervisorJob())
 

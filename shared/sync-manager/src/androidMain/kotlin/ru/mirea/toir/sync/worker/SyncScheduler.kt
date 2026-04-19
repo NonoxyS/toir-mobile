@@ -22,9 +22,9 @@ object SyncScheduler {
         ).setConstraints(constraints).build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            SYNC_WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
-            request,
+            uniqueWorkName = SYNC_WORK_NAME,
+            existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP,
+            request = request,
         )
     }
 }
