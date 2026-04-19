@@ -59,6 +59,7 @@ sqldelight = "2.3.2"
 
 # Logging
 napier = "2.7.1"
+coil = "3.0.4"
 
 [libraries]
 
@@ -150,6 +151,7 @@ detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-form
 detekt-libraries = { group = "io.gitlab.arturbosch.detekt", name = "detekt-rules-libraries", version.ref = "detekt" }
 detekt-compose-kode = { module = "ru.kode:detekt-rules-compose", version.ref = "detekt-compose-kode" }
 detekt-compose-twitter = { module = "com.twitter.compose.rules:detekt", version.ref = "detekt-compose-twitter" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 
 [plugins]
 # Convention plugins

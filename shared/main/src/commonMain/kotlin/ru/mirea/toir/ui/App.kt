@@ -13,6 +13,7 @@ import ru.mirea.toir.core.navigation.RoutesListRoute
 import ru.mirea.toir.feature.auth.ui.api.composableAuthScreen
 import ru.mirea.toir.feature.bootstrap.ui.api.composableBootstrapScreen
 import ru.mirea.toir.feature.equipment.card.ui.api.composableEquipmentCardScreen
+import ru.mirea.toir.feature.photo.capture.ui.api.composablePhotoCaptureScreen
 import ru.mirea.toir.feature.route.points.ui.api.composableRoutePointsScreen
 import ru.mirea.toir.feature.routes.list.ui.api.composableRoutesListScreen
 
@@ -61,6 +62,9 @@ fun App() {
                     navController.navigate(ChecklistRoute(equipmentResultId))
                 },
                 onNavigateBack = navController::popBackStack,
+            )
+            composablePhotoCaptureScreen(
+                onPhotoConfirm = { navController.popBackStack() },
             )
         }
     }

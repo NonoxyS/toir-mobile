@@ -75,3 +75,8 @@ include(":shared:feature-equipment-card:api")
 include(":shared:feature-equipment-card:impl")
 include(":shared:feature-equipment-card:presentation")
 include(":shared:feature-equipment-card:ui")
+
+include(":shared:feature-photo-capture:api")
+include(":shared:feature-photo-capture:impl")
+include(":shared:feature-photo-capture:presentation")
+include(":shared:feature-photo-capture:ui")

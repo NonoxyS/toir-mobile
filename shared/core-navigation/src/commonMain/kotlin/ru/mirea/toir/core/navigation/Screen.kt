@@ -26,6 +26,9 @@ data class EquipmentCardRoute(
 data class ChecklistRoute(val equipmentResultId: String) : Screen
 
 @Serializable
+data class PhotoCaptureRoute(val checklistItemResultId: String) : Screen
+
+@Serializable
 data object DemoFirstRoute : Screen
 
 @Serializable
