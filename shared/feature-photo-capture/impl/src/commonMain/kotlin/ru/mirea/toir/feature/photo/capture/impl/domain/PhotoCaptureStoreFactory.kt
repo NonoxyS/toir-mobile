@@ -2,7 +2,6 @@ package ru.mirea.toir.feature.photo.capture.impl.domain
 
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore
 import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.Intent
@@ -28,7 +27,7 @@ internal class PhotoCaptureStoreFactory(
 
     internal sealed interface Message {
         data class SetLoading(val value: Boolean) : Message
-        data class SetPhotos(val photos: ImmutableList<String>) : Message
+        data class SetPhotos(val photos: List<String>) : Message
         data class AddPhoto(val uri: String) : Message
         data class SetResultId(val id: String) : Message
     }

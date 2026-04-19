@@ -1,6 +1,5 @@
 package ru.mirea.toir.feature.photo.capture.impl.domain
 
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
 import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.Intent
@@ -41,7 +40,7 @@ internal class PhotoCaptureExecutor(
     private suspend fun loadPhotos(checklistItemResultId: String) {
         repository.getPhotos(checklistItemResultId).fold(
             onSuccess = { uris ->
-                dispatch(Message.SetPhotos(uris.toImmutableList()))
+                dispatch(Message.SetPhotos(uris))
             },
             onFailure = { /* silent */ },
         )
