@@ -62,4 +62,9 @@
     <string name="equipment_card_status_in_progress">Проверка в процессе</string>
     <string name="equipment_card_status_checked">Оборудование проверено</string>
 
+    <!-- photo_capture -->
+    <string name="photo_capture_title">Фотофиксация</string>
+    <string name="photo_capture_button_take">Сделать фото</string>
+    <string name="photo_capture_button_confirm">Готово</string>
+    <string name="photo_capture_empty">Нет фотографий</string>
 </resources>
