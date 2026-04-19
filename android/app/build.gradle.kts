@@ -105,7 +105,9 @@ android {
 
 dependencies {
     implementation(projects.shared.main)
+    implementation(projects.shared.syncManager)
     implementation(libs.koin.android)
+    implementation(libs.koin.android.workmanager)
     implementation(libs.napier)
 
     debugImplementation(compose.uiTooling)

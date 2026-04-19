@@ -80,3 +80,5 @@ include(":shared:feature-photo-capture:api")
 include(":shared:feature-photo-capture:impl")
 include(":shared:feature-photo-capture:presentation")
 include(":shared:feature-photo-capture:ui")
+
+include(":shared:sync-manager")

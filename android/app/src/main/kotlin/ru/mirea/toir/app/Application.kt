@@ -7,6 +7,8 @@ import ru.mirea.toir.di.initKoin
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.workmanager.koin.workManagerFactory
+import ru.mirea.toir.sync.worker.SyncScheduler
 
 class Application : Application() {
 
@@ -26,9 +28,11 @@ class Application : Application() {
     private fun setupKoin() {
         initKoin {
             androidContext(this@Application)
+            workManagerFactory()
             modules(
                 appModule,
             )
         }
+        SyncScheduler.schedule(this)
     }
 }
