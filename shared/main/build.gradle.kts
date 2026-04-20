@@ -40,6 +40,7 @@ commonMainDependencies {
 
     implementations(
         *composeBundle,
+        projects.shared.syncManager,
     )
 }
 

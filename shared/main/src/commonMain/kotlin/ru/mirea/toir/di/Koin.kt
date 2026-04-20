@@ -24,6 +24,7 @@ import ru.mirea.toir.feature.route.points.impl.di.featureRoutePointsImplModule
 import ru.mirea.toir.feature.route.points.presentation.di.featureRoutePointsPresentationModule
 import ru.mirea.toir.feature.routes.list.impl.di.featureRoutesListImplModule
 import ru.mirea.toir.feature.routes.list.presentation.di.featureRoutesListPresentationModule
+import ru.mirea.toir.sync.di.syncManagerModule
 
 fun initKoin(appDeclaration: KoinAppDeclaration) {
     Napier.d(message = "initKoin")
@@ -58,6 +59,8 @@ fun initKoin(appDeclaration: KoinAppDeclaration) {
 
             featurePhotoCaptureImplModule,
             featurePhotoCapturePresentationModule,
+
+            syncManagerModule,
         )
     }
 }
