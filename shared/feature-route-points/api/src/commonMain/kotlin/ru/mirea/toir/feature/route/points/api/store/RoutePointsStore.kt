@@ -15,7 +15,6 @@ interface RoutePointsStore : Store<RoutePointsStore.Intent, RoutePointsStore.Sta
     )
 
     sealed interface Intent {
-        data class Init(val inspectionId: String) : Intent
         data class OnPointClick(val routePointId: String) : Intent
         data object OnFinishInspection : Intent
     }

@@ -1,7 +1,8 @@
 package ru.mirea.toir.feature.equipment.card.presentation.di
 
 import org.koin.core.module.dsl.new
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import ru.mirea.toir.feature.equipment.card.presentation.EquipmentCardViewModel
 import ru.mirea.toir.feature.equipment.card.presentation.mappers.UiEquipmentCardLabelMapper
@@ -12,5 +13,11 @@ import ru.mirea.toir.feature.equipment.card.presentation.mappers.UiEquipmentCard
 val featureEquipmentCardPresentationModule = module {
     factory<UiEquipmentCardStateMapper> { new(::UiEquipmentCardStateMapperImpl) }
     factory<UiEquipmentCardLabelMapper> { new(::UiEquipmentCardLabelMapperImpl) }
-    viewModelOf(::EquipmentCardViewModel)
+    viewModel { (inspectionId: String, routePointId: String) ->
+        EquipmentCardViewModel(
+            store = get { parametersOf(inspectionId, routePointId) },
+            stateMapper = get(),
+            labelMapper = get(),
+        )
+    }
 }

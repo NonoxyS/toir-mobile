@@ -11,7 +11,6 @@ internal class RoutePointsReducer : Reducer<RoutePointsStore.State, Message> {
         Message.SetError -> copy(isLoading = false, isError = true)
         is Message.SetData -> copy(
             isLoading = false,
-            inspectionId = msg.inspectionId,
             routeName = msg.routeName,
             points = msg.points,
             canFinish = msg.points.any { it.status == EquipmentResultStatus.COMPLETED },

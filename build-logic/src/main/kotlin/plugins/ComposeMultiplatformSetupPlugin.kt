@@ -52,6 +52,7 @@ class ComposeMultiplatformSetupPlugin : Plugin<Project> {
         with(pluginManager) {
             apply(libs.plugins.compose.compiler.get().pluginId)
             apply(libs.plugins.compose.multiplatform.get().pluginId)
+            apply(libs.plugins.conventionPlugin.jsonSerialization.get().pluginId)
         }
     }
 }

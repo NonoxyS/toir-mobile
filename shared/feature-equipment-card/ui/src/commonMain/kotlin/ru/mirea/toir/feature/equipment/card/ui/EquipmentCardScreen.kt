@@ -11,7 +11,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.icerock.moko.resources.compose.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
@@ -37,13 +37,9 @@ internal fun EquipmentCardScreen(
     routePointId: String,
     onNavigateToChecklist: (equipmentResultId: String) -> Unit,
     onNavigateBack: () -> Unit,
-    viewModel: EquipmentCardViewModel = koinViewModel(),
+    viewModel: EquipmentCardViewModel = koinViewModel { parametersOf(inspectionId, routePointId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(inspectionId, routePointId) {
-        viewModel.init(inspectionId, routePointId)
-    }
 
     viewModel.label.CollectFlow { label ->
         when (label) {

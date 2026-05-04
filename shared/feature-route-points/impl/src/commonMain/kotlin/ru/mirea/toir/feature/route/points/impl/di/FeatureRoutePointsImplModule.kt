@@ -11,11 +11,12 @@ import ru.mirea.toir.feature.route.points.impl.domain.repository.RoutePointsRepo
 val featureRoutePointsImplModule = module {
     factory<RoutePointsRepository> { new(::RoutePointsRepositoryImpl) }
 
-    factory<RoutePointsStore> {
+    factory<RoutePointsStore> { params ->
         RoutePointsStoreFactory(
             storeFactory = get(),
             mainDispatcher = get<CoroutineDispatchers>().main,
             repository = get(),
+            inspectionId = params.get(),
         ).create()
     }
 }

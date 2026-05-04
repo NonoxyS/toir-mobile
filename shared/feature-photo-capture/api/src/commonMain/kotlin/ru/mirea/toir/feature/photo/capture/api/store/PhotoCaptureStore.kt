@@ -14,7 +14,6 @@ interface PhotoCaptureStore : Store<Intent, State, Label> {
     )
 
     sealed interface Intent {
-        data class Init(val checklistItemResultId: String) : Intent
         data class OnPhotoTaken(val fileUri: String) : Intent
         data object OnConfirm : Intent
     }

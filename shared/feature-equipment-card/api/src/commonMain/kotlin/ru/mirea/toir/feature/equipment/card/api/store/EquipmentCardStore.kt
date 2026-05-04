@@ -12,7 +12,6 @@ interface EquipmentCardStore : Store<EquipmentCardStore.Intent, EquipmentCardSto
     )
 
     sealed interface Intent {
-        data class Init(val inspectionId: String, val routePointId: String) : Intent
         data object OnOpenChecklist : Intent
     }
 

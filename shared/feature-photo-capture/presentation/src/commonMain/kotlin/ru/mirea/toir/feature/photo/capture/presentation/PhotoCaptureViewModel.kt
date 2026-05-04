@@ -24,7 +24,6 @@ class PhotoCaptureViewModel internal constructor(
         }
     }
 
-    fun init(checklistItemResultId: String) = store.accept(Intent.Init(checklistItemResultId))
     fun onPhotoTaken(fileUri: String) = store.accept(Intent.OnPhotoTaken(fileUri))
     fun onConfirm() = store.accept(Intent.OnConfirm)
 

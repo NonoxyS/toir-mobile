@@ -11,11 +11,13 @@ import ru.mirea.toir.feature.equipment.card.impl.domain.repository.EquipmentCard
 val featureEquipmentCardImplModule = module {
     factory<EquipmentCardRepository> { new(::EquipmentCardRepositoryImpl) }
 
-    factory<EquipmentCardStore> {
+    factory<EquipmentCardStore> { (inspectionId: String, routePointId: String) ->
         EquipmentCardStoreFactory(
             storeFactory = get(),
             mainDispatcher = get<CoroutineDispatchers>().main,
             repository = get(),
+            inspectionId = inspectionId,
+            routePointId = routePointId,
         ).create()
     }
 }

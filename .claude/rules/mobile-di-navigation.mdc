@@ -38,18 +38,27 @@ internal val feature{Name}PresentationModule = module {
 
 ## Navigation
 
-Screens are defined in `core-navigation/Screen.kt`. `Screen` is a plain interface; routes are top-level `@Serializable data object`s:
+`core-navigation` exposes only `interface Screen` плюс универсальные хелперы (`navigateOnResumed`, `popBackStackOnResumed`, `popBackStack(route)` и т.п.). Каждая фича владеет своим Route вместе с `composable*` и `navigateTo*` extensions внутри `feature-{name}/ui/api/`. `ComposeMultiplatformSetupPlugin` авто-применяет `jsonSerialization`, поэтому `@Serializable Route` собирается без ручных `alias`-плагинов в build.gradle.kts.
+
+`{Feature}Route` объявляется **публичным** (`data object` или `data class` без `internal`). App.kt и другие фичи импортируют Route напрямую и передают как `popUpToScreen` для cross-feature popUpTo.
 
 ```kotlin
-interface Screen
-
+// shared/feature-{name}/ui/src/commonMain/kotlin/.../ui/api/Feature{Name}ScreenApi.kt
 @Serializable
 data object {Feature}Route : Screen
-```
 
-Screen API in the `ui` module:
+fun NavController.navigateTo{Feature}Screen(
+    popUpInclusive: Boolean = true,
+    popUpToScreen: Screen? = null,
+) {
+    navigateOnResumed({Feature}Route) {
+        launchSingleTop = true
+        popUpToScreen?.let { screen ->
+            popUpTo(screen) { inclusive = popUpInclusive }
+        }
+    }
+}
 
-```kotlin
 fun NavGraphBuilder.composable{Feature}Screen(
     onNavigateToNext: () -> Unit,
 ) {
@@ -57,16 +66,46 @@ fun NavGraphBuilder.composable{Feature}Screen(
         {Feature}Screen(onNavigateToNext = onNavigateToNext)
     }
 }
+```
 
-fun NavController.navigateTo{Feature}Screen() {
-    navigate({Feature}Route)
+Если у маршрута есть аргументы (data class), они идут **первыми** в сигнатуре `navigateTo*Screen`, перед `popUpInclusive`/`popUpToScreen`:
+
+```kotlin
+@Serializable
+data class {Feature}Route(val id: String) : Screen
+
+fun NavController.navigateTo{Feature}Screen(
+    id: String,
+    popUpInclusive: Boolean = true,
+    popUpToScreen: Screen? = null,
+) {
+    navigateOnResumed({Feature}Route(id)) {
+        launchSingleTop = true
+        popUpToScreen?.let { screen ->
+            popUpTo(screen) { inclusive = popUpInclusive }
+        }
+    }
 }
 ```
 
-In NavHost:
+В `composable*Screen` аргументы маршрута распаковываются из `backStackEntry.toRoute<{Feature}Route>()` и передаются дальше в `{Feature}Screen(...)`. Сам экран **не** вызывает `viewModel.init(...)` через `LaunchedEffect`; вместо этого аргументы маршрута пробрасываются во ViewModel через `koinViewModel { parametersOf(...) }`, далее в `viewModel { params -> ... }` Koin-модуля, и в конструктор `*StoreFactory` (см. `mobile-mvi.mdc`).
+
+В `App.kt` навигация только через extensions, никаких `navController.navigate(Route)`:
 
 ```kotlin
-NavHost(navController = navController, startDestination = {Feature}Route) {
-    composable{Feature}Screen(onNavigateToNext = { navController.navigateTo{Next}Screen() })
+NavHost(navController = navController, startDestination = AuthRoute) {
+    composableAuthScreen(
+        onNavigateToMain = {
+            navController.navigateToBootstrapScreen(popUpToScreen = AuthRoute)
+        },
+    )
+    composableBootstrapScreen(
+        onNavigateToRoutesList = {
+            navController.navigateToRoutesListScreen(popUpToScreen = BootstrapRoute)
+        },
+        onNavigateToLogin = {
+            navController.navigateToAuthScreen(popUpToScreen = RoutesListRoute)
+        },
+    )
 }
 ```

@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +31,7 @@ import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.common.ui.compose.utils.Spacer4
@@ -49,18 +49,15 @@ internal fun RoutePointsScreen(
     inspectionId: String,
     onNavigateToEquipmentCard: (inspectionId: String, routePointId: String) -> Unit,
     onInspectionFinish: () -> Unit,
-    viewModel: RoutePointsViewModel = koinViewModel(),
+    viewModel: RoutePointsViewModel = koinViewModel { parametersOf(inspectionId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(inspectionId) {
-        viewModel.init(inspectionId)
-    }
 
     viewModel.label.CollectFlow { label ->
         when (label) {
             is UiRoutePointsLabel.NavigateToEquipmentCard ->
                 onNavigateToEquipmentCard(label.inspectionId, label.routePointId)
+
             UiRoutePointsLabel.InspectionFinished -> onInspectionFinish()
         }
     }
@@ -84,11 +81,13 @@ internal fun RoutePointsScreen(
                 state.isLoading -> CircularProgressIndicator(
                     color = ToirTheme.colors.textSecondary,
                 )
+
                 state.isError -> Text(
                     text = stringResource(MR.strings.error_generic),
                     style = ToirTheme.typography.bodyMedium,
                     color = ToirTheme.colors.error,
                 )
+
                 else -> RoutePointsContent(
                     state = state,
                     onPointClick = { routePointId -> viewModel.onPointClick(routePointId) },
