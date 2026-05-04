@@ -10,5 +10,7 @@ data class LocalEquipmentResult(
     val status: LocalEquipmentResultStatus,
     val startedAt: String?,
     val completedAt: String?,
+    val createdAt: String,
+    val updatedAt: String,
     val syncStatus: LocalSyncStatus,
 )

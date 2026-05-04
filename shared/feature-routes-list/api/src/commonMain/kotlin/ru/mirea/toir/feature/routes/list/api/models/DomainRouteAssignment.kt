@@ -6,7 +6,6 @@ data class DomainRouteAssignment(
     val routeName: String,
     val status: RouteAssignmentStatus,
     val assignedAt: String,
-    val dueDate: String?,
     val totalPoints: Int,
     val completedPoints: Int,
     val inspectionId: String?,

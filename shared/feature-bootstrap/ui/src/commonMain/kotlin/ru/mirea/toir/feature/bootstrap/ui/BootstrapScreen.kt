@@ -42,15 +42,12 @@ internal fun BootstrapScreen(
     ) {
         if (state.isLoading) {
             CircularProgressIndicator()
-        } else if (state.errorMessage != null) {
+        } else if (state.isError) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = stringResource(MR.strings.bootstrap_error_title),
                     style = MaterialTheme.typography.titleMedium,
                 )
-                Spacer8()
-
-                Text(text = state.errorMessage.orEmpty())
                 Spacer16()
 
                 Button(onClick = viewModel::onRetry) {

@@ -9,13 +9,15 @@ CREATE TABLE IF NOT EXISTS inspection_equipment_results (
     status TEXT AS LocalEquipmentResultStatus NOT NULL,
     started_at TEXT,
     completed_at TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
     sync_status TEXT AS LocalSyncStatus NOT NULL
 );
 
 insertResult:
 INSERT INTO inspection_equipment_results (
-    id, inspection_id, route_point_id, equipment_id, status, started_at, completed_at, sync_status
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+    id, inspection_id, route_point_id, equipment_id, status, started_at, completed_at, created_at, updated_at, sync_status
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectByInspectionId:
 SELECT * FROM inspection_equipment_results WHERE inspection_id = ?;
@@ -29,7 +31,7 @@ WHERE route_point_id = ? AND inspection_id = ?
 LIMIT 1;
 
 updateStatus:
-UPDATE inspection_equipment_results SET status = ?, started_at = ?, completed_at = ? WHERE id = ?;
+UPDATE inspection_equipment_results SET status = ?, started_at = ?, completed_at = ?, updated_at = ? WHERE id = ?;
 
 selectPending:
 SELECT * FROM inspection_equipment_results WHERE sync_status = 'pending';

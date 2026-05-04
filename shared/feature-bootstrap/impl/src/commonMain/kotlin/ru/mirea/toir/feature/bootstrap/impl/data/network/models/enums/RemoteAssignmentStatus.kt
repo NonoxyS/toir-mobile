@@ -11,6 +11,8 @@ internal enum class RemoteAssignmentStatus {
     ASSIGNED,
     IN_PROGRESS,
     COMPLETED,
+    PARTIALLY_COMPLETED,
+    CANCELLED,
     UNKNOWN,
 }
 
@@ -21,6 +23,8 @@ internal object RemoteAssignmentStatusSerializer : KSerializer<RemoteAssignmentS
             RemoteAssignmentStatus.ASSIGNED to "assigned",
             RemoteAssignmentStatus.IN_PROGRESS to "in_progress",
             RemoteAssignmentStatus.COMPLETED to "completed",
+            RemoteAssignmentStatus.PARTIALLY_COMPLETED to "partially_completed",
+            RemoteAssignmentStatus.CANCELLED to "cancelled",
         )
     )
     override val descriptor = delegate.descriptor

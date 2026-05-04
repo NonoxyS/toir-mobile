@@ -10,6 +10,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,11 +37,15 @@ internal fun LoginPasswordField(
     onTogglePasswordVisibility: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var localValue by remember { mutableStateOf(value) }
     val colors = ToirTheme.colors
 
     OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = localValue,
+        onValueChange = {
+            localValue = it
+            onValueChange(it)
+        },
         label = { Text(text = stringResource(MR.strings.auth_password_hint)) },
         singleLine = true,
         isError = isError,

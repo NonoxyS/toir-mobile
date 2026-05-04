@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(xargs -I{} cat {})",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(xargs ls *)",
+      "Bash(./gradlew :shared:core-network:compileKotlinAndroid :shared:feature-auth:impl:compileKotlinAndroid)",
+      "Bash(./gradlew :android:app:assembleDevDebug)",
+      "Bash(cat)",
+      "Read(//tmp/**)",
+      "Bash(./gradlew compileKotlin)",
+      "Bash(./gradlew test *)"
     ]
   },
   "prefersReducedMotion": false

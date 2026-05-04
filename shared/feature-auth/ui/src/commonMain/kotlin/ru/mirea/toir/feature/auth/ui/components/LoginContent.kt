@@ -17,6 +17,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
@@ -37,7 +41,7 @@ internal fun LoginContent(
     login: String,
     password: String,
     isLoading: Boolean,
-    errorMessage: String?,
+    isError: Boolean,
     passwordVisible: Boolean,
     onLoginChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
@@ -72,34 +76,28 @@ internal fun LoginContent(
             )
             Spacer32()
 
-            OutlinedTextField(
+            LoginField(
                 value = login,
                 onValueChange = onLoginChange,
-                label = { Text(text = stringResource(MR.strings.auth_login_hint)) },
-                singleLine = true,
-                isError = errorMessage != null,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                modifier = Modifier.fillMaxWidth(),
+                isError = isError,
                 enabled = !isLoading,
-                shape = ToirTheme.shapes.sm,
-                colors = loginTextFieldColors(colors),
             )
             Spacer12()
 
             LoginPasswordField(
                 value = password,
                 onValueChange = onPasswordChange,
-                isError = errorMessage != null,
+                isError = isError,
                 enabled = !isLoading,
                 passwordVisible = passwordVisible,
                 onDone = onLoginClick,
                 onTogglePasswordVisibility = onTogglePasswordVisibility,
             )
 
-            if (errorMessage != null) {
+            if (isError) {
                 Spacer12()
                 Text(
-                    text = errorMessage,
+                    text = stringResource(MR.strings.auth_error_invalid_credentials),
                     style = typography.caption,
                     color = colors.error,
                 )
@@ -134,15 +132,36 @@ internal fun LoginContent(
                 }
             }
             Spacer16()
-            /* TODO: navigate to password recovery when backend API is ready
-            Text(
-                text = stringResource(MR.strings.auth_forgot_password),
-                style = typography.caption,
-                color = colors.textSecondary,
-                textDecoration = TextDecoration.Underline,
-            )*/
         }
     }
+}
+
+@Composable
+private fun LoginField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    isError: Boolean,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    var localValue by remember { mutableStateOf(value) }
+    val colors = ToirTheme.colors
+
+    OutlinedTextField(
+        value = localValue,
+        onValueChange = { newValue ->
+            localValue = newValue
+            onValueChange(newValue)
+        },
+        label = { Text(text = stringResource(MR.strings.auth_login_hint)) },
+        singleLine = true,
+        isError = isError,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        modifier = modifier.fillMaxWidth(),
+        enabled = enabled,
+        shape = ToirTheme.shapes.sm,
+        colors = loginTextFieldColors(colors),
+    )
 }
 
 @Composable
@@ -175,7 +194,7 @@ private fun PreviewLoginContent() {
             login = "user@example.com",
             password = "password",
             isLoading = false,
-            errorMessage = null,
+            isError = false,
             passwordVisible = false,
             onLoginChange = {},
             onPasswordChange = {},
@@ -193,7 +212,7 @@ private fun PreviewLoginContentError() {
             login = "user@example.com",
             password = "password",
             isLoading = false,
-            errorMessage = "Неверный логин или пароль",
+            isError = true,
             passwordVisible = false,
             onLoginChange = {},
             onPasswordChange = {},
@@ -211,7 +230,7 @@ private fun PreviewLoginContentLoading() {
             login = "user@example.com",
             password = "password",
             isLoading = true,
-            errorMessage = null,
+            isError = false,
             passwordVisible = false,
             onLoginChange = {},
             onPasswordChange = {},

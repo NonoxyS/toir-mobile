@@ -5,5 +5,6 @@ enum class LocalSyncStatus(
 ) : LocalEnum {
 
     PENDING("pending"),
-    SYNCED("synced")
+    SYNCED("synced"),
+    FAILED("failed")
 }

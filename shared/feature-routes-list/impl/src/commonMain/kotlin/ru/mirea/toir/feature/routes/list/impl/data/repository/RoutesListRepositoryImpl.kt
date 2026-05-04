@@ -8,8 +8,12 @@ import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
 import ru.mirea.toir.common.extensions.wrapResultSuccess
-import ru.mirea.toir.core.database.models.LocalRouteStatus
+import ru.mirea.toir.core.database.models.LocalInspectionStatus
+import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.models.LocalSyncStatus
+import ru.mirea.toir.core.database.storage.action_log.ActionLogEntityType
+import ru.mirea.toir.core.database.storage.action_log.ActionLogType
+import ru.mirea.toir.core.database.storage.action_log.ActionLogger
 import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.route.RouteStorage
@@ -22,6 +26,7 @@ import kotlin.uuid.Uuid
 internal class RoutesListRepositoryImpl(
     private val routeStorage: RouteStorage,
     private val inspectionStorage: InspectionStorage,
+    private val actionLogger: ActionLogger,
     private val mapper: RouteAssignmentMapper,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : RoutesListRepository {
@@ -42,7 +47,7 @@ internal class RoutesListRepositoryImpl(
                             0
                         }
                         val hasPendingSync = inspection?.syncStatus == LocalSyncStatus.PENDING &&
-                            inspection.status == LocalRouteStatus.COMPLETED
+                            inspection.status in COMPLETED_INSPECTION_STATUSES
                         mapper.map(
                             assignment = assignment,
                             route = route,
@@ -71,17 +76,25 @@ internal class RoutesListRepositoryImpl(
 
                     val assignment = routeStorage.selectAssignmentById(assignmentId)
                         ?: error("Assignment not found: $assignmentId")
+                    val now = Clock.System.now().toString()
                     val inspectionId = Uuid.random().toString()
                     inspectionStorage.insertInspection(
                         id = inspectionId,
                         assignmentId = assignmentId,
                         routeId = assignment.routeId,
-                        status = LocalRouteStatus.IN_PROGRESS,
-                        startedAt = Clock.System.now().toString(),
+                        status = LocalInspectionStatus.IN_PROGRESS,
+                        startedAt = now,
+                        createdAt = now,
+                        updatedAt = now,
                     )
                     routeStorage.updateAssignmentStatus(
                         id = assignmentId,
-                        status = LocalRouteStatus.IN_PROGRESS,
+                        status = LocalRouteAssignmentStatus.IN_PROGRESS,
+                    )
+                    actionLogger.log(
+                        actionType = ActionLogType.INSPECTION_STARTED,
+                        entityType = ActionLogEntityType.INSPECTION,
+                        entityId = inspectionId,
                     )
                     inspectionId.wrapResultSuccess()
                 },
@@ -91,4 +104,12 @@ internal class RoutesListRepositoryImpl(
                 },
             )
         }
+
+    private companion object {
+        val COMPLETED_INSPECTION_STATUSES = setOf(
+            LocalInspectionStatus.COMPLETED,
+            LocalInspectionStatus.PARTIALLY_COMPLETED,
+            LocalInspectionStatus.CANCELLED,
+        )
+    }
 }

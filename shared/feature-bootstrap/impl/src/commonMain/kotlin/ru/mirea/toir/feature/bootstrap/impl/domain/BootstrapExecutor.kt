@@ -31,8 +31,8 @@ internal class BootstrapExecutor(
                 dispatch(Message.ClearLoading)
                 publish(Label.NavigateToRoutesList)
             },
-            onFailure = { throwable ->
-                dispatch(Message.SetError(throwable.message ?: "Ошибка загрузки данных"))
+            onFailure = {
+                dispatch(Message.SetError)
             },
         )
         dispatch(Message.ClearLoading)

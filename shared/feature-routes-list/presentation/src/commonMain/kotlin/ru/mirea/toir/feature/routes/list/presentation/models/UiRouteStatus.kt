@@ -6,7 +6,9 @@ import ru.mirea.toir.res.MR
 enum class UiRouteStatus(
     val stringResource: StringResource,
 ) {
-    ASSIGNED(stringResource = MR.strings.routes_list_status_assigned,),
+    ASSIGNED(stringResource = MR.strings.routes_list_status_assigned),
     IN_PROGRESS(stringResource = MR.strings.routes_list_status_in_progress),
     COMPLETED(stringResource = MR.strings.routes_list_status_completed),
+    PARTIALLY_COMPLETED(stringResource = MR.strings.routes_list_status_partially_completed),
+    CANCELLED(stringResource = MR.strings.routes_list_status_cancelled),
 }

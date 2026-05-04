@@ -18,3 +18,6 @@ SELECT * FROM route_points WHERE id = ?;
 
 deleteAll:
 DELETE FROM route_points;
+
+deleteById:
+DELETE FROM route_points WHERE id = ?;

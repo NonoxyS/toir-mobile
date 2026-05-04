@@ -9,5 +9,7 @@ data class LocalChecklistItem(
     val isRequired: Long,
     val requiresPhoto: Long,
     val selectOptions: String?,
+    val numericMin: Double?,
+    val numericMax: Double?,
     val orderIndex: Long,
 )

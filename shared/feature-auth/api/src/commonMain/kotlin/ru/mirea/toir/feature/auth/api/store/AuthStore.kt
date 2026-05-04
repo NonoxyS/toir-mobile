@@ -8,7 +8,7 @@ interface AuthStore : Store<AuthStore.Intent, AuthStore.State, AuthStore.Label> 
         val login: String = "",
         val password: String = "",
         val isLoading: Boolean = false,
-        val errorMessage: String? = null,
+        val isError: Boolean = false,
         val passwordVisible: Boolean = false,
     )
 

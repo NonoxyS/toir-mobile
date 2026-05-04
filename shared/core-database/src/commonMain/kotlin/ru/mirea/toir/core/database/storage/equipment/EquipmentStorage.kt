@@ -10,11 +10,16 @@ interface EquipmentStorage {
         name: String,
         type: String,
         locationId: String?,
+        qrCode: String?,
     )
 
     fun selectAll(): List<LocalEquipment>
 
     fun selectById(id: String): LocalEquipment?
 
+    fun selectByQrCode(qrCode: String): LocalEquipment?
+
     fun deleteAll()
+
+    fun deleteById(id: String)
 }

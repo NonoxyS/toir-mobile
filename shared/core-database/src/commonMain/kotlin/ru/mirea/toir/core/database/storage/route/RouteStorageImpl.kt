@@ -4,7 +4,7 @@ import ru.mirea.toir.core.database.Route_assignments
 import ru.mirea.toir.core.database.Route_points
 import ru.mirea.toir.core.database.Routes
 import ru.mirea.toir.core.database.ToirDatabase
-import ru.mirea.toir.core.database.models.LocalRouteStatus
+import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.storage.route.models.LocalRoute
 import ru.mirea.toir.core.database.storage.route.models.LocalRouteAssignment
 import ru.mirea.toir.core.database.storage.route.models.LocalRoutePoint
@@ -15,8 +15,8 @@ internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
     private val pointQueries = db.routePointQueries
     private val assignmentQueries = db.routeAssignmentQueries
 
-    override fun upsertRoute(id: String, name: String, description: String?) {
-        routeQueries.upsertRoute(id = id, name = name, description = description)
+    override fun upsertRoute(id: String, code: String, name: String, description: String?) {
+        routeQueries.upsertRoute(id = id, code = code, name = name, description = description)
     }
 
     override fun selectAllRoutes(): List<LocalRoute> =
@@ -24,6 +24,10 @@ internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
 
     override fun selectRouteById(id: String): LocalRoute? =
         routeQueries.selectById(id).executeAsOneOrNull()?.toLocal()
+
+    override fun deleteRouteById(id: String) {
+        routeQueries.deleteById(id)
+    }
 
     override fun upsertRoutePoint(
         id: String,
@@ -47,13 +51,18 @@ internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
     override fun selectPointById(id: String): LocalRoutePoint? =
         pointQueries.selectById(id).executeAsOneOrNull()?.toLocal()
 
+    override fun deleteRoutePointById(id: String) {
+        pointQueries.deleteById(id)
+    }
+
     override fun upsertAssignment(
         id: String,
         routeId: String,
         userId: String,
-        status: LocalRouteStatus,
+        status: LocalRouteAssignmentStatus,
         assignedAt: String,
-        dueDate: String?,
+        shiftCode: String?,
+        updatedAt: String,
     ) {
         assignmentQueries.upsertRouteAssignment(
             id = id,
@@ -61,7 +70,8 @@ internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
             user_id = userId,
             status = status,
             assigned_at = assignedAt,
-            due_date = dueDate,
+            shift_code = shiftCode,
+            updated_at = updatedAt,
         )
     }
 
@@ -71,8 +81,12 @@ internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
     override fun selectAssignmentById(id: String): LocalRouteAssignment? =
         assignmentQueries.selectById(id).executeAsOneOrNull()?.toLocal()
 
-    override fun updateAssignmentStatus(id: String, status: LocalRouteStatus) {
+    override fun updateAssignmentStatus(id: String, status: LocalRouteAssignmentStatus) {
         assignmentQueries.updateStatus(status = status, id = id)
+    }
+
+    override fun deleteAssignmentById(id: String) {
+        assignmentQueries.deleteById(id)
     }
 
     override fun deleteAllRoutes() {
@@ -89,6 +103,7 @@ internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
 
     private fun Routes.toLocal() = LocalRoute(
         id = id,
+        code = code,
         name = name,
         description = description,
     )
@@ -107,6 +122,7 @@ internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
         userId = user_id,
         status = status,
         assignedAt = assigned_at,
-        dueDate = due_date,
+        shiftCode = shift_code,
+        updatedAt = updated_at,
     )
 }

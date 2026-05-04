@@ -24,7 +24,7 @@ internal object RemoteAnswerTypeSerializer : KSerializer<RemoteAnswerType> {
             RemoteAnswerType.NUMBER to "number",
             RemoteAnswerType.TEXT to "text",
             RemoteAnswerType.SELECT to "select",
-            RemoteAnswerType.CONFIRM to "confirm",
+            RemoteAnswerType.CONFIRM to "confirmation",
         )
     )
     override val descriptor = delegate.descriptor

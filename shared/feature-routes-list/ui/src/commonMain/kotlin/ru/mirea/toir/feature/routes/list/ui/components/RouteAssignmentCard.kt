@@ -131,8 +131,10 @@ private fun RouteCardProgress(
     val colors = ToirTheme.colors
     val progressColor = when (item.status) {
         UiRouteStatus.COMPLETED -> colors.success
+        UiRouteStatus.PARTIALLY_COMPLETED -> colors.warning
         UiRouteStatus.IN_PROGRESS -> colors.warning
         UiRouteStatus.ASSIGNED -> colors.border
+        UiRouteStatus.CANCELLED -> colors.border
     }
 
     LinearProgressIndicator(
@@ -217,7 +219,8 @@ private fun ColumnScope.RouteCardAction(
             }
         }
 
-        UiRouteStatus.IN_PROGRESS -> {
+        UiRouteStatus.IN_PROGRESS,
+        UiRouteStatus.PARTIALLY_COMPLETED -> {
             Spacer12()
             OutlinedButton(
                 onClick = onContinueClick,
@@ -230,7 +233,8 @@ private fun ColumnScope.RouteCardAction(
             }
         }
 
-        UiRouteStatus.COMPLETED -> Unit
+        UiRouteStatus.COMPLETED,
+        UiRouteStatus.CANCELLED -> Unit
     }
 }
 

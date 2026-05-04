@@ -6,7 +6,7 @@ interface BootstrapStore : Store<BootstrapStore.Intent, BootstrapStore.State, Bo
 
     data class State(
         val isLoading: Boolean = true,
-        val errorMessage: String? = null,
+        val isError: Boolean = false,
     )
 
     sealed interface Intent {

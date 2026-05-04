@@ -1,6 +1,6 @@
 package ru.mirea.toir.feature.routes.list.impl.data.mappers
 
-import ru.mirea.toir.core.database.models.LocalRouteStatus
+import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.storage.route.models.LocalRoute
 import ru.mirea.toir.core.database.storage.route.models.LocalRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
@@ -20,16 +20,17 @@ internal class RouteAssignmentMapper {
         routeName = route?.name.orEmpty(),
         status = assignment.status.toDomain(),
         assignedAt = assignment.assignedAt,
-        dueDate = assignment.dueDate,
         totalPoints = totalPoints,
         completedPoints = completedPoints,
         inspectionId = inspectionId,
         hasPendingSync = hasPendingSync,
     )
 
-    private fun LocalRouteStatus.toDomain(): RouteAssignmentStatus = when (this) {
-        LocalRouteStatus.ASSIGNED -> RouteAssignmentStatus.ASSIGNED
-        LocalRouteStatus.IN_PROGRESS -> RouteAssignmentStatus.IN_PROGRESS
-        LocalRouteStatus.COMPLETED -> RouteAssignmentStatus.COMPLETED
+    private fun LocalRouteAssignmentStatus.toDomain(): RouteAssignmentStatus = when (this) {
+        LocalRouteAssignmentStatus.ASSIGNED -> RouteAssignmentStatus.ASSIGNED
+        LocalRouteAssignmentStatus.IN_PROGRESS -> RouteAssignmentStatus.IN_PROGRESS
+        LocalRouteAssignmentStatus.COMPLETED -> RouteAssignmentStatus.COMPLETED
+        LocalRouteAssignmentStatus.PARTIALLY_COMPLETED -> RouteAssignmentStatus.PARTIALLY_COMPLETED
+        LocalRouteAssignmentStatus.CANCELLED -> RouteAssignmentStatus.CANCELLED
     }
 }

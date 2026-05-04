@@ -14,6 +14,7 @@ internal class EquipmentStorageImpl(db: ToirDatabase) : EquipmentStorage {
         name: String,
         type: String,
         locationId: String?,
+        qrCode: String?,
     ) {
         queries.upsertEquipment(
             id = id,
@@ -21,6 +22,7 @@ internal class EquipmentStorageImpl(db: ToirDatabase) : EquipmentStorage {
             name = name,
             type = type,
             location_id = locationId,
+            qr_code = qrCode,
         )
     }
 
@@ -30,8 +32,15 @@ internal class EquipmentStorageImpl(db: ToirDatabase) : EquipmentStorage {
     override fun selectById(id: String): LocalEquipment? =
         queries.selectById(id).executeAsOneOrNull()?.toLocal()
 
+    override fun selectByQrCode(qrCode: String): LocalEquipment? =
+        queries.selectByQrCode(qrCode).executeAsOneOrNull()?.toLocal()
+
     override fun deleteAll() {
         queries.deleteAll()
+    }
+
+    override fun deleteById(id: String) {
+        queries.deleteById(id)
     }
 
     private fun Equipment.toLocal() = LocalEquipment(
@@ -40,5 +49,6 @@ internal class EquipmentStorageImpl(db: ToirDatabase) : EquipmentStorage {
         name = name,
         type = type,
         locationId = location_id,
+        qrCode = qr_code,
     )
 }
