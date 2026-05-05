@@ -8,6 +8,7 @@ import ru.mirea.toir.feature.bootstrap.api.store.BootstrapStore.Label
 import ru.mirea.toir.feature.bootstrap.api.store.BootstrapStore.State
 import ru.mirea.toir.feature.bootstrap.impl.domain.BootstrapStoreFactory.Message
 import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapRepository
+import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapResult
 
 internal class BootstrapExecutor(
     private val bootstrapRepository: BootstrapRepository,
@@ -34,14 +35,15 @@ internal class BootstrapExecutor(
             publish(Label.NavigateToLogin)
             return
         }
-        bootstrapRepository.loadAndSaveBootstrap().fold(
-            onSuccess = {
+        when (bootstrapRepository.loadAndSaveBootstrap()) {
+            BootstrapResult.Success -> {
                 dispatch(Message.ClearLoading)
                 publish(Label.NavigateToRoutesList)
-            },
-            onFailure = {
+            }
+            BootstrapResult.Unauthorized,
+            is BootstrapResult.Failure -> {
                 dispatch(Message.SetError)
-            },
-        )
+            }
+        }
     }
 }
