@@ -11,6 +11,7 @@ import kotlinx.collections.immutable.ImmutableList
 @Composable
 internal fun PhotoCapturePhotoRow(
     photos: ImmutableList<String>,
+    onPhotoTap: (uri: String) -> Unit,
     onPhotoLongPress: (uri: String) -> Unit,
 ) {
     LazyRow(
@@ -20,6 +21,7 @@ internal fun PhotoCapturePhotoRow(
         items(items = photos, key = { it }) { uri ->
             PhotoCapturePhotoItem(
                 uri = uri,
+                onTap = { onPhotoTap(uri) },
                 onLongPress = { onPhotoLongPress(uri) },
             )
         }

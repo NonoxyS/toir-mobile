@@ -12,6 +12,7 @@ import kotlinx.collections.immutable.ImmutableList
 @Composable
 internal fun PhotoCaptureContent(
     photos: ImmutableList<String>,
+    onPhotoTap: (uri: String) -> Unit,
     onPhotoLongPress: (uri: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -25,6 +26,7 @@ internal fun PhotoCaptureContent(
             Spacer(Modifier.height(16.dp))
             PhotoCapturePhotoRow(
                 photos = photos,
+                onPhotoTap = onPhotoTap,
                 onPhotoLongPress = onPhotoLongPress,
             )
         }

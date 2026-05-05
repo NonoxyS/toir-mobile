@@ -33,6 +33,7 @@ import ru.mirea.toir.feature.photo.capture.ui.components.PhotoCaptureContent
 import ru.mirea.toir.feature.photo.capture.ui.components.PhotoCaptureFooter
 import ru.mirea.toir.feature.photo.capture.ui.components.PhotoDeleteConfirmDialog
 import ru.mirea.toir.feature.photo.capture.ui.components.PhotoExitConfirmDialog
+import ru.mirea.toir.feature.photo.capture.ui.preview.PhotoPreviewScreen
 import ru.mirea.toir.res.MR
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -54,6 +55,7 @@ internal fun PhotoCaptureScreen(
     val cameraLauncher = rememberCameraLauncher(onPhotoTaken = viewModel::onPhotoTaken)
 
     var pendingDeleteUri by remember { mutableStateOf<String?>(null) }
+    var previewUri by remember { mutableStateOf<String?>(null) }
     var showExitDialog by remember { mutableStateOf(false) }
 
     val handleBack: () -> Unit = {
@@ -86,10 +88,21 @@ internal fun PhotoCaptureScreen(
     ) { paddingValues ->
         PhotoCaptureContent(
             photos = state.photos,
+            onPhotoTap = { uri -> previewUri = uri },
             onPhotoLongPress = { uri -> pendingDeleteUri = uri },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
+        )
+    }
+
+    previewUri?.let { uri ->
+        val index = state.photos.indexOf(uri).takeIf { it >= 0 } ?: 0
+        PhotoPreviewScreen(
+            photoUri = uri,
+            photoIndex = index + 1,
+            totalCount = state.photos.size,
+            onClose = { previewUri = null },
         )
     }
 
