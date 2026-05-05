@@ -79,7 +79,10 @@ internal class ConfigChangesApplier(
             }
             if (checklist == null) {
                 Napier.w(
-                    "config-changes: no checklist for equipmentId=${point.equipmentId}, skipping route point ${point.id}"
+                    message = """
+                        config-changes: no checklist for equipmentId=${point.equipmentId}, 
+                        skipping route point ${point.id}
+                    """.trimIndent()
                 )
                 return@forEach
             }
