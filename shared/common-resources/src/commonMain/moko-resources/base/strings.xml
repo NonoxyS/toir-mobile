@@ -58,7 +58,7 @@
     <string name="equipment_card_name">Наименование</string>
     <string name="equipment_card_type">Тип</string>
     <string name="equipment_card_location">Локация</string>
-    <string name="equipment_card_status">Локация</string>
+    <string name="equipment_card_status">Статус</string>
     <string name="equipment_card_button_open_checklist">Открыть чек-лист</string>
     <string name="equipment_card_status_not_checked">Оборудование не проверено</string>
     <string name="equipment_card_status_in_progress">Проверка в процессе</string>
