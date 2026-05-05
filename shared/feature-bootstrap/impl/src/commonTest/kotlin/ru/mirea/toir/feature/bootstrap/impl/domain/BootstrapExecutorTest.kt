@@ -93,4 +93,30 @@ internal class BootstrapExecutorTest {
             store.dispose()
         }
     }
+
+    @Test
+    fun `when bootstrap returns Unauthorized but logout fails — executor still publishes NavigateToLogin`() =
+        runTest {
+            val repository = FakeBootstrapRepository(nextResult = BootstrapResult.Unauthorized)
+            val authRepository = FakeAuthRepository(logoutShouldThrow = true)
+            val labels = mutableListOf<Label>()
+
+            val store = BootstrapStoreFactory(
+                storeFactory = DefaultStoreFactory(),
+                bootstrapRepository = repository,
+                authRepository = authRepository,
+                mainDispatcher = Dispatchers.Unconfined,
+            ).create(autoInit = false)
+
+            try {
+                store.labels(observer(onNext = { label: Label -> labels += label }))
+                store.init()
+
+                assertEquals(listOf<Label>(Label.NavigateToLogin), labels)
+                assertEquals(1, authRepository.logoutCallCount)
+                assertEquals(false, store.state.isLoading)
+            } finally {
+                store.dispose()
+            }
+        }
 }

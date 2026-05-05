@@ -11,6 +11,7 @@ internal class FakeAuthRepository(
         accessToken = AccessToken("access"),
         refreshToken = RefreshToken("refresh"),
     ),
+    var logoutShouldThrow: Boolean = false,
 ) : AuthRepository {
     var logoutCallCount: Int = 0
         private set
@@ -25,6 +26,9 @@ internal class FakeAuthRepository(
 
     override suspend fun logout(): Result<Unit> {
         logoutCallCount++
+        if (logoutShouldThrow) {
+            throw RuntimeException("simulated logout failure")
+        }
         tokens = null
         return Result.success(Unit)
     }

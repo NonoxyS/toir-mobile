@@ -1,6 +1,8 @@
 package ru.mirea.toir.feature.bootstrap.impl.domain
 
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineDispatcher
+import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.core.auth.domain.repository.AuthRepository
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
 import ru.mirea.toir.feature.bootstrap.api.store.BootstrapStore.Intent
@@ -41,7 +43,12 @@ internal class BootstrapExecutor(
                 publish(Label.NavigateToRoutesList)
             }
             BootstrapResult.Unauthorized -> {
-                authRepository.logout()
+                coRunCatching(
+                    tryBlock = { authRepository.logout() },
+                    catchBlock = { cause ->
+                        Napier.w(message = "logout failed during 401 handling", throwable = cause)
+                    },
+                )
                 dispatch(Message.ClearLoading)
                 publish(Label.NavigateToLogin)
             }
