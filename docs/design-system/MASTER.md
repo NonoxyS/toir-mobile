@@ -5,6 +5,28 @@
 
 ---
 
+## 0. Карта модулей и экранов
+
+Дизайн-система реализована в `shared/common-ui/src/commonMain/kotlin/ru/mirea/toir/common/ui/compose/theme/`
+и потребляется фичами через объект `ToirTheme` (см. §14).
+
+| Feature-модуль          | Screen                | Page override               | Назначение                            |
+|-------------------------|-----------------------|-----------------------------|---------------------------------------|
+| `feature-auth`          | `LoginScreen`         | `pages/auth.md`             | Вход в систему                        |
+| `feature-bootstrap`     | `BootstrapScreen`     | `pages/bootstrap.md`        | Auth-gate + загрузка конфига          |
+| `feature-routes-list`   | `RoutesListScreen`    | `pages/routes-list.md`      | Главный экран — назначенные маршруты  |
+| `feature-route-points`  | `RoutePointsScreen`   | `pages/route-detail.md`     | Список точек обхода маршрута          |
+| `feature-equipment-card`| `EquipmentCardScreen` | `pages/equipment-card.md`   | Карточка оборудования (точка маршрута)|
+| `feature-checklist`     | `ChecklistScreen`     | `pages/checklist.md`        | Рабочий чек-лист точки                |
+| `feature-photo-capture` | `PhotoCaptureScreen`  | `pages/photo-capture.md`    | Захват фото к пункту чек-листа        |
+| _(не реализовано)_      | Summary               | `pages/summary.md`          | Экран итогов обхода (запланирован)    |
+
+> Pages-файлы могут описывать ещё-не-реализованные элементы (QR-сканирование, collapsible
+> секция «Завершённые», sticky offline-баннер). Это намеренно — pages фиксируют целевой UX.
+> Если в коде элемента нет — добавление должно идти по соответствующему page-override.
+
+---
+
 ## 1. Философия
 
 **Приложение — серьёзный инструмент для сертифицированных техников в промышленной среде.**
@@ -22,6 +44,11 @@ Hazard-полосы, «sci-fi» эффекты, чистый чёрный (#000)
 ---
 
 ## 2. Цветовые токены
+
+> **Текущий режим: только тёмная тема.** `getLightColorScheme()` намеренно возвращает
+> `darkColorScheme` — приложение спроектировано под полевые условия (яркое солнце, тёмные
+> цеха), и единая dark-палитра обеспечивает прогнозируемую читаемость. Light-вариант
+> добавится отдельным waypoint'ом, когда появится подтверждённый use-case.
 
 ### 2.1 Нейтральные (основа)
 
@@ -143,6 +170,8 @@ Fallback: системный (SF Pro на iOS, Roboto на Android).
 ## 7. Иконки
 
 - Источник: **Material Symbols Outlined** (stroke weight 200–300, optical size 24) или **Lucide Icons**.
+- В коде поставляются как `*.xml`/`*.svg` через **moko-resources**, доступ — `MR.images.<name>`
+  + `painterResource(MR.images.<name>)`. Растровые PNG не использовать.
 - Единая гарнитура для всего приложения.
 - Размер: 20dp (inline в тексте), 24dp (стандарт), 28dp (акцентный).
 - Цвет: `color.textSecondary` по умолчанию; `color.textPrimary` для активных.
@@ -254,6 +283,90 @@ Label (bodyMedium, textSecondary) [*обязательное]
 - Цвет: `color.borderSubtle` (#2A2F3C).
 - Используется между пунктами списка, внутри карточек.
 
+### 8.10 Status Accent Bar
+
+Вертикальная цветная полоса слева у карточки — быстрый «status at a glance», читается даже в перчатках.
+
+- Толщина: **3dp** (компактные карточки списка, например sync-статус) или **4dp** (выделенная
+  карточка «текущий шаг»).
+- Высота: на всю высоту карточки, прижата к левому краю.
+- Цвет — по семантике статуса:
+  - В работе / текущий → `color.warning`
+  - Завершено → `color.success`
+  - Ошибка → `color.error`
+  - Ожидает синхр. → `color.sync`
+  - Не начато → `color.textDisabled` (или скрыть полосу)
+- Когда полоса присутствует, левый padding контента увеличивается на 4dp (16dp → 20dp), чтобы
+  не «съедать» воздух у текста.
+- Полоса **дополняет** иконку и/или бейдж статуса, не заменяет их (требование §13 — не только цвет).
+
+### 8.11 Pinned Progress Header
+
+Прогресс-полоса под Top App Bar, всегда видимая (не sticky-при-скролле — pinned).
+
+```
+┌─ Top App Bar ───────────────────────────────┐
+│ ← ПТО-7 · Насосная ст. №3                  │
+└─────────────────────────────────────────────┘
+│ 5 of 12 completed   ████████░░░░░░░░  42%   │  ← pinned
+└─────────────────────────────────────────────┘
+```
+
+- Высота: 56dp, фон `color.background`, нижняя граница 1dp `color.borderSubtle`.
+- Внутри: Row (16dp горизонтальный padding, 10dp вертикальный):
+  - Подпись `«X of Y completed»` — `type.bodyMedium`, `color.textSecondary`.
+  - `LinearProgressIndicator`: высота **4dp**, форма `radius.pill`, fill `color.success`,
+    track `color.border`. Прогресс берёт оставшееся пространство.
+  - Опционально: процент справа — `type.bodyMedium` (500), `color.textPrimary`.
+- Применяется на экранах с явным линейным прогрессом: точки маршрута, шаги чек-листа.
+
+### 8.12 Checklist Item Types
+
+Чек-лист поддерживает **5 типов пунктов** (каждый — отдельный composable). У всех общие
+инварианты:
+
+- Заголовок пункта формируется через `item.titleWithRequiredMarker()` — добавляет красную `*`
+  для обязательного поля (`color.error`, тот же weight).
+- Подсказки/ошибки под полем: `type.caption`. Цвет:
+  - `color.textSecondary` — нейтральная подсказка (диапазон, формат).
+  - `color.error` — ошибка валидации.
+- Вертикальный gap между пунктами в LazyColumn: **16dp**.
+
+| Тип       | Контрол                         | Особенности                                                                |
+|-----------|----------------------------------|----------------------------------------------------------------------------|
+| `Boolean` | `Switch` (Material3)             | Лейбл слева (`bodyLarge`), Switch справа.                                  |
+| `Text`    | `OutlinedTextField` (single-line)| Лейбл сверху (`bodyMedium`/`label`), keyboard `Text`.                      |
+| `Number`  | `OutlinedTextField` (decimal)    | Range-валидация (`min`/`max`); helper `«from X to Y»` серый, ошибка красная.|
+| `Select`  | RadioGroup (Column, gap 4dp)     | Каждая опция — `bodyLarge`, рядом `RadioButton`.                           |
+| `Confirm` | Кнопка `Primary` («Подтвердить») | Текст-инструкция слева, кнопка справа; после подтверждения — `disabled`.   |
+
+Добавление новых типов — расширение этой таблицы и каталога в `feature-checklist/ui/items/`.
+
+### 8.13 Equipment Card Field
+
+Базовый «label + value» паттерн для отображения справочных полей (карточка оборудования).
+
+- Layout: Column, `Arrangement.spacedBy(12.dp)` между полями.
+- Внутри одного поля:
+  - Label (`type.caption` или `type.bodyMedium`, `color.textSecondary`).
+  - Value (`type.bodyLarge`, `color.textPrimary`).
+  - Без рамок, без фона — просто текст с вертикальным ритмом.
+- Карточка оборудования сама себе фон не рисует — рендерится поверх `color.background`.
+- В `bottomBar` экрана — Primary кнопка «Открыть чек-лист» (full-width минус
+  2×`spacing.md`, фон `color.ctaPrimary`).
+
+### 8.14 Photo Capture Grid
+
+Горизонтальная лента сделанных фото + кнопки управления.
+
+- Лента: `LazyRow`, `horizontalArrangement = spacedBy(8.dp)`, `contentPadding = 4.dp` по краям.
+- Тайл фото: квадрат **120×120dp**, `radius.md`, `AsyncImage` (Coil3).
+- Состояние «нет фото»: лента скрыта, видна только кнопка `«Снять фото»` (Secondary).
+- Кнопки в Column ниже ленты:
+  - `«Снять фото»` — Secondary, всегда видна; `disabled` пока идёт capture.
+  - `«Подтвердить»` — Primary, `disabled` пока `photos.isEmpty()`.
+- Удаление фото — long-press на тайл → подтверждение через системный диалог.
+
 ---
 
 ## 9. Экранные шаблоны
@@ -265,20 +378,22 @@ Label (bodyMedium, textSecondary) [*обязательное]
 │ ← Назначенные маршруты        🔄 ⊘ offline  │
 └─────────────────────────────────────────────┘
   ┌─ Card elevation.1 ──────────────────────┐
-  │ Route #1234          [В работе ▶]       │
-  │ ПТО-7 · 12 точек                        │
-  │ ████░░░░ 5/12  04 апр 2026              │
+  │ ПТО-7 · Насосная ст. №3  [В работе ▶]   │
+  │ Маршрут #1234                            │
+  │ ████░░░░ 5 / 12 точек                    │
+  │ 📅 04 апр 2026 · ⏱ ~40 мин              │
   └─────────────────────────────────────────┘
-  ──────────────────────────────────────────
-  ┌─ Card elevation.1 ──────────────────────┐
-  │ Route #1235          [Не начат ○]       │
-  ...
+  ┌─ Card + sync accent (3dp left) ─────────┐
+  ║ ПТО-3 · Котельная       [Ожидает ⇅]    │  ← color.sync 3dp слева
+  ║ Маршрут #1233                            │
+  ║ ✓ Завершён · 8 / 8 точек                │
+  └─────────────────────────────────────────┘
 └─ Bottom Navigation ─────────────────────────┘
 ```
 
-- Pull-to-refresh.
-- Активные маршруты — сверху.
+- Активные маршруты — сверху, ожидающие синхр. — со status accent bar (§8.10).
 - Empty state: иконка + «Нет назначенных маршрутов» + retry при ошибке.
+- Pull-to-refresh — в плане, ещё не реализован (отслеживается в waypoint-плане).
 
 ### 9.2 Чек-лист (рабочий экран)
 
@@ -304,6 +419,11 @@ Label (bodyMedium, textSecondary) [*обязательное]
 - Заголовки секций: sticky при скролле.
 - Незаполненный обязательный пункт: красная рамка, `*` красный.
 - Кнопка «Завершить» disabled пока есть незаполненные обязательные.
+
+> **Текущее состояние реализации (`feature-checklist`):**
+> Sticky-заголовки секций, sticky-footer и offline-баннер ещё не реализованы — пункты
+> рендерятся плоским `LazyColumn`, кнопка «Завершить» — последним item'ом списка.
+> Item-и реализованы (см. §8.12). Выравнивание с pages/checklist.md — в плане работ.
 
 ### 9.3 Итоги проверки
 
@@ -380,40 +500,78 @@ Label (bodyMedium, textSecondary) [*обязательное]
 
 ## 14. Реализация токенов в Kotlin (Compose Multiplatform)
 
+Все токены живут в `shared/common-ui/src/commonMain/kotlin/ru/mirea/toir/common/ui/compose/theme/`
+и доступны через объект **`ToirTheme`** (а не `MaterialTheme`):
+
 ```kotlin
-// shared/common-ui/src/commonMain/kotlin/ru/mirea/toir/ui/theme/Color.kt
-
-object ToirColors {
-    // Background
-    val Background = Color(0xFF1A1D22)
-    val Surface = Color(0xFF242830)
-    val Surface2 = Color(0xFF2D3240)
-    val SurfacePressed = Color(0xFF313744)
-
-    // Borders
-    val Border = Color(0xFF3D4455)
-    val BorderSubtle = Color(0xFF2A2F3C)
-
-    // Text
-    val TextPrimary = Color(0xFFE8EAF0)
-    val TextSecondary = Color(0xFF9499A8)
-    val TextDisabled = Color(0xFF55596A)
-    val TextOnAccent = Color(0xFF1A1D22)
-
-    // CTA
-    val CtaPrimary = Color(0xFFD8DBE6)
-    val CtaSecondary = Color(0xFF2D3240)
-
-    // Semantic
-    val Success = Color(0xFF3D9E72)
-    val SuccessSubtle = Color(0xFF1F3D2D)
-    val Warning = Color(0xFFC4872A)
-    val WarningSubtle = Color(0xFF3A2B10)
-    val Error = Color(0xFFB84040)
-    val ErrorSubtle = Color(0xFF3A1A1A)
-    val Sync = Color(0xFFB07830)
-    val SyncSubtle = Color(0xFF362410)
+@Composable
+fun MyComponent() {
+    Box(
+        modifier = Modifier
+            .background(ToirTheme.colors.surface)
+            .clip(ToirTheme.shapes.md)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Заголовок",
+            style = ToirTheme.typography.headline,
+            color = ToirTheme.colors.textPrimary,
+        )
+    }
 }
+```
+
+Доступные surfaces:
+
+- `ToirTheme.colors: ToirColorScheme` — все 24 токена из §2 (background, surface, …,
+  destructive, focusBorder, pressedOverlay, selectedBackground).
+- `ToirTheme.typography: ToirTypography` — 7 стилей из §3 (displayLarge, displayMedium,
+  headline, bodyLarge, bodyMedium, label, caption). Шрифт — `fontInter` через
+  moko-resources.
+- `ToirTheme.shapes: ToirShapes` — `xs/sm/md/lg/pill` из §5.
+
+Корневой провайдер — `ToirTheme { content() }` в `shared/main/.../App.kt`. По умолчанию
+`LocalTextStyle` уже выставлен в `bodyMedium` + `textPrimary`, поэтому в большинстве
+`Text(...)` явный color не требуется.
+
+### Цветовая палитра (минимальный пример)
+
+```kotlin
+// shared/common-ui/src/commonMain/kotlin/ru/mirea/toir/common/ui/compose/theme/Colors.kt
+
+@Immutable
+data class ToirColorScheme(
+    val background: Color,
+    val surface: Color,
+    val surface2: Color,
+    val surfacePressed: Color,
+    val border: Color,
+    val borderSubtle: Color,
+    val textPrimary: Color,
+    val textSecondary: Color,
+    val textDisabled: Color,
+    val textOnAccent: Color,
+    val ctaPrimary: Color,
+    val ctaSecondary: Color,
+    val success: Color, val successSubtle: Color,
+    val warning: Color, val warningSubtle: Color,
+    val error: Color,   val errorSubtle: Color,
+    val sync: Color,    val syncSubtle: Color,
+    val destructive: Color,
+    val focusBorder: Color,
+    val pressedOverlay: Color,
+    val selectedBackground: Color,
+)
+
+private val darkColorScheme = ToirColorScheme(
+    background = Color(0xFF1A1D22),
+    surface = Color(0xFF242830),
+    surface2 = Color(0xFF2D3240),
+    // … значения см. в §2
+)
+
+internal fun getLightColorScheme(): ToirColorScheme = darkColorScheme  // dark-only
+internal fun getDarkColorScheme(): ToirColorScheme = darkColorScheme
 ```
 
 ---
@@ -424,7 +582,9 @@ object ToirColors {
 
 - [ ] Нет emoji вместо иконок (только Material Symbols или Lucide)
 - [ ] Иконки единой гарнитуры, одинаковый stroke weight
-- [ ] Нет hardcoded цветов — только токены из `ToirColors`
+- [ ] Нет hardcoded цветов — только токены из `ToirTheme.colors`
+- [ ] Нет обращений к `MaterialTheme.colorScheme/typography/shapes` —
+      только `ToirTheme.colors/typography/shapes`
 - [ ] Состояния нажатия не сдвигают layout
 
 ### Интерактивность
