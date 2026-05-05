@@ -33,9 +33,9 @@ internal fun PhotoCapturePhotoItem(
     uri: String,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    modifier: Modifier = Modifier,
     onTap: () -> Unit = {},
     onLongPress: () -> Unit = {},
-    modifier: Modifier = Modifier,
 ) {
     val colors = ToirTheme.colors
     var painterState by remember { mutableStateOf<AsyncImagePainter.State?>(null) }
