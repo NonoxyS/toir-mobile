@@ -70,6 +70,7 @@ fun App() {
             )
             composablePhotoCaptureScreen(
                 onPhotoConfirm = { navController.popBackStack() },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }
