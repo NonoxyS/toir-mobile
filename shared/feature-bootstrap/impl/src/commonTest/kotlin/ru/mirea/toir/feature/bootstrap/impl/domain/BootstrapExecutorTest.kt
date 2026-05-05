@@ -2,7 +2,6 @@ package ru.mirea.toir.feature.bootstrap.impl.domain
 
 import com.arkivanov.mvikotlin.core.rx.observer
 import com.arkivanov.mvikotlin.core.utils.isAssertOnMainThreadEnabled
-import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import ru.mirea.toir.feature.bootstrap.api.store.BootstrapStore.Label
@@ -27,11 +26,11 @@ internal class BootstrapExecutorTest {
             val labels = mutableListOf<Label>()
 
             val store = BootstrapStoreFactory(
-                storeFactory = DefaultStoreFactory(),
+                storeFactory = TestStoreFactory(),
                 bootstrapRepository = repository,
                 authRepository = authRepository,
                 mainDispatcher = Dispatchers.Unconfined,
-            ).create(autoInit = false)
+            ).create()
 
             try {
                 store.labels(observer(onNext = { label: Label -> labels += label }))
@@ -51,11 +50,11 @@ internal class BootstrapExecutorTest {
         val labels = mutableListOf<Label>()
 
         val store = BootstrapStoreFactory(
-            storeFactory = DefaultStoreFactory(),
+            storeFactory = TestStoreFactory(),
             bootstrapRepository = repository,
             authRepository = authRepository,
             mainDispatcher = Dispatchers.Unconfined,
-        ).create(autoInit = false)
+        ).create()
 
         try {
             store.labels(observer(onNext = { label: Label -> labels += label }))
@@ -76,11 +75,11 @@ internal class BootstrapExecutorTest {
         val labels = mutableListOf<Label>()
 
         val store = BootstrapStoreFactory(
-            storeFactory = DefaultStoreFactory(),
+            storeFactory = TestStoreFactory(),
             bootstrapRepository = repository,
             authRepository = authRepository,
             mainDispatcher = Dispatchers.Unconfined,
-        ).create(autoInit = false)
+        ).create()
 
         try {
             store.labels(observer(onNext = { label: Label -> labels += label }))
@@ -102,11 +101,11 @@ internal class BootstrapExecutorTest {
             val labels = mutableListOf<Label>()
 
             val store = BootstrapStoreFactory(
-                storeFactory = DefaultStoreFactory(),
+                storeFactory = TestStoreFactory(),
                 bootstrapRepository = repository,
                 authRepository = authRepository,
                 mainDispatcher = Dispatchers.Unconfined,
-            ).create(autoInit = false)
+            ).create()
 
             try {
                 store.labels(observer(onNext = { label: Label -> labels += label }))

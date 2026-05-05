@@ -17,12 +17,11 @@ internal class BootstrapStoreFactory(
     private val authRepository: AuthRepository,
     private val mainDispatcher: CoroutineDispatcher,
 ) {
-    fun create(autoInit: Boolean = true): BootstrapStore =
+    fun create(): BootstrapStore =
         object :
             BootstrapStore,
             Store<Intent, State, Label> by storeFactory.create(
                 name = BootstrapStore::class.simpleName,
-                autoInit = autoInit,
                 initialState = State(),
                 bootstrapper = SimpleBootstrapper(Unit),
                 executorFactory = {
