@@ -1,5 +1,12 @@
 package ru.mirea.toir.feature.photo.capture.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -36,7 +43,13 @@ import ru.mirea.toir.feature.photo.capture.ui.components.PhotoExitConfirmDialog
 import ru.mirea.toir.feature.photo.capture.ui.preview.PhotoPreviewScreen
 import ru.mirea.toir.res.MR
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+private const val PREVIEW_TRANSITION_MS = 250
+
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalComposeUiApi::class,
+    ExperimentalSharedTransitionApi::class,
+)
 @Composable
 internal fun PhotoCaptureScreen(
     checklistItemResultId: String,
@@ -62,48 +75,68 @@ internal fun PhotoCaptureScreen(
         if (state.photos.isNotEmpty()) showExitDialog = true else onNavigateBack()
     }
 
-    BackHandler(enabled = state.photos.isNotEmpty()) {
+    BackHandler(enabled = state.photos.isNotEmpty() && previewUri == null) {
         showExitDialog = true
     }
-
-    Scaffold(
-        containerColor = ToirTheme.colors.background,
-        topBar = {
-            PhotoCaptureTopBar(
-                photoCount = state.photos.size,
-                maxPhotos = state.maxPhotos,
-                onBack = handleBack,
-            )
-        },
-        bottomBar = {
-            val isLimitReached = state.maxPhotos?.let { state.photos.size >= it } ?: false
-            PhotoCaptureFooter(
-                canTake = !state.isLoading && !isLimitReached,
-                canConfirm = state.photos.isNotEmpty(),
-                isLimitReached = isLimitReached,
-                onTakePhoto = cameraLauncher,
-                onConfirm = viewModel::onConfirm,
-            )
-        },
-    ) { paddingValues ->
-        PhotoCaptureContent(
-            photos = state.photos,
-            onPhotoTap = { uri -> previewUri = uri },
-            onPhotoLongPress = { uri -> pendingDeleteUri = uri },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-        )
+    BackHandler(enabled = previewUri != null) {
+        previewUri = null
     }
 
-    previewUri?.let { uri ->
-        val index = state.photos.indexOf(uri).takeIf { it >= 0 } ?: 0
-        PhotoPreviewScreen(
-            photoUri = uri,
-            photoIndex = index + 1,
-            totalCount = state.photos.size,
-            onClose = { previewUri = null },
-        )
+    SharedTransitionLayout {
+        AnimatedContent(
+            targetState = previewUri,
+            transitionSpec = {
+                fadeIn(tween(PREVIEW_TRANSITION_MS)) togetherWith
+                    fadeOut(tween(PREVIEW_TRANSITION_MS))
+            },
+            label = "photo-preview-content",
+        ) { currentPreview ->
+            if (currentPreview == null) {
+                Scaffold(
+                    containerColor = ToirTheme.colors.background,
+                    topBar = {
+                        PhotoCaptureTopBar(
+                            photoCount = state.photos.size,
+                            maxPhotos = state.maxPhotos,
+                            onBack = handleBack,
+                        )
+                    },
+                    bottomBar = {
+                        val isLimitReached = state.maxPhotos
+                            ?.let { state.photos.size >= it }
+                            ?: false
+                        PhotoCaptureFooter(
+                            canTake = !state.isLoading && !isLimitReached,
+                            canConfirm = state.photos.isNotEmpty(),
+                            isLimitReached = isLimitReached,
+                            onTakePhoto = cameraLauncher,
+                            onConfirm = viewModel::onConfirm,
+                        )
+                    },
+                ) { paddingValues ->
+                    PhotoCaptureContent(
+                        photos = state.photos,
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedVisibilityScope = this@AnimatedContent,
+                        onPhotoTap = { uri -> previewUri = uri },
+                        onPhotoLongPress = { uri -> pendingDeleteUri = uri },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                    )
+                }
+            } else {
+                val index = state.photos.indexOf(currentPreview).takeIf { it >= 0 } ?: 0
+                PhotoPreviewScreen(
+                    photoUri = currentPreview,
+                    photoIndex = index + 1,
+                    totalCount = state.photos.size,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this@AnimatedContent,
+                    onClose = { previewUri = null },
+                )
+            }
+        }
     }
 
     pendingDeleteUri?.let { uri ->
@@ -141,7 +174,11 @@ private fun PhotoCaptureTopBar(
     }
     TopAppBar(
         title = {
-            Text(text = title, style = ToirTheme.typography.headline, color = ToirTheme.colors.textPrimary)
+            Text(
+                text = title,
+                style = ToirTheme.typography.headline,
+                color = ToirTheme.colors.textPrimary,
+            )
         },
         navigationIcon = {
             IconButton(onClick = onBack) {

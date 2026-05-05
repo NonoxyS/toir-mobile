@@ -1,5 +1,8 @@
 package ru.mirea.toir.feature.photo.capture.ui.components
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,9 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun PhotoCaptureContent(
     photos: ImmutableList<String>,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     onPhotoTap: (uri: String) -> Unit,
     onPhotoLongPress: (uri: String) -> Unit,
     modifier: Modifier = Modifier,
@@ -26,6 +32,8 @@ internal fun PhotoCaptureContent(
             Spacer(Modifier.height(16.dp))
             PhotoCapturePhotoRow(
                 photos = photos,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedVisibilityScope = animatedVisibilityScope,
                 onPhotoTap = onPhotoTap,
                 onPhotoLongPress = onPhotoLongPress,
             )

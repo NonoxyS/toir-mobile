@@ -1,5 +1,8 @@
 package ru.mirea.toir.feature.photo.capture.ui.components
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,9 +27,12 @@ import dev.icerock.moko.resources.compose.painterResource
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun PhotoCapturePhotoItem(
     uri: String,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     onTap: () -> Unit = {},
     onLongPress: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -34,38 +40,44 @@ internal fun PhotoCapturePhotoItem(
     val colors = ToirTheme.colors
     var painterState by remember { mutableStateOf<AsyncImagePainter.State?>(null) }
 
-    Box(
-        modifier = modifier
-            .size(120.dp)
-            .clip(ToirTheme.shapes.md)
-            .background(colors.surface2)
-            .border(width = 1.dp, color = colors.borderSubtle, shape = ToirTheme.shapes.md)
-            .pointerInput(uri) {
-                detectTapGestures(
-                    onTap = { onTap() },
-                    onLongPress = { onLongPress() },
+    with(sharedTransitionScope) {
+        Box(
+            modifier = modifier
+                .size(120.dp)
+                .clip(ToirTheme.shapes.md)
+                .background(colors.surface2)
+                .border(width = 1.dp, color = colors.borderSubtle, shape = ToirTheme.shapes.md)
+                .sharedElement(
+                    sharedContentState = rememberSharedContentState(key = "photo-$uri"),
+                    animatedVisibilityScope = animatedVisibilityScope,
                 )
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        AsyncImage(
-            model = uri,
-            contentDescription = null,
-            modifier = Modifier.size(120.dp).clip(ToirTheme.shapes.md),
-            onState = { painterState = it },
-        )
-        when (painterState) {
-            is AsyncImagePainter.State.Loading -> CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
-                color = colors.textSecondary,
-            )
-            is AsyncImagePainter.State.Error -> Image(
-                painter = painterResource(MR.images.ic_broken_image),
+                .pointerInput(uri) {
+                    detectTapGestures(
+                        onTap = { onTap() },
+                        onLongPress = { onLongPress() },
+                    )
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            AsyncImage(
+                model = uri,
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                colorFilter = ColorFilter.tint(colors.textDisabled),
+                modifier = Modifier.size(120.dp).clip(ToirTheme.shapes.md),
+                onState = { painterState = it },
             )
-            else -> Unit
+            when (painterState) {
+                is AsyncImagePainter.State.Loading -> CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = colors.textSecondary,
+                )
+                is AsyncImagePainter.State.Error -> Image(
+                    painter = painterResource(MR.images.ic_broken_image),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(colors.textDisabled),
+                )
+                else -> Unit
+            }
         }
     }
 }

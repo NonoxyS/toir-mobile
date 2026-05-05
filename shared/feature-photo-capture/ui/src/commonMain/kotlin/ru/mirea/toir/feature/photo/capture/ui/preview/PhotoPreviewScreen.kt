@@ -1,5 +1,8 @@
 package ru.mirea.toir.feature.photo.capture.ui.preview
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -42,12 +45,14 @@ private const val MAX_SCALE = 4f
 private const val DOUBLE_TAP_SCALE = 2.5f
 private const val ZOOM_ANIM_MS = 200
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun PhotoPreviewScreen(
     photoUri: String,
     photoIndex: Int,
     totalCount: Int,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     onClose: () -> Unit,
 ) {
     Scaffold(
@@ -85,6 +90,8 @@ internal fun PhotoPreviewScreen(
     ) { paddingValues ->
         ZoomableImage(
             photoUri = photoUri,
+            sharedTransitionScope = sharedTransitionScope,
+            animatedVisibilityScope = animatedVisibilityScope,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -93,9 +100,12 @@ internal fun PhotoPreviewScreen(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ZoomableImage(
     photoUri: String,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
@@ -129,19 +139,25 @@ private fun ZoomableImage(
             .transformable(state = transformableState),
         contentAlignment = Alignment.Center,
     ) {
-        AsyncImage(
-            model = photoUri,
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .graphicsLayer {
-                    scaleX = animatedScale
-                    scaleY = animatedScale
-                    translationX = offset.x
-                    translationY = offset.y
-                },
-        )
+        with(sharedTransitionScope) {
+            AsyncImage(
+                model = photoUri,
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .sharedElement(
+                        sharedContentState = rememberSharedContentState(key = "photo-$photoUri"),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    )
+                    .graphicsLayer {
+                        scaleX = animatedScale
+                        scaleY = animatedScale
+                        translationX = offset.x
+                        translationY = offset.y
+                    },
+            )
+        }
     }
 }
