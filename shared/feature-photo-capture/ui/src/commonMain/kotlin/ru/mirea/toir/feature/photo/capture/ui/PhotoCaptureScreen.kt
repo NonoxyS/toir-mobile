@@ -12,7 +12,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,9 +31,11 @@ import ru.mirea.toir.feature.photo.capture.presentation.PhotoCaptureViewModel
 import ru.mirea.toir.feature.photo.capture.presentation.models.UiPhotoCaptureLabel
 import ru.mirea.toir.feature.photo.capture.ui.components.PhotoCaptureContent
 import ru.mirea.toir.feature.photo.capture.ui.components.PhotoCaptureFooter
+import ru.mirea.toir.feature.photo.capture.ui.components.PhotoDeleteConfirmDialog
+import ru.mirea.toir.feature.photo.capture.ui.components.PhotoExitConfirmDialog
 import ru.mirea.toir.res.MR
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 internal fun PhotoCaptureScreen(
     checklistItemResultId: String,
@@ -46,13 +53,24 @@ internal fun PhotoCaptureScreen(
 
     val cameraLauncher = rememberCameraLauncher(onPhotoTaken = viewModel::onPhotoTaken)
 
+    var pendingDeleteUri by remember { mutableStateOf<String?>(null) }
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    val handleBack: () -> Unit = {
+        if (state.photos.isNotEmpty()) showExitDialog = true else onNavigateBack()
+    }
+
+    BackHandler(enabled = state.photos.isNotEmpty()) {
+        showExitDialog = true
+    }
+
     Scaffold(
         containerColor = ToirTheme.colors.background,
         topBar = {
             PhotoCaptureTopBar(
                 photoCount = state.photos.size,
                 maxPhotos = state.maxPhotos,
-                onBack = onNavigateBack,
+                onBack = handleBack,
             )
         },
         bottomBar = {
@@ -68,10 +86,30 @@ internal fun PhotoCaptureScreen(
     ) { paddingValues ->
         PhotoCaptureContent(
             photos = state.photos,
-            onPhotoLongPress = viewModel::onPhotoDeleted,
+            onPhotoLongPress = { uri -> pendingDeleteUri = uri },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
+        )
+    }
+
+    pendingDeleteUri?.let { uri ->
+        PhotoDeleteConfirmDialog(
+            onDismiss = { pendingDeleteUri = null },
+            onConfirm = {
+                viewModel.onPhotoDeleted(uri)
+                pendingDeleteUri = null
+            },
+        )
+    }
+
+    if (showExitDialog) {
+        PhotoExitConfirmDialog(
+            onContinueCapture = { showExitDialog = false },
+            onDiscard = {
+                showExitDialog = false
+                onNavigateBack()
+            },
         )
     }
 }
