@@ -18,7 +18,8 @@ val featureBootstrapImplModule = module {
         BootstrapStoreFactory(
             storeFactory = get(),
             mainDispatcher = get<CoroutineDispatchers>().main,
-            bootstrapRepository = get()
+            bootstrapRepository = get(),
+            authRepository = get(),
         ).create()
     }
 }

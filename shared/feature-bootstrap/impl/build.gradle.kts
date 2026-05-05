@@ -15,5 +15,6 @@ commonMainDependencies {
     implementations(
         projects.shared.coreNetwork,
         projects.shared.coreDatabase,
+        projects.shared.coreAuth,
     )
 }
