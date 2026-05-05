@@ -1,34 +1,39 @@
 package ru.mirea.toir.feature.equipment.card.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
-import ru.mirea.toir.res.MR
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.feature.equipment.card.presentation.EquipmentCardViewModel
 import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentCardLabel
 import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentCardState
 import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentResultStatus
 import ru.mirea.toir.feature.equipment.card.ui.components.EquipmentCardContent
+import ru.mirea.toir.feature.equipment.card.ui.components.EquipmentCardLayout
 import ru.mirea.toir.feature.equipment.card.ui.components.EquipmentCardOpenChecklistButton
+import ru.mirea.toir.res.MR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,11 +65,14 @@ internal fun EquipmentCardScreen(
                     )
                 },
                 navigationIcon = {
-                    TextButton(onClick = onNavigateBack) {
-                        Text(
-                            text = "←",
-                            style = ToirTheme.typography.bodyLarge,
-                            color = ToirTheme.colors.textSecondary,
+                    IconButton(onClick = onNavigateBack) {
+                        Image(
+                            painter = painterResource(MR.images.ic_arrow_back),
+                            contentDescription = stringResource(
+                                MR.strings.equipment_card_back_content_description,
+                            ),
+                            modifier = Modifier.size(24.dp),
+                            colorFilter = ColorFilter.tint(ToirTheme.colors.textSecondary),
                         )
                     }
                 },
@@ -96,12 +104,14 @@ internal fun EquipmentCardScreen(
                     color = ToirTheme.colors.error,
                 )
 
-                else -> EquipmentCardContent(
-                    state = state,
+                else -> EquipmentCardLayout(
+                    status = state.status,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                )
+                ) {
+                    EquipmentCardContent(state = state)
+                }
             }
         }
     }
@@ -124,20 +134,24 @@ private fun PreviewEquipmentCardScreenLoading() {
 @Composable
 private fun PreviewEquipmentCardScreenContent() {
     ToirTheme {
-        EquipmentCardContent(
-            state = UiEquipmentCardState(
-                code = "EQ-001",
-                name = "Насос циркуляционный",
-                type = "Насос",
-                locationName = "Котельная, 2 этаж",
-                status = UiEquipmentResultStatus.IN_PROGRESS,
-                equipmentResultId = "res-001",
-                isLoading = false,
-                isError = false,
-            ),
+        EquipmentCardLayout(
+            status = UiEquipmentResultStatus.IN_PROGRESS,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-        )
+        ) {
+            EquipmentCardContent(
+                state = UiEquipmentCardState(
+                    code = "EQ-001",
+                    name = "Насос циркуляционный",
+                    type = "Насос",
+                    locationName = "Котельная, 2 этаж",
+                    status = UiEquipmentResultStatus.IN_PROGRESS,
+                    equipmentResultId = "res-001",
+                    isLoading = false,
+                    isError = false,
+                ),
+            )
+        }
     }
 }
