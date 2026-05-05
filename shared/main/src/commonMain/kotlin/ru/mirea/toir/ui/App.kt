@@ -10,9 +10,12 @@ import ru.mirea.toir.feature.auth.ui.api.navigateToAuthScreen
 import ru.mirea.toir.feature.bootstrap.ui.api.BootstrapRoute
 import ru.mirea.toir.feature.bootstrap.ui.api.composableBootstrapScreen
 import ru.mirea.toir.feature.bootstrap.ui.api.navigateToBootstrapScreen
+import ru.mirea.toir.feature.checklist.ui.api.composableChecklistScreen
+import ru.mirea.toir.feature.checklist.ui.api.navigateToChecklistScreen
 import ru.mirea.toir.feature.equipment.card.ui.api.composableEquipmentCardScreen
 import ru.mirea.toir.feature.equipment.card.ui.api.navigateToEquipmentCardScreen
 import ru.mirea.toir.feature.photo.capture.ui.api.composablePhotoCaptureScreen
+import ru.mirea.toir.feature.photo.capture.ui.api.navigateToPhotoCaptureScreen
 import ru.mirea.toir.feature.route.points.ui.api.composableRoutePointsScreen
 import ru.mirea.toir.feature.route.points.ui.api.navigateToRoutePointsScreen
 import ru.mirea.toir.feature.routes.list.ui.api.RoutesListRoute
@@ -54,7 +57,15 @@ fun App() {
                 },
             )
             composableEquipmentCardScreen(
-                onNavigateToChecklist = { /* TODO: feature-checklist */ },
+                onNavigateToChecklist = { equipmentResultId ->
+                    navController.navigateToChecklistScreen(equipmentResultId)
+                },
+                onNavigateBack = { navController.popBackStack() },
+            )
+            composableChecklistScreen(
+                onNavigateToPhotoCapture = { checklistItemResultId ->
+                    navController.navigateToPhotoCaptureScreen(checklistItemResultId)
+                },
                 onNavigateBack = { navController.popBackStack() },
             )
             composablePhotoCaptureScreen(

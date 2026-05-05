@@ -107,7 +107,9 @@ internal class BootstrapRepositoryImpl(
                             checklistStorage.selectChecklistByEquipmentType(it.type)
                         }
                         if (checklist == null) {
-                            Napier.w("No checklist for equipmentId=${point.equipmentId}, skipping route point ${point.id}")
+                            Napier.w(
+                                "No checklist for equipmentId=${point.equipmentId}, skipping route point ${point.id}"
+                            )
                             return@forEach
                         }
                         routeStorage.upsertRoutePoint(

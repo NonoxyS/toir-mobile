@@ -9,7 +9,9 @@ internal data class RemoteSyncPushRequest(
     @SerialName("deviceId") val deviceId: String,
     @SerialName("sentAt") val sentAt: String,
     @SerialName("inspections") val inspections: List<RemoteSyncInspection> = emptyList(),
-    @SerialName("inspectionEquipmentResults") val inspectionEquipmentResults: List<RemoteSyncEquipmentResult> = emptyList(),
+    @SerialName(
+        "inspectionEquipmentResults"
+    ) val inspectionEquipmentResults: List<RemoteSyncEquipmentResult> = emptyList(),
     @SerialName("checklistItemResults") val checklistItemResults: List<RemoteSyncChecklistItemResult> = emptyList(),
     @SerialName("actionLogs") val actionLogs: List<RemoteSyncActionLog> = emptyList(),
 )

@@ -78,7 +78,9 @@ internal class ConfigChangesApplier(
                 checklistStorage.selectChecklistByEquipmentType(it.type)
             }
             if (checklist == null) {
-                Napier.w("config-changes: no checklist for equipmentId=${point.equipmentId}, skipping route point ${point.id}")
+                Napier.w(
+                    "config-changes: no checklist for equipmentId=${point.equipmentId}, skipping route point ${point.id}"
+                )
                 return@forEach
             }
             routeStorage.upsertRoutePoint(

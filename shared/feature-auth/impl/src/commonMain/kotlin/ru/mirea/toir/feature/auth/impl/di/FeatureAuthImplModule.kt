@@ -7,7 +7,6 @@ import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.core.auth.data.storage.TokenStorage
 import ru.mirea.toir.core.auth.domain.repository.AuthRepository
 import ru.mirea.toir.core.network.ktor.HttpClientType
-import ru.mirea.toir.core.network.ktor.KtorClient
 import ru.mirea.toir.feature.auth.api.store.AuthStore
 import ru.mirea.toir.feature.auth.impl.data.mappers.AuthUserMapper
 import ru.mirea.toir.feature.auth.impl.data.mappers.AuthUserMapperImpl

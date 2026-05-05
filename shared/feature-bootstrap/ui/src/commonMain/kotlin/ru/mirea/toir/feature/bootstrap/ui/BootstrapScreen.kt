@@ -16,7 +16,6 @@ import dev.icerock.moko.resources.compose.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.common.ui.compose.utils.Spacer16
-import ru.mirea.toir.common.ui.compose.utils.Spacer8
 import ru.mirea.toir.feature.bootstrap.presentation.BootstrapViewModel
 import ru.mirea.toir.feature.bootstrap.presentation.models.UiBootstrapLabel
 import ru.mirea.toir.res.MR

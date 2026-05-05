@@ -34,7 +34,20 @@
       "Bash(./gradlew :shared:feature-photo-capture:impl:test :shared:feature-auth:impl:test :shared:feature-bootstrap:impl:test)",
       "Bash(./gradlew :shared:feature-photo-capture:impl:tasks --all)",
       "Bash(./gradlew :shared:feature-photo-capture:impl:allTests :shared:feature-auth:impl:allTests :shared:feature-bootstrap:impl:allTests)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(./gradlew :shared:feature-checklist:impl:allTests)",
+      "Bash(./gradlew :shared:feature-checklist:api:detekt :shared:feature-checklist:impl:detekt :shared:feature-checklist:presentation:detekt :shared:feature-checklist:ui:detekt)",
+      "Bash(./gradlew detekt *)",
+      "Bash(./gradlew :detekt --rerun-tasks)",
+      "Bash(awk NR>=240 && NR<=320 {print NR\": \"$0} *)",
+      "Bash(awk '{print NR\": \"$0}' /Users/a.dobrov/StudioProjects/toir-mobile/shared/feature-checklist/impl/src/commonMain/kotlin/ru/mirea/toir/feature/checklist/impl/domain/ChecklistReducer.kt)",
+      "Bash(awk '{print NR\": \"$0}' /Users/a.dobrov/StudioProjects/toir-mobile/shared/feature-checklist/impl/src/commonMain/kotlin/ru/mirea/toir/feature/checklist/impl/domain/ChecklistStoreFactory.kt)",
+      "Bash(awk '{print NR\": \"$0}' /Users/a.dobrov/StudioProjects/toir-mobile/shared/feature-checklist/presentation/src/commonMain/kotlin/ru/mirea/toir/feature/checklist/presentation/models/UiChecklistItem.kt)",
+      "Bash(awk '{print NR\": \"$0}' /Users/a.dobrov/StudioProjects/toir-mobile/shared/feature-checklist/presentation/src/commonMain/kotlin/ru/mirea/toir/feature/checklist/presentation/models/UiChecklistState.kt)",
+      "Bash(awk '{print NR\": \"$0}' /Users/a.dobrov/StudioProjects/toir-mobile/shared/feature-checklist/presentation/src/commonMain/kotlin/ru/mirea/toir/feature/checklist/presentation/mappers/UiChecklistStateMapper.kt)",
+      "Bash(awk '{print NR\": \"$0}' /Users/a.dobrov/StudioProjects/toir-mobile/shared/feature-checklist/ui/src/commonMain/kotlin/ru/mirea/toir/feature/checklist/ui/items/NumberChecklistItem.kt)",
+      "Bash(awk '{print NR\": \"$0}' /Users/a.dobrov/StudioProjects/toir-mobile/shared/feature-checklist/ui/src/commonMain/kotlin/ru/mirea/toir/feature/checklist/ui/ChecklistScreen.kt)",
+      "Bash(./gradlew :android:app:assembleDevDebug :shared:feature-checklist:impl:allTests)"
     ]
   },
   "prefersReducedMotion": false
