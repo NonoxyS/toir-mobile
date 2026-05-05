@@ -28,7 +28,7 @@ internal class BootstrapStoreFactory(
 
     internal sealed interface Message {
         data object SetLoading : Message
-        data class SetError(val message: String) : Message
+        data object SetError : Message
         data object ClearLoading : Message
     }
 }

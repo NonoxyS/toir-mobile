@@ -4,6 +4,8 @@ enum class RouteAssignmentStatus {
     ASSIGNED,
     IN_PROGRESS,
     COMPLETED,
+    PARTIALLY_COMPLETED,
+    CANCELLED,
     ;
 
     companion object {

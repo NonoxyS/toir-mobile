@@ -7,14 +7,17 @@ CREATE TABLE IF NOT EXISTS checklist_items (
     is_required INTEGER NOT NULL DEFAULT 0,
     requires_photo INTEGER NOT NULL DEFAULT 0,
     select_options TEXT,
+    numeric_min REAL,
+    numeric_max REAL,
     order_index INTEGER NOT NULL DEFAULT 0
 );
 
 upsertChecklistItem:
 INSERT OR REPLACE INTO checklist_items (
     id, checklist_id, title, description, answer_type,
-    is_required, requires_photo, select_options, order_index
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+    is_required, requires_photo, select_options,
+    numeric_min, numeric_max, order_index
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectByChecklistId:
 SELECT * FROM checklist_items WHERE checklist_id = ? ORDER BY order_index ASC;
@@ -24,3 +27,6 @@ SELECT * FROM checklist_items WHERE id = ?;
 
 deleteAll:
 DELETE FROM checklist_items;
+
+deleteById:
+DELETE FROM checklist_items WHERE id = ?;

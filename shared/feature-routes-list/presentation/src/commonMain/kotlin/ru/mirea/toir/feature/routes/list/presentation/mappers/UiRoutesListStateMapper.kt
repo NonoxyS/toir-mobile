@@ -35,5 +35,7 @@ internal class UiRoutesListStateMapperImpl : UiRoutesListStateMapper {
         RouteAssignmentStatus.ASSIGNED -> UiRouteStatus.ASSIGNED
         RouteAssignmentStatus.IN_PROGRESS -> UiRouteStatus.IN_PROGRESS
         RouteAssignmentStatus.COMPLETED -> UiRouteStatus.COMPLETED
+        RouteAssignmentStatus.PARTIALLY_COMPLETED -> UiRouteStatus.PARTIALLY_COMPLETED
+        RouteAssignmentStatus.CANCELLED -> UiRouteStatus.CANCELLED
     }
 }

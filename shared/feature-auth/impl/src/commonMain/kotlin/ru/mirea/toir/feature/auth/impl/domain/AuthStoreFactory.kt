@@ -30,7 +30,7 @@ internal class AuthStoreFactory(
         data class SetLogin(val value: String) : Message
         data class SetPassword(val value: String) : Message
         data object SetLoading : Message
-        data class SetError(val message: String) : Message
+        data object SetError : Message
         data object ClearLoading : Message
         data object TogglePasswordVisibility : Message
     }

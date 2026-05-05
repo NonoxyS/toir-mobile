@@ -3,12 +3,13 @@ CREATE TABLE IF NOT EXISTS equipment (
     code TEXT NOT NULL,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    location_id TEXT
+    location_id TEXT,
+    qr_code TEXT
 );
 
 upsertEquipment:
-INSERT OR REPLACE INTO equipment (id, code, name, type, location_id)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO equipment (id, code, name, type, location_id, qr_code)
+VALUES (?, ?, ?, ?, ?, ?);
 
 selectAll:
 SELECT * FROM equipment;
@@ -16,5 +17,11 @@ SELECT * FROM equipment;
 selectById:
 SELECT * FROM equipment WHERE id = ?;
 
+selectByQrCode:
+SELECT * FROM equipment WHERE qr_code = ? LIMIT 1;
+
 deleteAll:
 DELETE FROM equipment;
+
+deleteById:
+DELETE FROM equipment WHERE id = ?;

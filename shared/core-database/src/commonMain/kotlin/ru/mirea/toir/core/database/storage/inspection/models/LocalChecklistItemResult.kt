@@ -9,8 +9,9 @@ data class LocalChecklistItemResult(
     val valueBoolean: Long?,
     val valueNumber: Double?,
     val valueText: String?,
-    val valueSelect: String?,
-    val isConfirmed: Long,
-    val answeredAt: String?,
+    val selectedOption: String?,
+    val comment: String?,
+    val createdAt: String,
+    val updatedAt: String,
     val syncStatus: LocalSyncStatus,
 )

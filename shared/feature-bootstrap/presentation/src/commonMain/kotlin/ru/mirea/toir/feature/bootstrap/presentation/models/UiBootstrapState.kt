@@ -5,5 +5,5 @@ import androidx.compose.runtime.Immutable
 @Immutable
 data class UiBootstrapState(
     val isLoading: Boolean = true,
-    val errorMessage: String? = null,
+    val isError: Boolean = false,
 )

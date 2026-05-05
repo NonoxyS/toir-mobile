@@ -13,7 +13,7 @@ internal class UiAuthStateMapperImpl : UiAuthStateMapper {
             login = login,
             password = password,
             isLoading = isLoading,
-            errorMessage = errorMessage,
+            isError = isError,
             passwordVisible = passwordVisible,
         )
     }

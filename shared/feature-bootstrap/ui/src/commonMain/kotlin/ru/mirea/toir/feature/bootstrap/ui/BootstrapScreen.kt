@@ -16,7 +16,6 @@ import dev.icerock.moko.resources.compose.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.common.ui.compose.utils.Spacer16
-import ru.mirea.toir.common.ui.compose.utils.Spacer8
 import ru.mirea.toir.feature.bootstrap.presentation.BootstrapViewModel
 import ru.mirea.toir.feature.bootstrap.presentation.models.UiBootstrapLabel
 import ru.mirea.toir.res.MR
@@ -42,15 +41,12 @@ internal fun BootstrapScreen(
     ) {
         if (state.isLoading) {
             CircularProgressIndicator()
-        } else if (state.errorMessage != null) {
+        } else if (state.isError) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = stringResource(MR.strings.bootstrap_error_title),
                     style = MaterialTheme.typography.titleMedium,
                 )
-                Spacer8()
-
-                Text(text = state.errorMessage.orEmpty())
                 Spacer16()
 
                 Button(onClick = viewModel::onRetry) {

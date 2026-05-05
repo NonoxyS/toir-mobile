@@ -35,6 +35,8 @@
     <string name="routes_list_status_assigned">Не начат</string>
     <string name="routes_list_status_in_progress">В работе</string>
     <string name="routes_list_status_completed">Завершён</string>
+    <string name="routes_list_status_partially_completed">Частично завершён</string>
+    <string name="routes_list_status_cancelled">Отменён</string>
     <string name="routes_list_progress">%1$d / %2$d точек</string>
     <string name="routes_list_route_number">Маршрут #%1$s</string>
 
@@ -67,4 +69,17 @@
     <string name="photo_capture_button_take">Сделать фото</string>
     <string name="photo_capture_button_confirm">Готово</string>
     <string name="photo_capture_empty">Нет фотографий</string>
+
+    <!-- checklist -->
+    <string name="checklist_title">Чек-лист проверки</string>
+    <string name="checklist_button_finish">Завершить проверку</string>
+    <string name="checklist_button_add_photo">Добавить фото</string>
+    <string name="checklist_button_confirm">Выполнено</string>
+    <string name="checklist_photo_count">Фото: %1$d</string>
+    <string name="checklist_validation_error_required">Заполните все обязательные поля</string>
+    <string name="checklist_validation_error_photo">Прикрепите фото к обязательным пунктам</string>
+    <string name="checklist_number_hint_range">Допустимо: от %1$s до %2$s</string>
+    <string name="checklist_number_hint_min">Допустимо: не меньше %1$s</string>
+    <string name="checklist_number_hint_max">Допустимо: не больше %1$s</string>
+    <string name="checklist_number_error_out_of_range">Значение вне допустимого диапазона</string>
 </resources>

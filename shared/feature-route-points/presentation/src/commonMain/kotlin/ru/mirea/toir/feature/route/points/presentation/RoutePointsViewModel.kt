@@ -24,7 +24,6 @@ class RoutePointsViewModel internal constructor(
         }
     }
 
-    fun init(inspectionId: String) = store.accept(Intent.Init(inspectionId))
     fun onPointClick(routePointId: String) = store.accept(Intent.OnPointClick(routePointId))
     fun onFinishInspection() = store.accept(Intent.OnFinishInspection)
 

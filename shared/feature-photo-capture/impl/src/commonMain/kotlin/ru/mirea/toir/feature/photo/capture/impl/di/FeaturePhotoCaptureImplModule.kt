@@ -11,11 +11,12 @@ import ru.mirea.toir.feature.photo.capture.impl.domain.repository.PhotoCaptureRe
 val featurePhotoCaptureImplModule = module {
     factory<PhotoCaptureRepository> { new(::PhotoCaptureRepositoryImpl) }
 
-    factory<PhotoCaptureStore> {
+    factory<PhotoCaptureStore> { params ->
         PhotoCaptureStoreFactory(
             storeFactory = get(),
             mainDispatcher = get<CoroutineDispatchers>().main,
             repository = get(),
+            checklistItemResultId = params.get(),
         ).create()
     }
 }

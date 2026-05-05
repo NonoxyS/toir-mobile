@@ -16,11 +16,12 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
-import org.koin.core.module.dsl.new
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import ru.mirea.toir.core.auth.domain.models.BearerTokens as DomainBearerTokens
 import ru.mirea.toir.core.auth.domain.repository.AuthRepository
 import ru.mirea.toir.core.domain.exception.NetworkUnavailableException
+import ru.mirea.toir.core.network.ktor.HttpClientType
 import ru.mirea.toir.core.network.ktor.KtorClient
 import ru.mirea.toir.core.network.ktor.KtorClientImpl
 import ru.mirea.toir.core.network.ktor.NetworkEnvironment
@@ -28,7 +29,14 @@ import ru.mirea.toir.core.network.ktor.certificates.configureCertificates
 
 val coreNetworkKtorModule = module {
 
-    single<HttpClient> {
+    single<HttpClient>(named(HttpClientType.Auth)) {
+        httpClient(environment = get()) {
+            initBaseHttpConfig()
+            defaultRequest { setTemplateApiHost(environment = get()) }
+        }
+    }
+
+    single<HttpClient>(named(HttpClientType.Authenticated)) {
         httpClient(environment = get()) {
             initBaseHttpConfig()
             installBearerAuth(authRepository = get())
@@ -37,7 +45,17 @@ val coreNetworkKtorModule = module {
     }
 
     factory<KtorClient> {
-        new(::KtorClientImpl)
+        KtorClientImpl(
+            httpClient = get(named(HttpClientType.Authenticated)),
+            json = get(),
+        )
+    }
+
+    factory<KtorClient>(named(HttpClientType.Auth)) {
+        KtorClientImpl(
+            httpClient = get(named(HttpClientType.Auth)),
+            json = get(),
+        )
     }
 }
 

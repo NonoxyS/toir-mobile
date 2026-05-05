@@ -10,20 +10,25 @@ internal class ActionLogStorageImpl(db: ToirDatabase) : ActionLogStorage {
 
     override fun insert(
         id: String,
-        inspectionId: String,
         actionType: String,
-        metadata: String?,
-        createdAt: String,
+        entityType: String?,
+        entityId: String?,
+        payloadJson: String?,
+        actionTime: String,
     ) {
         queries.insertActionLog(
             id = id,
-            inspection_id = inspectionId,
             action_type = actionType,
-            metadata = metadata,
-            created_at = createdAt,
+            entity_type = entityType,
+            entity_id = entityId,
+            payload_json = payloadJson,
+            action_time = actionTime,
             sync_status = LocalSyncStatus.PENDING,
         )
     }
+
+    override fun selectAll(): List<LocalActionLog> =
+        queries.selectAll().executeAsList().map { it.toLocal() }
 
     override fun selectPending(): List<LocalActionLog> =
         queries.selectPending().executeAsList().map { it.toLocal() }
@@ -34,10 +39,11 @@ internal class ActionLogStorageImpl(db: ToirDatabase) : ActionLogStorage {
 
     private fun Action_logs.toLocal() = LocalActionLog(
         id = id,
-        inspectionId = inspection_id,
         actionType = action_type,
-        metadata = metadata,
-        createdAt = created_at,
+        entityType = entity_type,
+        entityId = entity_id,
+        payloadJson = payload_json,
+        actionTime = action_time,
         syncStatus = sync_status,
     )
 }

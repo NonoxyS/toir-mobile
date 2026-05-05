@@ -7,13 +7,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.icerock.moko.resources.compose.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.feature.photo.capture.presentation.PhotoCaptureViewModel
@@ -26,13 +26,9 @@ import ru.mirea.toir.res.MR
 internal fun PhotoCaptureScreen(
     checklistItemResultId: String,
     onPhotoConfirm: () -> Unit,
-    viewModel: PhotoCaptureViewModel = koinViewModel(),
+    viewModel: PhotoCaptureViewModel = koinViewModel { parametersOf(checklistItemResultId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(checklistItemResultId) {
-        viewModel.init(checklistItemResultId)
-    }
 
     viewModel.label.CollectFlow { label ->
         when (label) {

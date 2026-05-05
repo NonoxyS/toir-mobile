@@ -9,6 +9,6 @@ interface UiBootstrapStateMapper {
 
 internal class UiBootstrapStateMapperImpl : UiBootstrapStateMapper {
     override fun map(state: BootstrapStore.State): UiBootstrapState = with(state) {
-        UiBootstrapState(isLoading = isLoading, errorMessage = errorMessage)
+        UiBootstrapState(isLoading = isLoading, isError = isError)
     }
 }

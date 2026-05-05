@@ -14,10 +14,12 @@ import ru.mirea.toir.core.database.ToirDatabase
 import ru.mirea.toir.core.database.adapters.EnumColumnAdapter
 import ru.mirea.toir.core.database.driver.DatabaseDriverFactory
 import ru.mirea.toir.core.database.models.LocalBatchStatus
-import ru.mirea.toir.core.database.models.LocalRouteStatus
+import ru.mirea.toir.core.database.models.LocalInspectionStatus
+import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 import ru.mirea.toir.core.database.storage.action_log.ActionLogStorage
 import ru.mirea.toir.core.database.storage.action_log.ActionLogStorageImpl
+import ru.mirea.toir.core.database.storage.action_log.ActionLogger
 import ru.mirea.toir.core.database.storage.checklist.ChecklistStorage
 import ru.mirea.toir.core.database.storage.checklist.ChecklistStorageImpl
 import ru.mirea.toir.core.database.storage.equipment.EquipmentStorage
@@ -25,6 +27,8 @@ import ru.mirea.toir.core.database.storage.equipment.EquipmentStorageImpl
 import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
 import ru.mirea.toir.core.database.storage.inspection.InspectionStorageImpl
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
+import ru.mirea.toir.core.database.storage.location.LocationStorage
+import ru.mirea.toir.core.database.storage.location.LocationStorageImpl
 import ru.mirea.toir.core.database.storage.photo.PhotoStorage
 import ru.mirea.toir.core.database.storage.photo.PhotoStorageImpl
 import ru.mirea.toir.core.database.storage.route.RouteStorage
@@ -43,10 +47,10 @@ val coreDatabaseModule = module {
         ToirDatabase(
             driver = get<DatabaseDriverFactory>().create(),
             route_assignmentsAdapter = Route_assignments.Adapter(
-                statusAdapter = EnumColumnAdapter.create<LocalRouteStatus>(),
+                statusAdapter = EnumColumnAdapter.create<LocalRouteAssignmentStatus>(),
             ),
             inspectionsAdapter = Inspections.Adapter(
-                statusAdapter = EnumColumnAdapter.create<LocalRouteStatus>(),
+                statusAdapter = EnumColumnAdapter.create<LocalInspectionStatus>(),
                 sync_statusAdapter = EnumColumnAdapter.create<LocalSyncStatus>(),
             ),
             inspection_equipment_resultsAdapter = Inspection_equipment_results.Adapter(
@@ -71,9 +75,11 @@ val coreDatabaseModule = module {
     factory<InspectionStorage> { new(::InspectionStorageImpl) }
     factory<RouteStorage> { new(::RouteStorageImpl) }
     factory<EquipmentStorage> { new(::EquipmentStorageImpl) }
+    factory<LocationStorage> { new(::LocationStorageImpl) }
     factory<UserStorage> { new(::UserStorageImpl) }
     factory<ChecklistStorage> { new(::ChecklistStorageImpl) }
     factory<PhotoStorage> { new(::PhotoStorageImpl) }
     factory<ActionLogStorage> { new(::ActionLogStorageImpl) }
+    single { new(::ActionLogger) }
     factory<SyncMetaStorage> { new(::SyncMetaStorageImpl) }
 }

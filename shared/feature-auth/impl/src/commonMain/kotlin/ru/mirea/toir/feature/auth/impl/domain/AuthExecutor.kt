@@ -36,8 +36,8 @@ internal class AuthExecutor(
                 dispatch(Message.ClearLoading)
                 publish(Label.NavigateToMain)
             },
-            onFailure = { throwable ->
-                dispatch(Message.SetError(throwable.message ?: "Ошибка авторизации"))
+            onFailure = {
+                dispatch(Message.SetError)
             },
         )
     }

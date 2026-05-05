@@ -13,18 +13,29 @@ internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
 
     override fun upsertChecklist(
         id: String,
+        code: String,
         name: String,
-        equipmentId: String?
+        equipmentType: String,
+        description: String?,
     ) {
         checklistQueries.upsertChecklist(
             id = id,
+            code = code,
             name = name,
-            equipment_id = equipmentId
+            equipment_type = equipmentType,
+            description = description,
         )
     }
 
     override fun selectChecklistById(id: String): LocalChecklist? =
         checklistQueries.selectById(id).executeAsOneOrNull()?.toLocal()
+
+    override fun selectChecklistByEquipmentType(equipmentType: String): LocalChecklist? =
+        checklistQueries.selectByEquipmentType(equipmentType).executeAsOneOrNull()?.toLocal()
+
+    override fun deleteChecklistById(id: String) {
+        checklistQueries.deleteById(id)
+    }
 
     override fun upsertItem(
         id: String,
@@ -35,6 +46,8 @@ internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
         isRequired: Long,
         requiresPhoto: Long,
         selectOptions: String?,
+        numericMin: Double?,
+        numericMax: Double?,
         orderIndex: Long,
     ) {
         itemQueries.upsertChecklistItem(
@@ -46,6 +59,8 @@ internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
             is_required = isRequired,
             requires_photo = requiresPhoto,
             select_options = selectOptions,
+            numeric_min = numericMin,
+            numeric_max = numericMax,
             order_index = orderIndex,
         )
     }
@@ -59,6 +74,10 @@ internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
     override fun selectItemById(id: String): LocalChecklistItem? =
         itemQueries.selectById(id).executeAsOneOrNull()?.toLocal()
 
+    override fun deleteItemById(id: String) {
+        itemQueries.deleteById(id)
+    }
+
     override fun deleteAll() {
         checklistQueries.deleteAll()
         itemQueries.deleteAll()
@@ -66,8 +85,10 @@ internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
 
     private fun Checklists.toLocal() = LocalChecklist(
         id = id,
+        code = code,
         name = name,
-        equipmentId = equipment_id,
+        equipmentType = equipment_type,
+        description = description,
     )
 
     private fun Checklist_items.toLocal() = LocalChecklistItem(
@@ -79,6 +100,8 @@ internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
         isRequired = is_required,
         requiresPhoto = requires_photo,
         selectOptions = select_options,
+        numericMin = numeric_min,
+        numericMax = numeric_max,
         orderIndex = order_index,
     )
 }

@@ -6,4 +6,5 @@ data class LocalEquipment(
     val name: String,
     val type: String,
     val locationId: String?,
+    val qrCode: String?,
 )

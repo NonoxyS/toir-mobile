@@ -6,6 +6,6 @@ enum class NetworkEnvironment(
     val apiHost: String,
     val protocol: URLProtocol = URLProtocol.HTTPS,
 ) {
-    Dev(apiHost = "10.0.2.2:8080", protocol = URLProtocol.HTTP),
+    Dev(apiHost = "82.25.58.221:8080", protocol = URLProtocol.HTTP),
     Prod(apiHost = "toir-backend.example.com"),
 }

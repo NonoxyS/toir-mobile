@@ -39,16 +39,19 @@ internal data class RemoteBootstrapAssignment(
     @SerialName("id") val id: String,
     @SerialName("routeId") val routeId: String,
     @SerialName("userId") val userId: String,
+    @SerialName("assignmentDate") val assignmentDate: String,
+    @SerialName("shiftCode") val shiftCode: String?,
     @SerialName("status") val status: RemoteAssignmentStatus,
-    @SerialName("assignedAt") val assignedAt: String,
-    @SerialName("dueDate") val dueDate: String?,
+    @SerialName("updatedAt") val updatedAt: String,
 )
 
 @Serializable
 internal data class RemoteBootstrapRoute(
     @SerialName("id") val id: String,
+    @SerialName("code") val code: String,
     @SerialName("name") val name: String,
     @SerialName("description") val description: String?,
+    @SerialName("updatedAt") val updatedAt: String,
 )
 
 @Serializable
@@ -56,8 +59,8 @@ internal data class RemoteBootstrapRoutePoint(
     @SerialName("id") val id: String,
     @SerialName("routeId") val routeId: String,
     @SerialName("equipmentId") val equipmentId: String,
-    @SerialName("checklistId") val checklistId: String,
     @SerialName("orderIndex") val orderIndex: Int,
+    @SerialName("updatedAt") val updatedAt: String,
 )
 
 @Serializable
@@ -67,20 +70,28 @@ internal data class RemoteBootstrapEquipment(
     @SerialName("name") val name: String,
     @SerialName("type") val type: String,
     @SerialName("locationId") val locationId: String?,
+    @SerialName("qrCode") val qrCode: String?,
+    @SerialName("updatedAt") val updatedAt: String,
 )
 
 @Serializable
 internal data class RemoteBootstrapLocation(
     @SerialName("id") val id: String,
+    @SerialName("code") val code: String,
     @SerialName("name") val name: String,
     @SerialName("description") val description: String?,
+    @SerialName("parentLocationId") val parentLocationId: String?,
+    @SerialName("updatedAt") val updatedAt: String,
 )
 
 @Serializable
 internal data class RemoteBootstrapChecklist(
     @SerialName("id") val id: String,
+    @SerialName("code") val code: String,
     @SerialName("name") val name: String,
-    @SerialName("equipmentId") val equipmentId: String?,
+    @SerialName("equipmentType") val equipmentType: String,
+    @SerialName("description") val description: String?,
+    @SerialName("updatedAt") val updatedAt: String,
 )
 
 @Serializable
@@ -89,9 +100,12 @@ internal data class RemoteBootstrapChecklistItem(
     @SerialName("checklistId") val checklistId: String,
     @SerialName("title") val title: String,
     @SerialName("description") val description: String?,
-    @SerialName("answerType") val answerType: RemoteAnswerType,
+    @SerialName("responseType") val responseType: RemoteAnswerType,
     @SerialName("isRequired") val isRequired: Boolean,
-    @SerialName("requiresPhoto") val requiresPhoto: Boolean,
-    @SerialName("selectOptions") val selectOptions: List<String>?,
+    @SerialName("requirePhoto") val requirePhoto: Boolean,
+    @SerialName("optionsJson") val optionsJson: String?,
+    @SerialName("numericMin") val numericMin: Double?,
+    @SerialName("numericMax") val numericMax: Double?,
     @SerialName("orderIndex") val orderIndex: Int,
+    @SerialName("updatedAt") val updatedAt: String,
 )

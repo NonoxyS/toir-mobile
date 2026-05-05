@@ -1,5 +1,6 @@
 package ru.mirea.toir.feature.equipment.card.impl.di
 
+import org.koin.core.module.dsl.new
 import org.koin.dsl.module
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.feature.equipment.card.api.store.EquipmentCardStore
@@ -8,20 +9,15 @@ import ru.mirea.toir.feature.equipment.card.impl.domain.EquipmentCardStoreFactor
 import ru.mirea.toir.feature.equipment.card.impl.domain.repository.EquipmentCardRepository
 
 val featureEquipmentCardImplModule = module {
-    factory<EquipmentCardRepository> {
-        EquipmentCardRepositoryImpl(
-            inspectionStorage = get(),
-            routeStorage = get(),
-            equipmentStorage = get(),
-            coroutineDispatchers = get(),
-        )
-    }
+    factory<EquipmentCardRepository> { new(::EquipmentCardRepositoryImpl) }
 
-    factory<EquipmentCardStore> {
+    factory<EquipmentCardStore> { (inspectionId: String, routePointId: String) ->
         EquipmentCardStoreFactory(
             storeFactory = get(),
             mainDispatcher = get<CoroutineDispatchers>().main,
             repository = get(),
+            inspectionId = inspectionId,
+            routePointId = routePointId,
         ).create()
     }
 }

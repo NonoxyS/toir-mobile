@@ -24,9 +24,6 @@ class EquipmentCardViewModel internal constructor(
         }
     }
 
-    fun init(inspectionId: String, routePointId: String) =
-        store.accept(Intent.Init(inspectionId, routePointId))
-
     fun onOpenChecklist() = store.accept(Intent.OnOpenChecklist)
 
     override fun onCleared() {

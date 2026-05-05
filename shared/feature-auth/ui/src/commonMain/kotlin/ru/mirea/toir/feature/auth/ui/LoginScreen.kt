@@ -26,7 +26,7 @@ internal fun LoginScreen(
         login = state.login,
         password = state.password,
         isLoading = state.isLoading,
-        errorMessage = state.errorMessage,
+        isError = state.isError,
         passwordVisible = state.passwordVisible,
         onLoginChange = viewModel::onLoginChange,
         onPasswordChange = viewModel::onPasswordChange,

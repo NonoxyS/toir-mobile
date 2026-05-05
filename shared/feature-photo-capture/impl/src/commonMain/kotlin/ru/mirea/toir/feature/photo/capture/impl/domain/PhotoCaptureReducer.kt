@@ -9,6 +9,5 @@ internal class PhotoCaptureReducer : Reducer<State, Message> {
         is Message.SetLoading -> copy(isLoading = msg.value)
         is Message.SetPhotos -> copy(photos = msg.photos)
         is Message.AddPhoto -> copy(photos = photos + msg.uri)
-        is Message.SetResultId -> copy(checklistItemResultId = msg.id)
     }
 }

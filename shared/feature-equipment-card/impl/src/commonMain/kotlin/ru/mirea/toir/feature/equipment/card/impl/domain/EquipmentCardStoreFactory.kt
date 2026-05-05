@@ -1,5 +1,6 @@
 package ru.mirea.toir.feature.equipment.card.impl.domain
 
+import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import kotlinx.coroutines.CoroutineDispatcher
@@ -14,6 +15,8 @@ internal class EquipmentCardStoreFactory(
     private val storeFactory: StoreFactory,
     private val repository: EquipmentCardRepository,
     private val mainDispatcher: CoroutineDispatcher,
+    private val inspectionId: String,
+    private val routePointId: String,
 ) {
     fun create(): EquipmentCardStore =
         object :
@@ -21,10 +24,21 @@ internal class EquipmentCardStoreFactory(
             Store<Intent, State, Label> by storeFactory.create(
                 name = EquipmentCardStore::class.simpleName,
                 initialState = State(),
-                bootstrapper = null,
-                executorFactory = { EquipmentCardExecutor(repository, mainDispatcher) },
+                bootstrapper = SimpleBootstrapper(Action.Load),
+                executorFactory = {
+                    EquipmentCardExecutor(
+                        repository = repository,
+                        mainDispatcher = mainDispatcher,
+                        inspectionId = inspectionId,
+                        routePointId = routePointId,
+                    )
+                },
                 reducer = EquipmentCardReducer(),
             ) {}
+
+    internal sealed interface Action {
+        data object Load : Action
+    }
 
     internal sealed interface Message {
         data object SetLoading : Message

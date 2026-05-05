@@ -1,7 +1,8 @@
 package ru.mirea.toir.feature.route.points.presentation.di
 
 import org.koin.core.module.dsl.new
-import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import ru.mirea.toir.feature.route.points.presentation.RoutePointsViewModel
 import ru.mirea.toir.feature.route.points.presentation.mappers.UiRoutePointsLabelMapper
@@ -12,5 +13,12 @@ import ru.mirea.toir.feature.route.points.presentation.mappers.UiRoutePointsStat
 val featureRoutePointsPresentationModule = module {
     factory<UiRoutePointsStateMapper> { new(::UiRoutePointsStateMapperImpl) }
     factory<UiRoutePointsLabelMapper> { new(::UiRoutePointsLabelMapperImpl) }
-    viewModelOf(::RoutePointsViewModel)
+    viewModel { params ->
+        val inspectionId: String = params.get()
+        RoutePointsViewModel(
+            store = get { parametersOf(inspectionId) },
+            stateMapper = get(),
+            labelMapper = get(),
+        )
+    }
 }

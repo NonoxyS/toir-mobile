@@ -1,10 +1,10 @@
 package ru.mirea.toir.core.database.storage.inspection
 
-import ru.mirea.toir.core.database.Inspections
-import ru.mirea.toir.core.database.Inspection_equipment_results
 import ru.mirea.toir.core.database.Checklist_item_results
+import ru.mirea.toir.core.database.Inspection_equipment_results
+import ru.mirea.toir.core.database.Inspections
 import ru.mirea.toir.core.database.ToirDatabase
-import ru.mirea.toir.core.database.models.LocalRouteStatus
+import ru.mirea.toir.core.database.models.LocalInspectionStatus
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 import ru.mirea.toir.core.database.storage.inspection.models.LocalChecklistItemResult
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResult
@@ -19,10 +19,12 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
 
     override fun insertInspection(
         id: String,
-        assignmentId: String,
+        assignmentId: String?,
         routeId: String,
-        status: LocalRouteStatus,
-        startedAt: String,
+        status: LocalInspectionStatus,
+        startedAt: String?,
+        createdAt: String,
+        updatedAt: String,
     ) {
         inspectionQueries.insertInspection(
             id = id,
@@ -31,6 +33,8 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
             status = status,
             started_at = startedAt,
             completed_at = null,
+            created_at = createdAt,
+            updated_at = updatedAt,
             sync_status = LocalSyncStatus.PENDING,
         )
     }
@@ -41,8 +45,18 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
     override fun selectInspectionById(id: String): LocalInspection? =
         inspectionQueries.selectById(id).executeAsOneOrNull()?.toLocal()
 
-    override fun updateInspectionStatus(id: String, status: LocalRouteStatus, completedAt: String?) {
-        inspectionQueries.updateStatus(status = status, completed_at = completedAt, id = id)
+    override fun updateInspectionStatus(
+        id: String,
+        status: LocalInspectionStatus,
+        completedAt: String?,
+        updatedAt: String,
+    ) {
+        inspectionQueries.updateStatus(
+            status = status,
+            completed_at = completedAt,
+            updated_at = updatedAt,
+            id = id,
+        )
     }
 
     override fun selectPendingInspections(): List<LocalInspection> =
@@ -58,6 +72,8 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
         routePointId: String,
         equipmentId: String,
         status: LocalEquipmentResultStatus,
+        createdAt: String,
+        updatedAt: String,
     ) {
         equipmentResultQueries.insertResult(
             id = id,
@@ -67,6 +83,8 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
             status = status,
             started_at = null,
             completed_at = null,
+            created_at = createdAt,
+            updated_at = updatedAt,
             sync_status = LocalSyncStatus.PENDING,
         )
     }
@@ -89,11 +107,13 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
         status: LocalEquipmentResultStatus,
         startedAt: String?,
         completedAt: String?,
+        updatedAt: String,
     ) {
         equipmentResultQueries.updateStatus(
             status = status,
             started_at = startedAt,
             completed_at = completedAt,
+            updated_at = updatedAt,
             id = id,
         )
     }
@@ -112,9 +132,10 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
         valueBoolean: Long?,
         valueNumber: Double?,
         valueText: String?,
-        valueSelect: String?,
-        isConfirmed: Long,
-        answeredAt: String?,
+        selectedOption: String?,
+        comment: String?,
+        createdAt: String,
+        updatedAt: String,
     ) {
         checklistItemResultQueries.insertOrReplaceResult(
             id = id,
@@ -123,9 +144,10 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
             value_boolean = valueBoolean,
             value_number = valueNumber,
             value_text = valueText,
-            value_select = valueSelect,
-            is_confirmed = isConfirmed,
-            answered_at = answeredAt,
+            selected_option = selectedOption,
+            comment = comment,
+            created_at = createdAt,
+            updated_at = updatedAt,
             sync_status = LocalSyncStatus.PENDING,
         )
     }
@@ -157,6 +179,8 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
         status = status,
         startedAt = started_at,
         completedAt = completed_at,
+        createdAt = created_at,
+        updatedAt = updated_at,
         syncStatus = sync_status,
     )
 
@@ -168,6 +192,8 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
         status = status,
         startedAt = started_at,
         completedAt = completed_at,
+        createdAt = created_at,
+        updatedAt = updated_at,
         syncStatus = sync_status,
     )
 
@@ -178,9 +204,10 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
         valueBoolean = value_boolean,
         valueNumber = value_number,
         valueText = value_text,
-        valueSelect = value_select,
-        isConfirmed = is_confirmed,
-        answeredAt = answered_at,
+        selectedOption = selected_option,
+        comment = comment,
+        createdAt = created_at,
+        updatedAt = updated_at,
         syncStatus = sync_status,
     )
 }

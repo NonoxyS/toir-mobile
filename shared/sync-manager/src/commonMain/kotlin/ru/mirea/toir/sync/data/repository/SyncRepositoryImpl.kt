@@ -12,12 +12,15 @@ import ru.mirea.toir.core.database.storage.action_log.ActionLogStorage
 import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
 import ru.mirea.toir.core.database.storage.photo.PhotoStorage
 import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorage
+import ru.mirea.toir.sync.data.applier.ConfigChangesApplier
 import ru.mirea.toir.sync.data.network.SyncApiClient
 import ru.mirea.toir.sync.data.network.models.RemoteSyncActionLog
 import ru.mirea.toir.sync.data.network.models.RemoteSyncChecklistItemResult
 import ru.mirea.toir.sync.data.network.models.RemoteSyncEquipmentResult
 import ru.mirea.toir.sync.data.network.models.RemoteSyncInspection
 import ru.mirea.toir.sync.data.network.models.RemoteSyncPushRequest
+import ru.mirea.toir.sync.data.network.models.RemoteSyncRejected
+import ru.mirea.toir.sync.data.network.models.RemoteSyncRejectedEntityType
 import ru.mirea.toir.sync.data.readFileBytes
 import ru.mirea.toir.sync.domain.models.SyncResult
 import ru.mirea.toir.sync.domain.repository.SyncRepository
@@ -33,6 +36,7 @@ internal class SyncRepositoryImpl(
     private val actionLogStorage: ActionLogStorage,
     private val syncMetaStorage: SyncMetaStorage,
     private val tokenStorage: TokenStorage,
+    private val configChangesApplier: ConfigChangesApplier,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : SyncRepository {
 
@@ -57,19 +61,21 @@ internal class SyncRepositoryImpl(
                     }
 
                     val request = RemoteSyncPushRequest(
-                        clientBatchId = Uuid.Companion.random().toString(),
+                        clientBatchId = Uuid.random().toString(),
                         deviceId = deviceId,
                         sentAt = Clock.System.now().toString(),
                         inspections = pendingInspections.map { inspection ->
                             RemoteSyncInspection(
                                 id = inspection.id,
-                                assignmentId = inspection.assignmentId,
+                                routeAssignmentId = inspection.assignmentId,
                                 routeId = inspection.routeId,
                                 status = inspection.status.localValue,
                                 startedAt = inspection.startedAt,
                                 completedAt = inspection.completedAt,
+                                createdAt = inspection.createdAt,
+                                updatedAt = inspection.updatedAt,
                             )
-                        }.takeIf { it.isNotEmpty() },
+                        },
                         inspectionEquipmentResults = pendingEquipmentResults.map { result ->
                             RemoteSyncEquipmentResult(
                                 id = result.id,
@@ -79,57 +85,64 @@ internal class SyncRepositoryImpl(
                                 status = result.status.localValue,
                                 startedAt = result.startedAt,
                                 completedAt = result.completedAt,
+                                createdAt = result.createdAt,
+                                updatedAt = result.updatedAt,
                             )
-                        }.takeIf { it.isNotEmpty() },
+                        },
                         checklistItemResults = pendingChecklistResults.map { r ->
                             RemoteSyncChecklistItemResult(
                                 id = r.id,
                                 inspectionEquipmentResultId = r.equipmentResultId,
                                 checklistItemId = r.checklistItemId,
-                                valueBoolean = r.valueBoolean?.let { it == 1L },
-                                valueNumber = r.valueNumber,
                                 valueText = r.valueText,
-                                valueSelect = r.valueSelect,
-                                isConfirmed = r.isConfirmed == 1L,
-                                answeredAt = r.answeredAt,
+                                valueNumber = r.valueNumber,
+                                valueBoolean = r.valueBoolean?.let { it == 1L },
+                                selectedOption = r.selectedOption,
+                                comment = r.comment,
+                                createdAt = r.createdAt,
+                                updatedAt = r.updatedAt,
                             )
-                        }.takeIf { it.isNotEmpty() },
+                        },
                         actionLogs = pendingLogs.map { log ->
                             RemoteSyncActionLog(
                                 id = log.id,
-                                inspectionId = log.inspectionId,
                                 actionType = log.actionType,
-                                metadata = log.metadata,
-                                createdAt = log.createdAt,
+                                entityType = log.entityType,
+                                entityId = log.entityId,
+                                payloadJson = log.payloadJson,
+                                actionTime = log.actionTime,
                             )
-                        }.takeIf { it.isNotEmpty() },
+                        },
                     )
 
                     val response = syncApiClient.pushSync(request).getOrThrow()
-                    val acceptedInspections = response.accepted.inspections
-                    val acceptedEquipment = response.accepted.inspectionEquipmentResults
-                    val acceptedChecklist = response.accepted.checklistItemResults
-                    val acceptedLogs = response.accepted.actionLogs
 
-                    acceptedInspections.forEach {
+                    response.accepted.inspections.forEach {
                         inspectionStorage.updateInspectionSyncStatus(it, LocalSyncStatus.SYNCED)
                     }
-                    acceptedEquipment.forEach {
-                        inspectionStorage.updateEquipmentResultSyncStatus(
-                            id = it,
-                            syncStatus = LocalSyncStatus.SYNCED
-                        )
+                    response.accepted.inspectionEquipmentResults.forEach {
+                        inspectionStorage.updateEquipmentResultSyncStatus(it, LocalSyncStatus.SYNCED)
                     }
-                    acceptedChecklist.forEach {
+                    response.accepted.checklistItemResults.forEach {
                         inspectionStorage.updateChecklistItemResultSyncStatus(it, LocalSyncStatus.SYNCED)
                     }
-                    acceptedLogs.forEach { actionLogStorage.updateSyncStatus(it, LocalSyncStatus.SYNCED) }
+                    response.accepted.actionLogs.forEach {
+                        actionLogStorage.updateSyncStatus(it, LocalSyncStatus.SYNCED)
+                    }
 
-                    val totalAccepted = acceptedInspections.size + acceptedEquipment.size +
-                        acceptedChecklist.size + acceptedLogs.size
-                    val totalRejected = response.rejected.size
+                    response.rejected.forEach { rejected ->
+                        markRejectedAsFailed(rejected)
+                    }
 
-                    SyncResult(acceptedCount = totalAccepted, rejectedCount = totalRejected).wrapResultSuccess()
+                    val totalAccepted = response.accepted.inspections.size +
+                        response.accepted.inspectionEquipmentResults.size +
+                        response.accepted.checklistItemResults.size +
+                        response.accepted.actionLogs.size
+
+                    SyncResult(
+                        acceptedCount = totalAccepted,
+                        rejectedCount = response.rejected.size,
+                    ).wrapResultSuccess()
                 },
                 catchBlock = { throwable ->
                     Napier.e(message = "pushPendingData failed", throwable = throwable)
@@ -150,9 +163,18 @@ internal class SyncRepositoryImpl(
                             photoId = photo.id,
                             checklistItemResultId = photo.checklistItemResultId,
                             fileBytes = bytes,
-                        ).onSuccess {
-                            photoStorage.updateSyncStatus(photo.id, LocalSyncStatus.SYNCED, null)
+                        ).onSuccess { response ->
+                            photoStorage.updateSyncStatus(
+                                id = photo.id,
+                                syncStatus = LocalSyncStatus.SYNCED,
+                                storageKey = response.storageKey,
+                            )
                             uploaded++
+                        }.onFailure { throwable ->
+                            Napier.e(
+                                message = "uploadPhoto failed for id=${photo.id}",
+                                throwable = throwable,
+                            )
                         }
                     }
                     uploaded.wrapResultSuccess()
@@ -165,20 +187,40 @@ internal class SyncRepositoryImpl(
         }
 
     @OptIn(ExperimentalTime::class)
-    override suspend fun fetchDeltaChanges(): Result<Unit> =
+    override suspend fun fetchAndApplyDeltaChanges(): Result<Unit> =
         withContext(coroutineDispatchers.io) {
             coRunCatching(
                 tryBlock = {
-                    val lastSync = syncMetaStorage.selectByKey(SyncMetaStorage.Companion.KEY_LAST_SYNC_TIME)
+                    val lastSync = syncMetaStorage.selectByKey(SyncMetaStorage.KEY_LAST_SYNC_TIME)
                         ?: "2000-01-01T00:00:00Z"
-                    syncApiClient.fetchConfigChanges(lastSync).getOrThrow()
-                    syncMetaStorage.upsert(SyncMetaStorage.Companion.KEY_LAST_SYNC_TIME, Clock.System.now().toString())
+                    val response = syncApiClient.fetchConfigChanges(lastSync).getOrThrow()
+                    configChangesApplier.apply(response)
+                    syncMetaStorage.upsert(
+                        key = SyncMetaStorage.KEY_LAST_SYNC_TIME,
+                        value = response.serverTime,
+                    )
                     Unit.wrapResultSuccess()
                 },
                 catchBlock = { throwable ->
-                    Napier.e(message = "fetchDeltaChanges failed", throwable = throwable)
+                    Napier.e(message = "fetchAndApplyDeltaChanges failed", throwable = throwable)
                     throwable.wrapResultFailure()
                 },
             )
         }
+
+    private fun markRejectedAsFailed(rejected: RemoteSyncRejected) {
+        Napier.w(
+            message = "Sync rejected: ${rejected.entityType} id=${rejected.entityId} reason=${rejected.reason}",
+        )
+        when (rejected.entityType) {
+            RemoteSyncRejectedEntityType.INSPECTION ->
+                inspectionStorage.updateInspectionSyncStatus(rejected.entityId, LocalSyncStatus.FAILED)
+            RemoteSyncRejectedEntityType.INSPECTION_EQUIPMENT_RESULT ->
+                inspectionStorage.updateEquipmentResultSyncStatus(rejected.entityId, LocalSyncStatus.FAILED)
+            RemoteSyncRejectedEntityType.CHECKLIST_ITEM_RESULT ->
+                inspectionStorage.updateChecklistItemResultSyncStatus(rejected.entityId, LocalSyncStatus.FAILED)
+            RemoteSyncRejectedEntityType.UNKNOWN ->
+                Napier.e("Sync rejected: unknown entityType for id=${rejected.entityId}")
+        }
+    }
 }

@@ -81,4 +81,9 @@ include(":shared:feature-photo-capture:impl")
 include(":shared:feature-photo-capture:presentation")
 include(":shared:feature-photo-capture:ui")
 
+include(":shared:feature-checklist:api")
+include(":shared:feature-checklist:impl")
+include(":shared:feature-checklist:presentation")
+include(":shared:feature-checklist:ui")
+
 include(":shared:sync-manager")

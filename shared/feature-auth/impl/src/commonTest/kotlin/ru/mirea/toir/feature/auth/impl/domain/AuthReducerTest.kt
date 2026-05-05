@@ -4,7 +4,6 @@ import ru.mirea.toir.feature.auth.api.store.AuthStore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AuthReducerTest {
@@ -26,17 +25,17 @@ class AuthReducerTest {
 
     @Test
     fun `SetLoading sets isLoading true and clears error`() {
-        val stateWithError = initialState.copy(errorMessage = "some error")
+        val stateWithError = initialState.copy(isError = true)
         val result = with(reducer) { stateWithError.reduce(AuthStoreFactory.Message.SetLoading) }
         assertTrue(result.isLoading)
-        assertNull(result.errorMessage)
+        assertFalse(result.isError)
     }
 
     @Test
-    fun `SetError sets error message and clears loading`() {
+    fun `SetError sets isError true and clears loading`() {
         val loading = initialState.copy(isLoading = true)
-        val result = with(reducer) { loading.reduce(AuthStoreFactory.Message.SetError("Неверный логин или пароль")) }
+        val result = with(reducer) { loading.reduce(AuthStoreFactory.Message.SetError) }
         assertFalse(result.isLoading)
-        assertEquals("Неверный логин или пароль", result.errorMessage)
+        assertTrue(result.isError)
     }
 }

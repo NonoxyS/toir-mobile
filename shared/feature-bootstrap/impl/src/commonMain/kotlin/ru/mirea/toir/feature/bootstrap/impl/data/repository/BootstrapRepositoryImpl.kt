@@ -2,14 +2,14 @@ package ru.mirea.toir.feature.bootstrap.impl.data.repository
 
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
 import ru.mirea.toir.common.extensions.wrapResultSuccess
-import ru.mirea.toir.core.database.models.LocalRouteStatus
+import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.storage.checklist.ChecklistStorage
 import ru.mirea.toir.core.database.storage.equipment.EquipmentStorage
+import ru.mirea.toir.core.database.storage.location.LocationStorage
 import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorage
 import ru.mirea.toir.core.database.storage.user.UserStorage
@@ -23,10 +23,10 @@ internal class BootstrapRepositoryImpl(
     private val apiClient: BootstrapApiClient,
     private val userStorage: UserStorage,
     private val equipmentStorage: EquipmentStorage,
+    private val locationStorage: LocationStorage,
     private val routeStorage: RouteStorage,
     private val checklistStorage: ChecklistStorage,
     private val syncMetaStorage: SyncMetaStorage,
-    private val json: Json,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : BootstrapRepository {
 
@@ -45,6 +45,16 @@ internal class BootstrapRepositoryImpl(
                         )
                     }
 
+                    response.locations.forEach { loc ->
+                        locationStorage.upsert(
+                            id = loc.id,
+                            code = loc.code,
+                            name = loc.name,
+                            description = loc.description,
+                            parentLocationId = loc.parentLocationId,
+                        )
+                    }
+
                     response.equipment.forEach { eq ->
                         equipmentStorage.upsert(
                             id = eq.id,
@@ -52,23 +62,61 @@ internal class BootstrapRepositoryImpl(
                             name = eq.name,
                             type = eq.type,
                             locationId = eq.locationId,
+                            qrCode = eq.qrCode,
+                        )
+                    }
+
+                    response.checklists.forEach { cl ->
+                        checklistStorage.upsertChecklist(
+                            id = cl.id,
+                            code = cl.code,
+                            name = cl.name,
+                            equipmentType = cl.equipmentType,
+                            description = cl.description,
+                        )
+                    }
+
+                    response.checklistItems.forEach { item ->
+                        checklistStorage.upsertItem(
+                            id = item.id,
+                            checklistId = item.checklistId,
+                            title = item.title,
+                            description = item.description,
+                            answerType = item.responseType.toDbValue(),
+                            isRequired = if (item.isRequired) 1L else 0L,
+                            requiresPhoto = if (item.requirePhoto) 1L else 0L,
+                            selectOptions = item.optionsJson,
+                            numericMin = item.numericMin,
+                            numericMax = item.numericMax,
+                            orderIndex = item.orderIndex.toLong(),
                         )
                     }
 
                     response.routes.forEach { route ->
                         routeStorage.upsertRoute(
                             id = route.id,
+                            code = route.code,
                             name = route.name,
                             description = route.description,
                         )
                     }
 
                     response.routePoints.forEach { point ->
+                        val equipment = equipmentStorage.selectById(point.equipmentId)
+                        val checklist = equipment?.let {
+                            checklistStorage.selectChecklistByEquipmentType(it.type)
+                        }
+                        if (checklist == null) {
+                            Napier.w(
+                                "No checklist for equipmentId=${point.equipmentId}, skipping route point ${point.id}"
+                            )
+                            return@forEach
+                        }
                         routeStorage.upsertRoutePoint(
                             id = point.id,
                             routeId = point.routeId,
                             equipmentId = point.equipmentId,
-                            checklistId = point.checklistId,
+                            checklistId = checklist.id,
                             orderIndex = point.orderIndex.toLong(),
                         )
                     }
@@ -79,30 +127,9 @@ internal class BootstrapRepositoryImpl(
                             routeId = assignment.routeId,
                             userId = assignment.userId,
                             status = assignment.status.toLocal(),
-                            assignedAt = assignment.assignedAt,
-                            dueDate = assignment.dueDate,
-                        )
-                    }
-
-                    response.checklists.forEach { cl ->
-                        checklistStorage.upsertChecklist(
-                            id = cl.id,
-                            name = cl.name,
-                            equipmentId = cl.equipmentId,
-                        )
-                    }
-
-                    response.checklistItems.forEach { item ->
-                        checklistStorage.upsertItem(
-                            id = item.id,
-                            checklistId = item.checklistId,
-                            title = item.title,
-                            description = item.description,
-                            answerType = item.answerType.toDbValue(),
-                            isRequired = if (item.isRequired) 1L else 0L,
-                            requiresPhoto = if (item.requiresPhoto) 1L else 0L,
-                            selectOptions = item.selectOptions?.let { json.encodeToString(it) },
-                            orderIndex = item.orderIndex.toLong(),
+                            assignedAt = assignment.assignmentDate,
+                            shiftCode = assignment.shiftCode,
+                            updatedAt = assignment.updatedAt,
                         )
                     }
 
@@ -120,13 +147,15 @@ internal class BootstrapRepositoryImpl(
             )
         }
 
-    private fun RemoteAssignmentStatus.toLocal(): LocalRouteStatus = when (this) {
-        RemoteAssignmentStatus.ASSIGNED -> LocalRouteStatus.ASSIGNED
-        RemoteAssignmentStatus.IN_PROGRESS -> LocalRouteStatus.IN_PROGRESS
-        RemoteAssignmentStatus.COMPLETED -> LocalRouteStatus.COMPLETED
+    private fun RemoteAssignmentStatus.toLocal(): LocalRouteAssignmentStatus = when (this) {
+        RemoteAssignmentStatus.ASSIGNED -> LocalRouteAssignmentStatus.ASSIGNED
+        RemoteAssignmentStatus.IN_PROGRESS -> LocalRouteAssignmentStatus.IN_PROGRESS
+        RemoteAssignmentStatus.COMPLETED -> LocalRouteAssignmentStatus.COMPLETED
+        RemoteAssignmentStatus.PARTIALLY_COMPLETED -> LocalRouteAssignmentStatus.PARTIALLY_COMPLETED
+        RemoteAssignmentStatus.CANCELLED -> LocalRouteAssignmentStatus.CANCELLED
         RemoteAssignmentStatus.UNKNOWN -> {
             Napier.e(message = "Unknown RemoteAssignmentStatus received, defaulting to ASSIGNED")
-            LocalRouteStatus.ASSIGNED
+            LocalRouteAssignmentStatus.ASSIGNED
         }
     }
 
@@ -141,7 +170,7 @@ internal class BootstrapRepositoryImpl(
         RemoteAnswerType.NUMBER -> "number"
         RemoteAnswerType.TEXT -> "text"
         RemoteAnswerType.SELECT -> "select"
-        RemoteAnswerType.CONFIRM -> "confirm"
+        RemoteAnswerType.CONFIRM -> "confirmation"
         RemoteAnswerType.UNKNOWN -> "unknown"
     }
 }

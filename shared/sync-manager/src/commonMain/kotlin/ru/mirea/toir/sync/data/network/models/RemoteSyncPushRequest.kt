@@ -8,20 +8,24 @@ internal data class RemoteSyncPushRequest(
     @SerialName("clientBatchId") val clientBatchId: String,
     @SerialName("deviceId") val deviceId: String,
     @SerialName("sentAt") val sentAt: String,
-    @SerialName("inspections") val inspections: List<RemoteSyncInspection>?,
-    @SerialName("inspectionEquipmentResults") val inspectionEquipmentResults: List<RemoteSyncEquipmentResult>?,
-    @SerialName("checklistItemResults") val checklistItemResults: List<RemoteSyncChecklistItemResult>?,
-    @SerialName("actionLogs") val actionLogs: List<RemoteSyncActionLog>?,
+    @SerialName("inspections") val inspections: List<RemoteSyncInspection> = emptyList(),
+    @SerialName(
+        "inspectionEquipmentResults"
+    ) val inspectionEquipmentResults: List<RemoteSyncEquipmentResult> = emptyList(),
+    @SerialName("checklistItemResults") val checklistItemResults: List<RemoteSyncChecklistItemResult> = emptyList(),
+    @SerialName("actionLogs") val actionLogs: List<RemoteSyncActionLog> = emptyList(),
 )
 
 @Serializable
 internal data class RemoteSyncInspection(
     @SerialName("id") val id: String,
-    @SerialName("assignmentId") val assignmentId: String,
+    @SerialName("routeAssignmentId") val routeAssignmentId: String?,
     @SerialName("routeId") val routeId: String,
     @SerialName("status") val status: String,
-    @SerialName("startedAt") val startedAt: String,
+    @SerialName("startedAt") val startedAt: String?,
     @SerialName("completedAt") val completedAt: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
 )
 
 @Serializable
@@ -33,6 +37,8 @@ internal data class RemoteSyncEquipmentResult(
     @SerialName("status") val status: String,
     @SerialName("startedAt") val startedAt: String?,
     @SerialName("completedAt") val completedAt: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
 )
 
 @Serializable
@@ -40,19 +46,21 @@ internal data class RemoteSyncChecklistItemResult(
     @SerialName("id") val id: String,
     @SerialName("inspectionEquipmentResultId") val inspectionEquipmentResultId: String,
     @SerialName("checklistItemId") val checklistItemId: String,
-    @SerialName("valueBoolean") val valueBoolean: Boolean?,
-    @SerialName("valueNumber") val valueNumber: Double?,
     @SerialName("valueText") val valueText: String?,
-    @SerialName("valueSelect") val valueSelect: String?,
-    @SerialName("isConfirmed") val isConfirmed: Boolean,
-    @SerialName("answeredAt") val answeredAt: String?,
+    @SerialName("valueNumber") val valueNumber: Double?,
+    @SerialName("valueBoolean") val valueBoolean: Boolean?,
+    @SerialName("selectedOption") val selectedOption: String?,
+    @SerialName("comment") val comment: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
 )
 
 @Serializable
 internal data class RemoteSyncActionLog(
     @SerialName("id") val id: String,
-    @SerialName("inspectionId") val inspectionId: String,
     @SerialName("actionType") val actionType: String,
-    @SerialName("metadata") val metadata: String?,
-    @SerialName("createdAt") val createdAt: String,
+    @SerialName("entityType") val entityType: String?,
+    @SerialName("entityId") val entityId: String?,
+    @SerialName("payloadJson") val payloadJson: String?,
+    @SerialName("actionTime") val actionTime: String,
 )
