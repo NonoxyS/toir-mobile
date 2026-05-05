@@ -7,5 +7,6 @@ import kotlinx.collections.immutable.persistentListOf
 @Immutable
 data class UiPhotoCaptureState(
     val photos: ImmutableList<String> = persistentListOf(),
+    val maxPhotos: Int? = null,
     val isLoading: Boolean = false,
 )
