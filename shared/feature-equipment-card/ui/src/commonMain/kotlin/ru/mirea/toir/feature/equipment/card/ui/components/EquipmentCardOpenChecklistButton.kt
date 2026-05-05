@@ -21,7 +21,7 @@ internal fun EquipmentCardOpenChecklistButton(onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .background(colors.background)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
         Button(
             onClick = onClick,
