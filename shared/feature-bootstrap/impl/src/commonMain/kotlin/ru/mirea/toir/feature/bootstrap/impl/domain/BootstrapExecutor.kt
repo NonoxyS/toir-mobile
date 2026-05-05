@@ -40,7 +40,11 @@ internal class BootstrapExecutor(
                 dispatch(Message.ClearLoading)
                 publish(Label.NavigateToRoutesList)
             }
-            BootstrapResult.Unauthorized,
+            BootstrapResult.Unauthorized -> {
+                authRepository.logout()
+                dispatch(Message.ClearLoading)
+                publish(Label.NavigateToLogin)
+            }
             is BootstrapResult.Failure -> {
                 dispatch(Message.SetError)
             }

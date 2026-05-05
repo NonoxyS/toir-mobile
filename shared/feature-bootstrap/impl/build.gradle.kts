@@ -1,5 +1,6 @@
 import extensions.androidLibraryConfig
 import extensions.commonMainDependencies
+import extensions.commonTestDependencies
 import extensions.implementations
 
 plugins {
@@ -16,5 +17,11 @@ commonMainDependencies {
         projects.shared.coreNetwork,
         projects.shared.coreDatabase,
         projects.shared.coreAuth,
+    )
+}
+
+commonTestDependencies {
+    implementations(
+        libs.kotlin.coroutines.test,
     )
 }
