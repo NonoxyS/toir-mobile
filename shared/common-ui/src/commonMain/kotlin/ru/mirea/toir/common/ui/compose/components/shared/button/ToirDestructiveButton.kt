@@ -25,7 +25,7 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 
 /**
- * Destructive button per MASTER §8.1.
+ * Destructive button.
  *
  * Renders a Material3 [OutlinedButton] with [ToirTheme.colors.errorSubtle] background,
  * [ToirTheme.colors.error] content and a 1 dp [ToirTheme.colors.error] outline. Used

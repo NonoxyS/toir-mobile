@@ -23,7 +23,7 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 
 /**
- * Ghost button per MASTER §8.1.
+ * Ghost button.
  *
  * Renders a Material3 [TextButton] with a transparent background and
  * [ToirTheme.colors.textSecondary] content. Used for tertiary actions such as

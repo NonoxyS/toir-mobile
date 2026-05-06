@@ -24,7 +24,7 @@ import ru.mirea.toir.res.MR
 
 /**
  * Outlined text field wrapper that injects [ToirTheme] tokens into Material3's
- * [OutlinedTextField] per MASTER §8.2.
+ * [OutlinedTextField].
  *
  * The label is rendered as a separate [Text] above the field — we intentionally diverge
  * from the Material3 floating label pattern. When [isRequired] is true, a red asterisk
@@ -36,7 +36,7 @@ import ru.mirea.toir.res.MR
  * Supports `trailingIcon`, `keyboardActions`, and `visualTransformation` for password /
  * search-style fields.
  */
-@Suppress("LongParameterList") // mirrors the Material3 OutlinedTextField surface (MASTER §8.2)
+@Suppress("LongParameterList") // mirrors the Material3 OutlinedTextField surface
 @Composable
 fun ToirOutlinedTextField(
     value: String,

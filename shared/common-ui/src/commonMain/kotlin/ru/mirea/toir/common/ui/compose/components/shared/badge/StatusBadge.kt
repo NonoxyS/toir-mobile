@@ -23,7 +23,7 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 
 /**
- * Pill-shaped status indicator per MASTER §8.4.
+ * Pill-shaped status indicator.
  *
  * Icon is treated as decorative — `text` carries the accessibility label, and the row merges
  * descendants so screen readers announce the badge as a single element.
