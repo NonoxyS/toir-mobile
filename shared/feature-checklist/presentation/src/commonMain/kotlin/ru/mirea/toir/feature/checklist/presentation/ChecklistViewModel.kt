@@ -24,7 +24,7 @@ class ChecklistViewModel internal constructor(
         }
     }
 
-    fun onBooleanAnswer(itemId: String, value: Boolean) =
+    fun onBooleanAnswer(itemId: String, value: Boolean?) =
         store.accept(Intent.OnBooleanAnswer(itemId, value))
 
     fun onNumberAnswer(itemId: String, value: String) =
@@ -36,7 +36,7 @@ class ChecklistViewModel internal constructor(
     fun onSelectAnswer(itemId: String, value: String) =
         store.accept(Intent.OnSelectAnswer(itemId, value))
 
-    fun onConfirm(itemId: String) = store.accept(Intent.OnConfirm(itemId))
+    fun onConfirm(itemId: String, value: Boolean) = store.accept(Intent.OnConfirm(itemId, value))
 
     fun onAddPhoto(itemId: String) = store.accept(Intent.OnAddPhoto(itemId))
 

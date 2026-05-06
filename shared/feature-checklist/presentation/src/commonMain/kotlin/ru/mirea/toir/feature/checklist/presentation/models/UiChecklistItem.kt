@@ -29,4 +29,5 @@ data class UiChecklistItem(
     val photoCount: Int,
     val numericMin: String?,
     val numericMax: String?,
+    val showValidationError: Boolean,
 )
