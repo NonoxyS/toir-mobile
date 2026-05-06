@@ -7,15 +7,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import dev.icerock.moko.resources.compose.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
+import ru.mirea.toir.res.MR
 
 /**
  * Outlined text field wrapper that injects [ToirTheme] tokens into Material3's
@@ -27,6 +32,9 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
  *
  * The optional [supportingText] is rendered below the field; when [isError] is true it
  * is tinted with [ToirTheme.colors.error], otherwise [ToirTheme.colors.textSecondary].
+ *
+ * Supports `trailingIcon`, `keyboardActions`, and `visualTransformation` for password /
+ * search-style fields.
  */
 @Suppress("LongParameterList") // mirrors the Material3 OutlinedTextField surface (MASTER §8.2)
 @Composable
@@ -42,6 +50,9 @@ fun ToirOutlinedTextField(
     enabled: Boolean = true,
     singleLine: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (label != null) {
@@ -72,7 +83,10 @@ fun ToirOutlinedTextField(
                 null
             },
             isError = isError,
+            trailingIcon = trailingIcon,
             keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            visualTransformation = visualTransformation,
             singleLine = singleLine,
             shape = ToirTheme.shapes.sm,
             colors = OutlinedTextFieldDefaults.colors(
@@ -195,6 +209,28 @@ private fun PreviewToirOutlinedTextFieldMultiline() {
                 modifier = Modifier.fillMaxWidth(),
                 label = "Комментарий",
                 singleLine = false,
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PreviewToirOutlinedTextFieldWithTrailingIcon() {
+    ToirTheme {
+        Box(Modifier.background(ToirTheme.colors.background).padding(16.dp)) {
+            ToirOutlinedTextField(
+                value = "secret",
+                onValueChange = {},
+                modifier = Modifier.fillMaxWidth(),
+                label = "Пароль",
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(MR.images.visibility),
+                        contentDescription = null,
+                        tint = ToirTheme.colors.textSecondary,
+                    )
+                },
             )
         }
     }

@@ -94,6 +94,7 @@ internal fun RoutePointCard(
     }
 }
 
+// page-override layout: route-detail uses an icon-less colored pill; shared StatusBadge requires an icon
 @Composable
 private fun StatusBadge(
     label: String,

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirSecondaryButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.Spacer10
 import ru.mirea.toir.common.ui.compose.utils.Spacer12
@@ -205,29 +205,21 @@ private fun ColumnScope.RouteCardAction(
     when (status) {
         UiRouteStatus.ASSIGNED -> {
             Spacer12()
-            OutlinedButton(
+            ToirSecondaryButton(
                 onClick = onStartClick,
+                text = stringResource(MR.strings.routes_list_button_start),
                 modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = stringResource(MR.strings.routes_list_button_start),
-                    style = ToirTheme.typography.label,
-                )
-            }
+            )
         }
 
         UiRouteStatus.IN_PROGRESS,
         UiRouteStatus.PARTIALLY_COMPLETED -> {
             Spacer12()
-            OutlinedButton(
+            ToirSecondaryButton(
                 onClick = onContinueClick,
+                text = stringResource(MR.strings.routes_list_button_continue),
                 modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = stringResource(MR.strings.routes_list_button_continue),
-                    style = ToirTheme.typography.label,
-                )
-            }
+            )
         }
 
         UiRouteStatus.COMPLETED,

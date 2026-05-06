@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +28,7 @@ import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirPrimaryButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.feature.bootstrap.presentation.BootstrapViewModel
@@ -153,19 +152,11 @@ private fun BootstrapError(onRetry: () -> Unit) {
                 textAlign = TextAlign.Center,
             )
         }
-        Button(
+        ToirPrimaryButton(
             onClick = onRetry,
+            text = stringResource(MR.strings.bootstrap_button_retry),
             modifier = Modifier.widthIn(max = 280.dp).fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = ToirTheme.colors.ctaPrimary,
-                contentColor = ToirTheme.colors.textOnAccent,
-            ),
-        ) {
-            Text(
-                text = stringResource(MR.strings.bootstrap_button_retry),
-                style = ToirTheme.typography.label,
-            )
-        }
+        )
     }
 }
 

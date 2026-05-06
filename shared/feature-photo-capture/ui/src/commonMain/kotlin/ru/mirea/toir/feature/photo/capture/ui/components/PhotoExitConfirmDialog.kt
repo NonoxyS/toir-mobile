@@ -2,9 +2,10 @@ package ru.mirea.toir.feature.photo.capture.ui.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import dev.icerock.moko.resources.compose.stringResource
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirDestructiveButton
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirGhostButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 
@@ -31,22 +32,16 @@ internal fun PhotoExitConfirmDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = onDiscard) {
-                Text(
-                    text = stringResource(MR.strings.common_button_delete),
-                    color = ToirTheme.colors.error,
-                    style = ToirTheme.typography.label,
-                )
-            }
+            ToirDestructiveButton(
+                onClick = onDiscard,
+                text = stringResource(MR.strings.common_button_delete),
+            )
         },
         dismissButton = {
-            TextButton(onClick = onContinueCapture) {
-                Text(
-                    text = stringResource(MR.strings.common_button_continue_capture),
-                    color = ToirTheme.colors.textSecondary,
-                    style = ToirTheme.typography.label,
-                )
-            }
+            ToirGhostButton(
+                onClick = onContinueCapture,
+                text = stringResource(MR.strings.common_button_continue_capture),
+            )
         },
     )
 }

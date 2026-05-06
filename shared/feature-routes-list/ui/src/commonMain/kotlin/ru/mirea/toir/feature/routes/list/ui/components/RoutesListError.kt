@@ -3,7 +3,6 @@ package ru.mirea.toir.feature.routes.list.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirPrimaryButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 
@@ -37,8 +37,9 @@ internal fun RoutesListError(
             color = ToirTheme.colors.textPrimary,
         )
 
-        Button(onClick = onRetry) {
-            Text(text = stringResource(MR.strings.routes_list_button_retry))
-        }
+        ToirPrimaryButton(
+            onClick = onRetry,
+            text = stringResource(MR.strings.routes_list_button_retry),
+        )
     }
 }

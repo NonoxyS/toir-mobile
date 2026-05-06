@@ -7,8 +7,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import ru.mirea.toir.common.ui.compose.components.shared.textfield.ToirOutlinedTextField
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 
@@ -37,46 +36,38 @@ internal fun LoginPasswordField(
     onTogglePasswordVisibility: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var localValue by remember { mutableStateOf(value) }
-    val colors = ToirTheme.colors
-
-    OutlinedTextField(
+    var localValue by remember(value) { mutableStateOf(value) }
+    ToirOutlinedTextField(
         value = localValue,
-        onValueChange = {
-            localValue = it
-            onValueChange(it)
+        onValueChange = { newValue ->
+            localValue = newValue
+            onValueChange(newValue)
         },
-        label = { Text(text = stringResource(MR.strings.auth_password_hint)) },
-        singleLine = true,
+        modifier = modifier.fillMaxWidth(),
+        label = stringResource(MR.strings.auth_password_hint),
         isError = isError,
-        visualTransformation = if (passwordVisible) {
-            VisualTransformation.None
-        } else {
-            PasswordVisualTransformation()
+        enabled = enabled,
+        singleLine = true,
+        trailingIcon = {
+            IconButton(onClick = onTogglePasswordVisibility) {
+                Icon(
+                    painter = painterResource(
+                        if (passwordVisible) MR.images.visibility_off else MR.images.visibility,
+                    ),
+                    contentDescription = null,
+                    tint = ToirTheme.colors.textSecondary,
+                )
+            }
         },
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Done,
         ),
         keyboardActions = KeyboardActions(onDone = { onDone() }),
-        modifier = modifier.fillMaxWidth(),
-        enabled = enabled,
-        shape = ToirTheme.shapes.sm,
-        colors = loginTextFieldColors(colors),
-        trailingIcon = {
-            IconButton(onClick = onTogglePasswordVisibility) {
-                Icon(
-                    painter = painterResource(
-                        imageResource = if (passwordVisible) {
-                            MR.images.visibility_off
-                        } else {
-                            MR.images.visibility
-                        }
-                    ),
-                    contentDescription = null,
-                    tint = colors.textSecondary,
-                )
-            }
+        visualTransformation = if (passwordVisible) {
+            VisualTransformation.None
+        } else {
+            PasswordVisualTransformation()
         },
     )
 }
