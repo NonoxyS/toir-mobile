@@ -4,19 +4,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -30,6 +27,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.icerock.moko.resources.compose.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirPrimaryButton
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirSecondaryButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.feature.checklist.presentation.ChecklistViewModel
@@ -114,6 +113,15 @@ private fun ChecklistScreenContent(
                 ),
             )
         },
+        bottomBar = {
+            if (!state.isLoading && !state.isError) {
+                ChecklistFinishBar(
+                    isValidationError = state.isValidationError,
+                    isPhotoValidationError = state.isPhotoValidationError,
+                    onFinishChecklist = onFinishChecklist,
+                )
+            }
+        },
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -131,9 +139,48 @@ private fun ChecklistScreenContent(
                     onSelectAnswer = onSelectAnswer,
                     onConfirm = onConfirm,
                     onAddPhoto = onAddPhoto,
-                    onFinishChecklist = onFinishChecklist,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ChecklistFinishBar(
+    isValidationError: Boolean,
+    isPhotoValidationError: Boolean,
+    onFinishChecklist: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = ToirTheme.colors.background,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(space = 8.dp),
+        ) {
+            if (isValidationError) {
+                Text(
+                    text = stringResource(MR.strings.checklist_validation_error_required),
+                    style = ToirTheme.typography.bodyMedium,
+                    color = ToirTheme.colors.error,
+                )
+            }
+            if (isPhotoValidationError) {
+                Text(
+                    text = stringResource(MR.strings.checklist_validation_error_photo),
+                    style = ToirTheme.typography.bodyMedium,
+                    color = ToirTheme.colors.error,
+                )
+            }
+            ToirPrimaryButton(
+                onClick = onFinishChecklist,
+                text = stringResource(MR.strings.checklist_button_finish),
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
@@ -171,7 +218,6 @@ private fun ChecklistList(
     onSelectAnswer: (String, String) -> Unit,
     onConfirm: (String) -> Unit,
     onAddPhoto: (String) -> Unit,
-    onFinishChecklist: () -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -188,42 +234,6 @@ private fun ChecklistList(
                 onConfirm = onConfirm,
                 onAddPhoto = onAddPhoto,
             )
-        }
-
-        item {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(space = 8.dp),
-            ) {
-                if (state.isValidationError) {
-                    Text(
-                        text = stringResource(MR.strings.checklist_validation_error_required),
-                        style = ToirTheme.typography.bodyMedium,
-                        color = ToirTheme.colors.error,
-                    )
-                }
-                if (state.isPhotoValidationError) {
-                    Text(
-                        text = stringResource(MR.strings.checklist_validation_error_photo),
-                        style = ToirTheme.typography.bodyMedium,
-                        color = ToirTheme.colors.error,
-                    )
-                }
-                Spacer(modifier = Modifier.height(height = 4.dp))
-                Button(
-                    onClick = onFinishChecklist,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ToirTheme.colors.ctaPrimary,
-                        contentColor = ToirTheme.colors.textOnAccent,
-                    ),
-                ) {
-                    Text(
-                        text = stringResource(MR.strings.checklist_button_finish),
-                        style = ToirTheme.typography.label,
-                    )
-                }
-            }
         }
     }
 }
@@ -287,19 +297,12 @@ private fun ChecklistPhotoSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(space = 4.dp),
     ) {
-        Button(
+        ToirSecondaryButton(
             onClick = { onAddPhoto(item.id) },
+            text = stringResource(MR.strings.checklist_button_add_photo),
             enabled = item.resultId != null,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = ToirTheme.colors.ctaSecondary,
-                contentColor = ToirTheme.colors.textPrimary,
-            ),
-        ) {
-            Text(
-                text = stringResource(MR.strings.checklist_button_add_photo),
-                style = ToirTheme.typography.label,
-            )
-        }
+            modifier = Modifier.fillMaxWidth(),
+        )
         if (item.photoCount > 0) {
             Text(
                 text = stringResource(MR.strings.checklist_photo_count, item.photoCount),

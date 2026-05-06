@@ -1,5 +1,6 @@
 package ru.mirea.toir.feature.equipment.card.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,7 +25,10 @@ internal fun EquipmentCardContent(
     state: UiEquipmentCardState,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         EquipmentCardField(
             label = stringResource(MR.strings.equipment_card_code),
             value = state.code,

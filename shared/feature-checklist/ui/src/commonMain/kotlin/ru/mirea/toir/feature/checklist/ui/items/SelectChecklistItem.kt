@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -43,6 +44,12 @@ internal fun SelectChecklistItem(
                 RadioButton(
                     selected = selected,
                     onClick = { onSelectOption(option) },
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = ToirTheme.colors.success,
+                        unselectedColor = ToirTheme.colors.border,
+                        disabledSelectedColor = ToirTheme.colors.success.copy(alpha = 0.5f),
+                        disabledUnselectedColor = ToirTheme.colors.border.copy(alpha = 0.5f),
+                    ),
                 )
                 Text(
                     text = option,

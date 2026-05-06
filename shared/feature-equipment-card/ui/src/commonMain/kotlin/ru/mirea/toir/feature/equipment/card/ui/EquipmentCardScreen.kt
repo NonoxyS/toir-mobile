@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -87,28 +88,39 @@ internal fun EquipmentCardScreen(
             }
         },
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center,
-        ) {
-            when {
-                state.isLoading -> CircularProgressIndicator(
-                    color = ToirTheme.colors.textSecondary,
-                )
+        when {
+            state.isLoading -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(color = ToirTheme.colors.textSecondary)
+            }
 
-                state.isError -> Text(
+            state.isError -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
                     text = stringResource(MR.strings.error_generic),
                     style = ToirTheme.typography.bodyMedium,
                     color = ToirTheme.colors.error,
                 )
+            }
 
-                else -> EquipmentCardLayout(
+            else -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                EquipmentCardLayout(
                     status = state.status,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
+                    modifier = Modifier.widthIn(max = 480.dp),
                 ) {
                     EquipmentCardContent(state = state)
                 }
@@ -134,24 +146,29 @@ private fun PreviewEquipmentCardScreenLoading() {
 @Composable
 private fun PreviewEquipmentCardScreenContent() {
     ToirTheme {
-        EquipmentCardLayout(
-            status = UiEquipmentResultStatus.IN_PROGRESS,
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
+            contentAlignment = Alignment.TopCenter,
         ) {
-            EquipmentCardContent(
-                state = UiEquipmentCardState(
-                    code = "EQ-001",
-                    name = "Насос циркуляционный",
-                    type = "Насос",
-                    locationName = "Котельная, 2 этаж",
-                    status = UiEquipmentResultStatus.IN_PROGRESS,
-                    equipmentResultId = "res-001",
-                    isLoading = false,
-                    isError = false,
-                ),
-            )
+            EquipmentCardLayout(
+                status = UiEquipmentResultStatus.IN_PROGRESS,
+                modifier = Modifier.widthIn(max = 480.dp),
+            ) {
+                EquipmentCardContent(
+                    state = UiEquipmentCardState(
+                        code = "EQ-001",
+                        name = "Насос циркуляционный",
+                        type = "Насос",
+                        locationName = "Котельная, 2 этаж",
+                        status = UiEquipmentResultStatus.IN_PROGRESS,
+                        equipmentResultId = "res-001",
+                        isLoading = false,
+                        isError = false,
+                    ),
+                )
+            }
         }
     }
 }

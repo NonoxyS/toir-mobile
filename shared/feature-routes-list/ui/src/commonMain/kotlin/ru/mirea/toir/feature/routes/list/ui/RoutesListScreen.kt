@@ -6,6 +6,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -39,6 +40,7 @@ internal fun RoutesListScreen(
 
     Scaffold(
         topBar = { RoutesListTopBar() },
+        containerColor = ToirTheme.colors.background,
     ) { paddingValues ->
         RoutesListContent(
             isLoading = state.isLoading,
@@ -66,6 +68,7 @@ private fun RoutesListTopBar() {
                 color = ToirTheme.colors.textPrimary,
             )
         },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = ToirTheme.colors.background),
     )
 }
 
@@ -83,6 +86,7 @@ private fun PreviewRoutesListScreenLoading() {
     ToirTheme {
         Scaffold(
             topBar = { RoutesListTopBar() },
+            containerColor = ToirTheme.colors.background,
         ) { paddingValues ->
             RoutesListContent(
                 isLoading = true,
@@ -145,6 +149,7 @@ private fun PreviewRoutesListScreenContent() {
     ToirTheme {
         Scaffold(
             topBar = { RoutesListTopBar() },
+            containerColor = ToirTheme.colors.background,
         ) { paddingValues ->
             RoutesListContent(
                 isLoading = false,
@@ -168,6 +173,7 @@ private fun PreviewRoutesListScreenError() {
     ToirTheme {
         Scaffold(
             topBar = { RoutesListTopBar() },
+            containerColor = ToirTheme.colors.background,
         ) { paddingValues ->
             RoutesListContent(
                 isLoading = false,

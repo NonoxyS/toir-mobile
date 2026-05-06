@@ -18,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
@@ -43,12 +42,10 @@ internal fun RouteAssignmentCard(
     val shapes = ToirTheme.shapes
 
     val cardBackground = if (item.status == UiRouteStatus.COMPLETED) colors.successSubtle else colors.surface
-    val cardAlpha = if (item.status == UiRouteStatus.ASSIGNED) 0.7f else 1f
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .alpha(cardAlpha)
             .clip(shapes.md)
             .background(cardBackground),
     ) {
