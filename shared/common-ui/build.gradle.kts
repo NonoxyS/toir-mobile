@@ -28,6 +28,7 @@ commonMainDependencies {
         projects.shared.commonResources,
 
         *composeBundle,
-        libs.moko.resources.compose
+        libs.moko.resources.compose,
+        libs.kotlin.immutableCollections,
     )
 }
