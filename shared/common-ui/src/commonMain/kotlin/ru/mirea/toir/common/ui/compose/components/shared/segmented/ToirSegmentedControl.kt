@@ -33,7 +33,7 @@ fun <T> ToirSegmentedControl(
     modifier: Modifier = Modifier,
     isError: Boolean = false,
     enabled: Boolean = true,
-    optionLabel: (T) -> String,
+    optionLabel: @Composable (T) -> String,
 ) {
     val borderColor = if (isError) ToirTheme.colors.error else ToirTheme.colors.border
     SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
