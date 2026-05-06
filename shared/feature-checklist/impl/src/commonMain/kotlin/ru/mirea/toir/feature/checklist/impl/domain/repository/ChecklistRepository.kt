@@ -8,7 +8,7 @@ internal interface ChecklistRepository {
     suspend fun saveBooleanAnswer(
         equipmentResultId: String,
         itemId: String,
-        value: Boolean,
+        value: Boolean?,
     ): Result<Unit>
 
     suspend fun saveNumberAnswer(
@@ -29,7 +29,11 @@ internal interface ChecklistRepository {
         value: String,
     ): Result<Unit>
 
-    suspend fun saveConfirm(equipmentResultId: String, itemId: String): Result<Unit>
+    suspend fun saveConfirm(
+        equipmentResultId: String,
+        itemId: String,
+        value: Boolean,
+    ): Result<Unit>
 
     suspend fun finishChecklist(equipmentResultId: String): Result<Unit>
 }

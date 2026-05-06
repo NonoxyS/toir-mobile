@@ -53,7 +53,7 @@ internal class ChecklistExecutor(
             }
 
             is Intent.OnConfirm -> {
-                repository.saveConfirm(state().equipmentResultId, intent.itemId)
+                repository.saveConfirm(state().equipmentResultId, intent.itemId, intent.value)
                 reloadItems()
             }
 

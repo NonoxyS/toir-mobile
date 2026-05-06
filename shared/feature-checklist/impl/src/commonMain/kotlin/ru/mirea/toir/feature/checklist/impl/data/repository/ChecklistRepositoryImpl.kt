@@ -81,11 +81,11 @@ internal class ChecklistRepositoryImpl(
     override suspend fun saveBooleanAnswer(
         equipmentResultId: String,
         itemId: String,
-        value: Boolean,
+        value: Boolean?,
     ): Result<Unit> = saveAnswer(
         equipmentResultId = equipmentResultId,
         itemId = itemId,
-        valueBoolean = if (value) 1L else 0L,
+        valueBoolean = value?.let { if (it) 1L else 0L },
     )
 
     override suspend fun saveNumberAnswer(
@@ -118,12 +118,15 @@ internal class ChecklistRepositoryImpl(
         selectedOption = value,
     )
 
-    override suspend fun saveConfirm(equipmentResultId: String, itemId: String): Result<Unit> =
-        saveAnswer(
-            equipmentResultId = equipmentResultId,
-            itemId = itemId,
-            valueBoolean = 1L,
-        )
+    override suspend fun saveConfirm(
+        equipmentResultId: String,
+        itemId: String,
+        value: Boolean,
+    ): Result<Unit> = saveAnswer(
+        equipmentResultId = equipmentResultId,
+        itemId = itemId,
+        valueBoolean = if (value) 1L else null,
+    )
 
     @OptIn(ExperimentalTime::class)
     override suspend fun finishChecklist(equipmentResultId: String): Result<Unit> =
