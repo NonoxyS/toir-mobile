@@ -30,10 +30,12 @@ fun ToirToggleChip(
     enabled: Boolean = true,
 ) {
     val borderColor = when {
+        !enabled -> ToirTheme.colors.borderSubtle
         isError -> ToirTheme.colors.error
         selected -> ToirTheme.colors.success
         else -> ToirTheme.colors.border
     }
+    val iconTint = if (enabled) ToirTheme.colors.success else ToirTheme.colors.textDisabled
     FilterChip(
         selected = selected,
         onClick = { onSelectedChange(!selected) },
@@ -50,7 +52,7 @@ fun ToirToggleChip(
                 Icon(
                     painter = painterResource(MR.images.ic_check_circle),
                     contentDescription = null,
-                    tint = ToirTheme.colors.success,
+                    tint = iconTint,
                 )
             }
         } else {
@@ -64,6 +66,8 @@ fun ToirToggleChip(
             selectedLabelColor = ToirTheme.colors.textPrimary,
             disabledContainerColor = ToirTheme.colors.surface,
             disabledLabelColor = ToirTheme.colors.textDisabled,
+            disabledLeadingIconColor = ToirTheme.colors.textDisabled,
+            disabledSelectedContainerColor = ToirTheme.colors.surface,
         ),
     )
 }
