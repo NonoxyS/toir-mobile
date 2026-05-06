@@ -109,6 +109,8 @@
     <string name="photo_capture_confirm_disabled_hint">Снимите хотя бы одно фото</string>
     <string name="photo_capture_preview_title">Фото %1$d из %2$d</string>
     <string name="photo_capture_preview_close_content_description">Закрыть</string>
+    <string name="photo_capture_permission_denied">Включите доступ к камере, чтобы сделать фото</string>
+    <string name="photo_capture_permission_permanently_denied">Разрешите доступ к камере в настройках устройства</string>
 
     <!-- Photo Capture — dialogs -->
     <string name="photo_delete_title">Удалить фото?</string>
