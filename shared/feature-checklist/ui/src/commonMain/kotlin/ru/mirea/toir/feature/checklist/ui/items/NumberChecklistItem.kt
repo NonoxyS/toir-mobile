@@ -26,9 +26,11 @@ internal fun NumberChecklistItem(
     val max = item.numericMax?.replace(',', '.')?.toDoubleOrNull()
     val isOutOfRange = parsed != null &&
         ((min != null && parsed < min) || (max != null && parsed > max))
+    val isInvalid = isOutOfRange || item.showValidationError
     val rangeHint = rangeHint(item.numericMin, item.numericMax)
     val supportingText = when {
         isOutOfRange -> stringResource(MR.strings.checklist_number_error_out_of_range)
+        item.showValidationError -> stringResource(MR.strings.checklist_validation_error_required)
         rangeHint != null -> rangeHint
         else -> null
     }
@@ -42,7 +44,7 @@ internal fun NumberChecklistItem(
         modifier = modifier.fillMaxWidth(),
         label = item.title,
         isRequired = item.isRequired,
-        isError = isOutOfRange,
+        isError = isInvalid,
         supportingText = supportingText,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         singleLine = true,

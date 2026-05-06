@@ -7,8 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import dev.icerock.moko.resources.compose.stringResource
 import ru.mirea.toir.common.ui.compose.components.shared.textfield.ToirOutlinedTextField
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
+import ru.mirea.toir.res.MR
 
 @Composable
 internal fun TextChecklistItem(
@@ -26,6 +28,12 @@ internal fun TextChecklistItem(
         modifier = modifier.fillMaxWidth(),
         label = item.title,
         isRequired = item.isRequired,
+        isError = item.showValidationError,
+        supportingText = if (item.showValidationError) {
+            stringResource(MR.strings.checklist_validation_error_required)
+        } else {
+            null
+        },
         singleLine = true,
     )
 }
