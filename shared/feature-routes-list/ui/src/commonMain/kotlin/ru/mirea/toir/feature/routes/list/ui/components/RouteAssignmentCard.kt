@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -43,9 +45,10 @@ internal fun RouteAssignmentCard(
 
     val cardBackground = if (item.status == UiRouteStatus.COMPLETED) colors.successSubtle else colors.surface
 
-    Box(
+    Row(
         modifier = modifier
             .fillMaxWidth()
+            .height(IntrinsicSize.Min)
             .clip(shapes.md)
             .background(cardBackground),
     ) {
@@ -53,7 +56,7 @@ internal fun RouteAssignmentCard(
             Box(
                 modifier = Modifier
                     .width(3.dp)
-                    .matchParentSize()
+                    .fillMaxHeight()
                     .background(colors.sync),
             )
         }
@@ -61,12 +64,7 @@ internal fun RouteAssignmentCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    start = if (item.hasPendingSync) 20.dp else 16.dp,
-                    top = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp,
-                ),
+                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 16.dp),
         ) {
             RouteCardHeader(item = item)
             Spacer4()
