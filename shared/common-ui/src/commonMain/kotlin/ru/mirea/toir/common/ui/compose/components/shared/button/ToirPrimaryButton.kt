@@ -24,7 +24,7 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 
 /**
- * Primary CTA button per MASTER §8.1.
+ * Primary CTA button.
  *
  * Renders a Material3 [Button] tinted with [ToirTheme.colors.ctaPrimary] and a 6dp
  * (sm) corner radius. The button is constrained to a minimum height of 48 dp so callers

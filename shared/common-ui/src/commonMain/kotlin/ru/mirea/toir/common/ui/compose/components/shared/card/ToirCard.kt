@@ -16,10 +16,10 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 
 /**
- * Surface elevation tokens per MASTER §6.
+ * Surface elevation tokens.
  *
  * - [Level1] — base surface (`surface`); used for the page background containers
- *   and the default list-card pattern (§9.1).
+ *   and the default list-card pattern.
  * - [Level2] — raised surface (`surface2`) with a 1 dp `border` stroke; used to
  *   visually separate nested content such as info banners or the equipment card
  *   content area on top of [Level1].
@@ -27,7 +27,7 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 enum class ToirElevation { Level1, Level2 }
 
 /**
- * Surface card wrapper per MASTER §6 (elevation tokens) and §9.1 (list card pattern).
+ * Surface card wrapper providing elevation tokens and list-card pattern.
  *
  * Wraps Material3 [Surface] with the design system colour, shape (10 dp `md`) and
  * — for [ToirElevation.Level2] — a 1 dp `border` stroke. Shadows are intentionally

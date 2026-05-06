@@ -25,7 +25,7 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 
 /**
- * Secondary button per MASTER §8.1.
+ * Secondary button.
  *
  * Renders a Material3 [OutlinedButton] with [ToirTheme.colors.surface2] background,
  * [ToirTheme.colors.textPrimary] content and a 1 dp [ToirTheme.colors.border] outline.

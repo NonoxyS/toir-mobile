@@ -13,11 +13,10 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 
 /**
- * Switch wrapper that injects [ToirTheme] tokens into Material3's [Switch]
- * per MASTER §8.12 (Boolean checklist item).
+ * Switch wrapper that injects [ToirTheme] tokens into Material3's [Switch].
  *
  * The wrapper renders only the switch itself — the optional label that appears
- * to its left in MASTER §8.12 is the responsibility of the calling row layout.
+ * to its left is the responsibility of the calling row layout.
  */
 @Composable
 fun ToirSwitch(

@@ -31,7 +31,11 @@ internal fun SelectChecklistItem(
         Text(
             text = item.titleWithRequiredMarker(),
             style = ToirTheme.typography.bodyLarge,
-            color = ToirTheme.colors.textPrimary,
+            color = if (item.showValidationError) {
+                ToirTheme.colors.error
+            } else {
+                ToirTheme.colors.textPrimary
+            },
         )
         selectType.options.forEach { option ->
             val selected = item.valueSelect == option

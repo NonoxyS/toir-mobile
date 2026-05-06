@@ -14,7 +14,9 @@ interface UiChecklistStateMapper : Mapper<ChecklistStore.State, UiChecklistState
 internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
 
     override fun map(item: ChecklistStore.State): UiChecklistState = UiChecklistState(
-        items = item.items.map { it.toUi() }.toImmutableList(),
+        items = item.items
+            .map { it.toUi(showValidationErrors = item.isValidationError) }
+            .toImmutableList(),
         isLoading = item.isLoading,
         isError = item.isError,
         isValidationError = item.isValidationError,
@@ -22,23 +24,35 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
         isCompleted = item.isCompleted,
     )
 
-    private fun DomainChecklistItem.toUi(): UiChecklistItem = UiChecklistItem(
-        id = id,
-        title = title,
-        description = description,
-        answerType = answerType.toUi(),
-        isRequired = isRequired,
-        requiresPhoto = requiresPhoto,
-        resultId = resultId,
-        valueBoolean = valueBoolean,
-        valueNumber = valueNumber?.formatNumber().orEmpty(),
-        valueText = valueText.orEmpty(),
-        valueSelect = valueSelect,
-        isConfirmed = isConfirmed,
-        photoCount = photoCount,
-        numericMin = numericMin?.formatNumber(),
-        numericMax = numericMax?.formatNumber(),
-    )
+    private fun DomainChecklistItem.toUi(showValidationErrors: Boolean): UiChecklistItem {
+        val showValidationError = showValidationErrors && isRequired && !isAnswered()
+        return UiChecklistItem(
+            id = id,
+            title = title,
+            description = description,
+            answerType = answerType.toUi(),
+            isRequired = isRequired,
+            requiresPhoto = requiresPhoto,
+            resultId = resultId,
+            valueBoolean = valueBoolean,
+            valueNumber = valueNumber?.formatNumber().orEmpty(),
+            valueText = valueText.orEmpty(),
+            valueSelect = valueSelect,
+            isConfirmed = isConfirmed,
+            photoCount = photoCount,
+            numericMin = numericMin?.formatNumber(),
+            numericMax = numericMax?.formatNumber(),
+            showValidationError = showValidationError,
+        )
+    }
+
+    private fun DomainChecklistItem.isAnswered(): Boolean = when (answerType) {
+        DomainAnswerType.Boolean -> valueBoolean != null
+        DomainAnswerType.Number -> valueNumber != null
+        DomainAnswerType.Text -> !valueText.isNullOrBlank()
+        is DomainAnswerType.Select -> !valueSelect.isNullOrBlank()
+        DomainAnswerType.Confirm -> isConfirmed
+    }
 
     private fun DomainAnswerType.toUi(): UiAnswerType = when (this) {
         DomainAnswerType.Boolean -> UiAnswerType.Boolean

@@ -21,11 +21,11 @@ interface ChecklistStore : Store<Intent, State, Label> {
     )
 
     sealed interface Intent {
-        data class OnBooleanAnswer(val itemId: String, val value: Boolean) : Intent
+        data class OnBooleanAnswer(val itemId: String, val value: Boolean?) : Intent
         data class OnNumberAnswer(val itemId: String, val value: String) : Intent
         data class OnTextAnswer(val itemId: String, val value: String) : Intent
         data class OnSelectAnswer(val itemId: String, val value: String) : Intent
-        data class OnConfirm(val itemId: String) : Intent
+        data class OnConfirm(val itemId: String, val value: Boolean) : Intent
         data class OnAddPhoto(val itemId: String) : Intent
         data object OnFinishChecklist : Intent
     }

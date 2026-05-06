@@ -82,11 +82,11 @@ internal fun ChecklistScreen(
 @Composable
 private fun ChecklistScreenContent(
     state: UiChecklistState,
-    onBooleanAnswer: (String, Boolean) -> Unit,
+    onBooleanAnswer: (String, Boolean?) -> Unit,
     onNumberAnswer: (String, String) -> Unit,
     onTextAnswer: (String, String) -> Unit,
     onSelectAnswer: (String, String) -> Unit,
-    onConfirm: (String) -> Unit,
+    onConfirm: (String, Boolean) -> Unit,
     onAddPhoto: (String) -> Unit,
     onFinishChecklist: () -> Unit,
     onNavigateBack: () -> Unit,
@@ -219,11 +219,11 @@ private fun ChecklistError() {
 @Composable
 private fun ChecklistList(
     state: UiChecklistState,
-    onBooleanAnswer: (String, Boolean) -> Unit,
+    onBooleanAnswer: (String, Boolean?) -> Unit,
     onNumberAnswer: (String, String) -> Unit,
     onTextAnswer: (String, String) -> Unit,
     onSelectAnswer: (String, String) -> Unit,
-    onConfirm: (String) -> Unit,
+    onConfirm: (String, Boolean) -> Unit,
     onAddPhoto: (String) -> Unit,
 ) {
     LazyColumn(
@@ -248,11 +248,11 @@ private fun ChecklistList(
 @Composable
 private fun ChecklistItemRow(
     item: UiChecklistItem,
-    onBooleanAnswer: (String, Boolean) -> Unit,
+    onBooleanAnswer: (String, Boolean?) -> Unit,
     onNumberAnswer: (String, String) -> Unit,
     onTextAnswer: (String, String) -> Unit,
     onSelectAnswer: (String, String) -> Unit,
-    onConfirm: (String) -> Unit,
+    onConfirm: (String, Boolean) -> Unit,
     onAddPhoto: (String) -> Unit,
 ) {
     Column(
@@ -282,7 +282,7 @@ private fun ChecklistItemRow(
 
             is UiAnswerType.Confirm -> ConfirmChecklistItem(
                 item = item,
-                onConfirm = { onConfirm(item.id) },
+                onConfirmChange = { value -> onConfirm(item.id, value) },
             )
         }
 
