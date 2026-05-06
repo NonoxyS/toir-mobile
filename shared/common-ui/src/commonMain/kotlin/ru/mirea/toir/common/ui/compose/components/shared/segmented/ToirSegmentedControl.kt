@@ -24,6 +24,7 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
  * Uses ToirTheme tokens via SegmentedButtonDefaults.colors(...). Border turns red when isError.
  * The [optionLabel] function maps each option T to its display String.
  */
+@Suppress("LongParameterList") // wraps SingleChoiceSegmentedButtonRow surface
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> ToirSegmentedControl(
@@ -58,6 +59,8 @@ fun <T> ToirSegmentedControl(
                     disabledActiveContentColor = ToirTheme.colors.textDisabled,
                     disabledInactiveContainerColor = Color.Transparent,
                     disabledInactiveContentColor = ToirTheme.colors.textDisabled,
+                    disabledActiveBorderColor = ToirTheme.colors.borderSubtle,
+                    disabledInactiveBorderColor = ToirTheme.colors.borderSubtle,
                 ),
                 icon = {},
             ) {
