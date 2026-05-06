@@ -13,7 +13,9 @@ import java.io.File
 import java.util.UUID
 
 @Composable
-actual fun rememberCameraLauncher(onPhotoTaken: (uri: String) -> Unit): () -> Unit {
+internal actual fun rememberPlatformCameraTrigger(
+    onPhotoTaken: (uri: String) -> Unit,
+): () -> Unit {
     val context = LocalContext.current
     val currentOnPhotoTaken = rememberUpdatedState(onPhotoTaken)
     val photoUri = remember { createPhotoUri(context) }

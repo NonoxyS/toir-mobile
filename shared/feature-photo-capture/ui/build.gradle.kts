@@ -18,5 +18,8 @@ commonMainDependencies {
     implementations(
         libs.coil.compose,
         libs.kotlin.immutableCollections,
+        libs.moko.permissions.core,
+        libs.moko.permissions.camera,
+        libs.moko.permissions.compose,
     )
 }

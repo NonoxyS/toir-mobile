@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -21,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -30,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
@@ -65,7 +69,23 @@ internal fun PhotoCaptureScreen(
         }
     }
 
-    val cameraLauncher = rememberCameraLauncher(onPhotoTaken = viewModel::onPhotoTaken)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    val permissionDeniedMessage = stringResource(MR.strings.photo_capture_permission_denied)
+    val permissionPermanentlyDeniedMessage =
+        stringResource(MR.strings.photo_capture_permission_permanently_denied)
+
+    val cameraLauncher = rememberCameraLauncher(
+        onPhotoTaken = viewModel::onPhotoTaken,
+        onPermissionDenial = { permanent ->
+            val message = if (permanent) {
+                permissionPermanentlyDeniedMessage
+            } else {
+                permissionDeniedMessage
+            }
+            coroutineScope.launch { snackbarHostState.showSnackbar(message) }
+        },
+    )
 
     var pendingDeleteUri by remember { mutableStateOf<String?>(null) }
     var previewUri by remember { mutableStateOf<String?>(null) }
@@ -101,6 +121,7 @@ internal fun PhotoCaptureScreen(
                             onBack = handleBack,
                         )
                     },
+                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     bottomBar = {
                         val isLimitReached = state.maxPhotos
                             ?.let { state.photos.size >= it }
