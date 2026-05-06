@@ -5,8 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
@@ -46,25 +49,25 @@ internal fun RoutePointCard(
         UiEquipmentResultStatus.SKIPPED -> colors.errorSubtle
     }
 
-    Box(
+    Row(
         modifier = modifier
             .fillMaxWidth()
+            .height(IntrinsicSize.Min)
             .clip(shapes.md)
             .background(colors.surface)
             .clickable(onClick = onClick),
     ) {
-        // Left accent bar
         Box(
             modifier = Modifier
                 .width(4.dp)
-                .matchParentSize()
+                .fillMaxHeight()
                 .background(accentColor),
         )
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, top = 14.dp, end = 14.dp, bottom = 14.dp),
+                .padding(start = 16.dp, top = 14.dp, end = 14.dp, bottom = 14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -94,6 +97,7 @@ internal fun RoutePointCard(
     }
 }
 
+// page-override layout: route-detail uses an icon-less colored pill; shared StatusBadge requires an icon
 @Composable
 private fun StatusBadge(
     label: String,

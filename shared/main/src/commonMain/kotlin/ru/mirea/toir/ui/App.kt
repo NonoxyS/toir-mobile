@@ -28,7 +28,7 @@ fun App() {
         val navController = rememberNavController()
         NavHost(
             navController = navController,
-            startDestination = AuthRoute,
+            startDestination = BootstrapRoute,
         ) {
             composableAuthScreen(
                 onNavigateToMain = {
@@ -40,7 +40,7 @@ fun App() {
                     navController.navigateToRoutesListScreen(popUpToScreen = BootstrapRoute)
                 },
                 onNavigateToLogin = {
-                    navController.navigateToAuthScreen(popUpToScreen = RoutesListRoute)
+                    navController.navigateToAuthScreen(popUpToScreen = BootstrapRoute)
                 },
             )
             composableRoutesListScreen(
@@ -70,6 +70,7 @@ fun App() {
             )
             composablePhotoCaptureScreen(
                 onPhotoConfirm = { navController.popBackStack() },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }

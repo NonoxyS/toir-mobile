@@ -24,6 +24,7 @@ internal class PhotoCaptureExecutor(
     override suspend fun suspendExecuteIntent(intent: Intent) {
         when (intent) {
             is Intent.OnPhotoTaken -> savePhoto(intent.fileUri)
+            is Intent.OnPhotoDeleted -> dispatch(Message.PhotoRemoved(intent.fileUri))
             Intent.OnConfirm -> publish(Label.PhotoConfirmed)
         }
     }

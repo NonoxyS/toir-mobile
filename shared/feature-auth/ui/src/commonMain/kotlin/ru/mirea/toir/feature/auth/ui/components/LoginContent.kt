@@ -5,16 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,7 +20,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import ru.mirea.toir.common.ui.compose.theme.ToirColorScheme
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirPrimaryButton
+import ru.mirea.toir.common.ui.compose.components.shared.textfield.ToirOutlinedTextField
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.Spacer12
 import ru.mirea.toir.common.ui.compose.utils.Spacer16
@@ -104,33 +98,13 @@ internal fun LoginContent(
             }
             Spacer24()
 
-            Button(
+            ToirPrimaryButton(
                 onClick = onLoginClick,
-                modifier = Modifier
-                    .fillMaxWidth(.3f)
-                    .heightIn(max = 48.dp),
+                text = stringResource(MR.strings.auth_button_login),
+                modifier = Modifier.fillMaxWidth(.3f),
                 enabled = !isLoading && login.isNotBlank() && password.isNotBlank(),
-                shape = ToirTheme.shapes.sm,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.ctaPrimary,
-                    contentColor = colors.textOnAccent,
-                    disabledContainerColor = colors.ctaPrimary.copy(alpha = 0.5f),
-                    disabledContentColor = colors.textOnAccent.copy(alpha = 0.5f),
-                ),
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = colors.textOnAccent,
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Text(
-                        text = stringResource(MR.strings.auth_button_login),
-                        style = typography.label,
-                    )
-                }
-            }
+                isLoading = isLoading,
+            )
             Spacer16()
         }
     }
@@ -144,47 +118,21 @@ private fun LoginField(
     enabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    var localValue by remember { mutableStateOf(value) }
-    val colors = ToirTheme.colors
-
-    OutlinedTextField(
+    var localValue by remember(value) { mutableStateOf(value) }
+    ToirOutlinedTextField(
         value = localValue,
         onValueChange = { newValue ->
             localValue = newValue
             onValueChange(newValue)
         },
-        label = { Text(text = stringResource(MR.strings.auth_login_hint)) },
-        singleLine = true,
-        isError = isError,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         modifier = modifier.fillMaxWidth(),
+        label = stringResource(MR.strings.auth_login_hint),
+        isError = isError,
         enabled = enabled,
-        shape = ToirTheme.shapes.sm,
-        colors = loginTextFieldColors(colors),
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
     )
 }
-
-@Composable
-internal fun loginTextFieldColors(colors: ToirColorScheme) = OutlinedTextFieldDefaults.colors(
-    focusedContainerColor = colors.surface2,
-    unfocusedContainerColor = colors.surface2,
-    disabledContainerColor = colors.surface2,
-    errorContainerColor = colors.surface2,
-    focusedBorderColor = colors.focusBorder,
-    unfocusedBorderColor = colors.border,
-    errorBorderColor = colors.error,
-    disabledBorderColor = colors.border.copy(alpha = 0.5f),
-    focusedTextColor = colors.textPrimary,
-    unfocusedTextColor = colors.textPrimary,
-    disabledTextColor = colors.textDisabled,
-    errorTextColor = colors.textPrimary,
-    focusedLabelColor = colors.textSecondary,
-    unfocusedLabelColor = colors.textSecondary,
-    disabledLabelColor = colors.textDisabled,
-    errorLabelColor = colors.error,
-    cursorColor = colors.textPrimary,
-    errorCursorColor = colors.error,
-)
 
 @Preview
 @Composable

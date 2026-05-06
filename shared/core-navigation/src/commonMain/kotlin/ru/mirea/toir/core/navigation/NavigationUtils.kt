@@ -22,7 +22,8 @@ fun NavController.popBackStackOnResumed() {
 }
 
 fun NavController.runOnResumed(block: () -> Unit) {
-    if (currentBackStackEntry?.lifecycle?.currentState != Lifecycle.State.RESUMED) return
+    val state = currentBackStackEntry?.lifecycle?.currentState ?: return
+    if (!state.isAtLeast(Lifecycle.State.STARTED)) return
 
     block()
 }

@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
@@ -32,6 +30,7 @@ import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirPrimaryButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.common.ui.compose.utils.Spacer4
@@ -177,19 +176,11 @@ private fun RoutePointsFinishButton(onClick: () -> Unit) {
             .background(colors.background)
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        Button(
+        ToirPrimaryButton(
             onClick = onClick,
+            text = stringResource(MR.strings.route_points_button_finish),
             modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.ctaPrimary,
-                contentColor = colors.textOnAccent,
-            ),
-        ) {
-            Text(
-                text = stringResource(MR.strings.route_points_button_finish),
-                style = ToirTheme.typography.label,
-            )
-        }
+        )
     }
 }
 

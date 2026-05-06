@@ -35,5 +35,6 @@ internal class PhotoCaptureStoreFactory(
         data class SetLoading(val value: Boolean) : Message
         data class SetPhotos(val photos: List<String>) : Message
         data class AddPhoto(val uri: String) : Message
+        data class PhotoRemoved(val uri: String) : Message
     }
 }

@@ -11,6 +11,7 @@ internal interface UiPhotoCaptureStateMapper {
 internal class UiPhotoCaptureStateMapperImpl : UiPhotoCaptureStateMapper {
     override fun map(state: State): UiPhotoCaptureState = UiPhotoCaptureState(
         photos = state.photos.toImmutableList(),
+        maxPhotos = state.maxPhotos,
         isLoading = state.isLoading,
     )
 }

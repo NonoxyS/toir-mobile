@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirSecondaryButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.Spacer8
 import ru.mirea.toir.res.MR
@@ -44,8 +44,9 @@ internal fun RoutesListEmpty(
         )
         Spacer8()
 
-        OutlinedButton(onClick = onRefresh) {
-            Text(text = stringResource(MR.strings.routes_list_button_refresh))
-        }
+        ToirSecondaryButton(
+            onClick = onRefresh,
+            text = stringResource(MR.strings.routes_list_button_refresh),
+        )
     }
 }

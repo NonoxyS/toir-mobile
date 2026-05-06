@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -13,16 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import ru.mirea.toir.common.ui.compose.components.shared.button.ToirSecondaryButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.Spacer10
 import ru.mirea.toir.common.ui.compose.utils.Spacer12
@@ -43,12 +44,11 @@ internal fun RouteAssignmentCard(
     val shapes = ToirTheme.shapes
 
     val cardBackground = if (item.status == UiRouteStatus.COMPLETED) colors.successSubtle else colors.surface
-    val cardAlpha = if (item.status == UiRouteStatus.ASSIGNED) 0.7f else 1f
 
-    Box(
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .alpha(cardAlpha)
+            .height(IntrinsicSize.Min)
             .clip(shapes.md)
             .background(cardBackground),
     ) {
@@ -56,7 +56,7 @@ internal fun RouteAssignmentCard(
             Box(
                 modifier = Modifier
                     .width(3.dp)
-                    .matchParentSize()
+                    .fillMaxHeight()
                     .background(colors.sync),
             )
         }
@@ -64,12 +64,7 @@ internal fun RouteAssignmentCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    start = if (item.hasPendingSync) 20.dp else 16.dp,
-                    top = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp,
-                ),
+                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 16.dp),
         ) {
             RouteCardHeader(item = item)
             Spacer4()
@@ -208,29 +203,21 @@ private fun ColumnScope.RouteCardAction(
     when (status) {
         UiRouteStatus.ASSIGNED -> {
             Spacer12()
-            OutlinedButton(
+            ToirSecondaryButton(
                 onClick = onStartClick,
+                text = stringResource(MR.strings.routes_list_button_start),
                 modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = stringResource(MR.strings.routes_list_button_start),
-                    style = ToirTheme.typography.label,
-                )
-            }
+            )
         }
 
         UiRouteStatus.IN_PROGRESS,
         UiRouteStatus.PARTIALLY_COMPLETED -> {
             Spacer12()
-            OutlinedButton(
+            ToirSecondaryButton(
                 onClick = onContinueClick,
+                text = stringResource(MR.strings.routes_list_button_continue),
                 modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = stringResource(MR.strings.routes_list_button_continue),
-                    style = ToirTheme.typography.label,
-                )
-            }
+            )
         }
 
         UiRouteStatus.COMPLETED,

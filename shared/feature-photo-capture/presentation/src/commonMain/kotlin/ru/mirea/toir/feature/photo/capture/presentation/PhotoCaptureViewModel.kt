@@ -25,6 +25,7 @@ class PhotoCaptureViewModel internal constructor(
     }
 
     fun onPhotoTaken(fileUri: String) = store.accept(Intent.OnPhotoTaken(fileUri))
+    fun onPhotoDeleted(fileUri: String) = store.accept(Intent.OnPhotoDeleted(fileUri))
     fun onConfirm() = store.accept(Intent.OnConfirm)
 
     override fun onCleared() {

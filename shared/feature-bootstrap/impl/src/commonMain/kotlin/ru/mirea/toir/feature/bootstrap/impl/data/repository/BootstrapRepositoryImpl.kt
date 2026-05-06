@@ -1,11 +1,11 @@
 package ru.mirea.toir.feature.bootstrap.impl.data.repository
 
 import io.github.aakira.napier.Napier
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.withContext
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
-import ru.mirea.toir.common.extensions.wrapResultFailure
-import ru.mirea.toir.common.extensions.wrapResultSuccess
 import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.storage.checklist.ChecklistStorage
 import ru.mirea.toir.core.database.storage.equipment.EquipmentStorage
@@ -18,6 +18,7 @@ import ru.mirea.toir.feature.bootstrap.impl.data.network.models.enums.RemoteAnsw
 import ru.mirea.toir.feature.bootstrap.impl.data.network.models.enums.RemoteAssignmentStatus
 import ru.mirea.toir.feature.bootstrap.impl.data.network.models.enums.RemoteUserRole
 import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapRepository
+import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapResult
 
 internal class BootstrapRepositoryImpl(
     private val apiClient: BootstrapApiClient,
@@ -30,7 +31,7 @@ internal class BootstrapRepositoryImpl(
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : BootstrapRepository {
 
-    override suspend fun loadAndSaveBootstrap(): Result<Unit> =
+    override suspend fun loadAndSaveBootstrap(): BootstrapResult =
         withContext(coroutineDispatchers.io) {
             coRunCatching(
                 tryBlock = {
@@ -138,11 +139,18 @@ internal class BootstrapRepositoryImpl(
                         value = response.serverTime,
                     )
 
-                    Unit.wrapResultSuccess()
+                    BootstrapResult.Success
                 },
-                catchBlock = { throwable ->
-                    Napier.e(message = "loadAndSaveBootstrap failed", throwable = throwable)
-                    throwable.wrapResultFailure()
+                catchBlock = { cause ->
+                    if (cause is ClientRequestException &&
+                        cause.response.status == HttpStatusCode.Unauthorized
+                    ) {
+                        Napier.w("loadAndSaveBootstrap: 401 Unauthorized")
+                        BootstrapResult.Unauthorized
+                    } else {
+                        Napier.e(message = "loadAndSaveBootstrap failed", throwable = cause)
+                        BootstrapResult.Failure(cause)
+                    }
                 },
             )
         }

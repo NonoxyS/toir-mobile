@@ -58,7 +58,7 @@
     <string name="equipment_card_name">Наименование</string>
     <string name="equipment_card_type">Тип</string>
     <string name="equipment_card_location">Локация</string>
-    <string name="equipment_card_status">Локация</string>
+    <string name="equipment_card_status">Статус</string>
     <string name="equipment_card_button_open_checklist">Открыть чек-лист</string>
     <string name="equipment_card_status_not_checked">Оборудование не проверено</string>
     <string name="equipment_card_status_in_progress">Проверка в процессе</string>
@@ -82,4 +82,40 @@
     <string name="checklist_number_hint_min">Допустимо: не меньше %1$s</string>
     <string name="checklist_number_hint_max">Допустимо: не больше %1$s</string>
     <string name="checklist_number_error_out_of_range">Значение вне допустимого диапазона</string>
+    <string name="checklist_back_content_description">Назад</string>
+
+    <!-- Bootstrap -->
+    <string name="bootstrap_title">TOIR</string>
+    <string name="bootstrap_subtitle">Система технического обхода</string>
+    <string name="bootstrap_error_subtitle">Проверьте подключение и попробуйте снова</string>
+    <!-- bootstrap_loading, bootstrap_error_title, bootstrap_button_retry уже определены выше -->
+
+    <!-- Equipment Card — QR (UI placeholder, до появления data-поля requiresQr) -->
+    <string name="equipment_card_qr_banner">Перед запуском проверки отсканируйте QR-код на оборудовании</string>
+    <string name="equipment_card_qr_chip">Подтверждено по QR</string>
+    <string name="equipment_card_button_scan_qr">Сканировать QR</string>
+    <string name="equipment_card_open_checklist_disabled_hint">Сначала отсканируйте QR</string>
+
+    <!-- Equipment Card — accessibility -->
+    <string name="equipment_card_back_content_description">Назад</string>
+
+    <!-- Photo Capture -->
+    <string name="photo_capture_title_with_progress">Фотофиксация · %1$d / %2$d</string>
+    <string name="photo_capture_empty_title">Нет фотографий</string>
+    <string name="photo_capture_empty_subtitle">Снимите первое фото для подтверждения</string>
+    <string name="photo_capture_limit_reached">Достигнут лимит фотографий</string>
+    <string name="photo_capture_confirm_disabled_hint">Снимите хотя бы одно фото</string>
+    <string name="photo_capture_preview_title">Фото %1$d из %2$d</string>
+    <string name="photo_capture_preview_close_content_description">Закрыть</string>
+
+    <!-- Photo Capture — dialogs -->
+    <string name="photo_delete_title">Удалить фото?</string>
+    <string name="photo_delete_message">Это действие нельзя отменить.</string>
+    <string name="photo_exit_title">Отменить фотофиксацию?</string>
+    <string name="photo_exit_message">Снятые фото будут удалены и не привяжутся к пункту чек-листа.</string>
+
+    <!-- Common buttons -->
+    <string name="common_button_cancel">Отмена</string>
+    <string name="common_button_delete">Удалить</string>
+    <string name="common_button_continue_capture">Продолжить съёмку</string>
 </resources>

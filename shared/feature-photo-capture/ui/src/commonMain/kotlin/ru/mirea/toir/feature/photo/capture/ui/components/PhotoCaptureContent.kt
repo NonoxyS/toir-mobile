@@ -1,48 +1,42 @@
 package ru.mirea.toir.feature.photo.capture.ui.components
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.collections.immutable.ImmutableList
-import ru.mirea.toir.res.MR
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun PhotoCaptureContent(
     photos: ImmutableList<String>,
-    isLoading: Boolean,
-    onTakePhoto: () -> Unit,
-    onConfirm: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onPhotoTap: (uri: String) -> Unit,
+    onPhotoLongPress: (uri: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        if (photos.isNotEmpty()) {
-            PhotoCapturePhotoRow(photos = photos)
-        }
-
-        Button(
-            onClick = onTakePhoto,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading,
+    if (photos.isEmpty()) {
+        PhotoCaptureEmptyState(modifier = modifier)
+    } else {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(text = stringResource(MR.strings.photo_capture_button_take))
-        }
-
-        Button(
-            onClick = onConfirm,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = photos.isNotEmpty(),
-        ) {
-            Text(text = stringResource(MR.strings.photo_capture_button_confirm))
+            Spacer(Modifier.height(16.dp))
+            PhotoCapturePhotoRow(
+                photos = photos,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedVisibilityScope = animatedVisibilityScope,
+                onPhotoTap = onPhotoTap,
+                onPhotoLongPress = onPhotoLongPress,
+            )
         }
     }
 }

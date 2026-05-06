@@ -27,12 +27,14 @@ fun NavController.navigateToPhotoCaptureScreen(
 
 fun NavGraphBuilder.composablePhotoCaptureScreen(
     onPhotoConfirm: () -> Unit,
+    onNavigateBack: () -> Unit,
 ) {
     composable<PhotoCaptureRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<PhotoCaptureRoute>()
         PhotoCaptureScreen(
             checklistItemResultId = route.checklistItemResultId,
             onPhotoConfirm = onPhotoConfirm,
+            onNavigateBack = onNavigateBack,
         )
     }
 }
