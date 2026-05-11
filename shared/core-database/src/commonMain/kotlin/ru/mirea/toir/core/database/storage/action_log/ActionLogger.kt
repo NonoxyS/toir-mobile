@@ -12,6 +12,7 @@ object ActionLogType {
     const val EQUIPMENT_OPENED = "equipment_opened"
     const val CHECKLIST_ITEM_UPDATED = "checklist_item_updated"
     const val PHOTO_ATTACHED = "photo_attached"
+    const val PHOTO_DELETED = "photo_deleted"
     const val EQUIPMENT_CHECK_COMPLETED = "equipment_check_completed"
     const val INSPECTION_COMPLETED = "inspection_completed"
     const val SYNC_STARTED = "sync_started"
