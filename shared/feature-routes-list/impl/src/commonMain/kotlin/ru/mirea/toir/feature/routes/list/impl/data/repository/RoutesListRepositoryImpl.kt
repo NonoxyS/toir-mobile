@@ -1,6 +1,12 @@
 package ru.mirea.toir.feature.routes.list.impl.data.repository
 
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -17,6 +23,7 @@ import ru.mirea.toir.core.database.storage.action_log.ActionLogger
 import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.route.RouteStorage
+import ru.mirea.toir.core.database.storage.route.models.LocalRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.RouteAssignmentStatus
 import ru.mirea.toir.feature.routes.list.impl.data.mappers.RouteAssignmentMapper
@@ -32,47 +39,58 @@ internal class RoutesListRepositoryImpl(
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : RoutesListRepository {
 
-    override suspend fun getAssignments(): Result<List<DomainRouteAssignment>> =
-        withContext(coroutineDispatchers.io) {
-            coRunCatching(
-                tryBlock = {
-                    val assignments = routeStorage.selectAllAssignments()
-                    val result = assignments.map { assignment ->
-                        val route = routeStorage.selectRouteById(assignment.routeId)
-                        val points = routeStorage.selectPointsByRouteId(assignment.routeId)
-                        val inspection = inspectionStorage.selectInspectionByAssignmentId(assignment.id)
-                        val completedCount = if (inspection != null) {
-                            inspectionStorage.selectEquipmentResultsByInspectionId(inspection.id)
-                                .count { it.status == LocalEquipmentResultStatus.COMPLETED }
-                        } else {
-                            0
-                        }
-                        val hasPendingSync = inspection?.syncStatus == LocalSyncStatus.PENDING &&
-                            inspection.status in COMPLETED_INSPECTION_STATUSES
-                        val effectiveStatus = resolveEffectiveStatus(
-                            assignmentStatus = assignment.status,
-                            inspectionStatus = inspection?.status,
-                            totalPoints = points.size,
-                            completedCount = completedCount,
-                        )
-                        mapper.map(
-                            assignment = assignment,
-                            route = route,
-                            status = effectiveStatus,
-                            totalPoints = points.size,
-                            completedPoints = completedCount,
-                            inspectionId = inspection?.id,
-                            hasPendingSync = hasPendingSync,
-                        )
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observeAssignments(): Flow<List<DomainRouteAssignment>> =
+        routeStorage.observeAllAssignments()
+            .flatMapLatest { assignments ->
+                if (assignments.isEmpty()) {
+                    flowOf(emptyList())
+                } else {
+                    val perAssignmentFlows = assignments.map { assignment ->
+                        buildAssignmentFlow(assignment)
                     }
-                    result.wrapResultSuccess()
-                },
-                catchBlock = { throwable ->
-                    Napier.e(message = "getAssignments failed", throwable = throwable)
-                    throwable.wrapResultFailure()
-                },
-            )
+                    combine(perAssignmentFlows) { it.toList() }
+                }
+            }
+            .flowOn(coroutineDispatchers.io)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun buildAssignmentFlow(
+        assignment: LocalRouteAssignment,
+    ): Flow<DomainRouteAssignment> {
+        val route = routeStorage.selectRouteById(assignment.routeId)
+        val pointsFlow = routeStorage.observePointsByRouteId(assignment.routeId)
+        val inspectionFlow = inspectionStorage.observeInspectionByAssignmentId(assignment.id)
+        return inspectionFlow.flatMapLatest { inspection ->
+            val equipmentResultsFlow = if (inspection != null) {
+                inspectionStorage.observeEquipmentResultsByInspectionId(inspection.id)
+            } else {
+                flowOf(emptyList())
+            }
+            combine(pointsFlow, equipmentResultsFlow) { points, results ->
+                val completedCount = results.count {
+                    it.status == LocalEquipmentResultStatus.COMPLETED
+                }
+                val hasPendingSync = inspection?.syncStatus == LocalSyncStatus.PENDING &&
+                    inspection.status in COMPLETED_INSPECTION_STATUSES
+                val effectiveStatus = resolveEffectiveStatus(
+                    assignmentStatus = assignment.status,
+                    inspectionStatus = inspection?.status,
+                    totalPoints = points.size,
+                    completedCount = completedCount,
+                )
+                mapper.map(
+                    assignment = assignment,
+                    route = route,
+                    status = effectiveStatus,
+                    totalPoints = points.size,
+                    completedPoints = completedCount,
+                    inspectionId = inspection?.id,
+                    hasPendingSync = hasPendingSync,
+                )
+            }
         }
+    }
 
     @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
     override suspend fun startInspection(assignmentId: String): Result<String> =

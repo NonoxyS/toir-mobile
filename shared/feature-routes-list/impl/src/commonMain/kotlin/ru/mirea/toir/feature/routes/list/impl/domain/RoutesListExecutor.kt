@@ -1,6 +1,10 @@
 package ru.mirea.toir.feature.routes.list.impl.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore.Intent
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore.Label
@@ -15,12 +19,16 @@ internal class RoutesListExecutor(
     mainContext = mainDispatcher,
 ) {
     override suspend fun suspendExecuteAction(action: Unit) {
-        loadAssignments()
+        repository.observeAssignments()
+            .onStart { dispatch(Message.SetLoading) }
+            .onEach { dispatch(Message.SetAssignments(it)) }
+            .catch { dispatch(Message.SetError) }
+            .launchIn(scope)
     }
 
     override suspend fun suspendExecuteIntent(intent: Intent) {
         when (intent) {
-            Intent.Refresh -> loadAssignments()
+            Intent.Refresh -> Unit
             is Intent.OnStartInspection -> startInspection(intent.assignmentId)
             is Intent.OnContinueInspection -> publish(
                 Label.NavigateToRoutePoints(intent.inspectionId)
@@ -28,26 +36,12 @@ internal class RoutesListExecutor(
         }
     }
 
-    private suspend fun loadAssignments() {
-        dispatch(Message.SetLoading)
-        repository.getAssignments().fold(
-            onSuccess = { list ->
-                dispatch(Message.SetAssignments(list))
-            },
-            onFailure = { throwable ->
-                dispatch(Message.SetError)
-            },
-        )
-    }
-
     private suspend fun startInspection(assignmentId: String) {
         repository.startInspection(assignmentId).fold(
             onSuccess = { inspectionId ->
                 publish(Label.NavigateToRoutePoints(inspectionId))
             },
-            onFailure = { throwable ->
-                dispatch(Message.SetError)
-            },
+            onFailure = { dispatch(Message.SetError) },
         )
     }
 }
