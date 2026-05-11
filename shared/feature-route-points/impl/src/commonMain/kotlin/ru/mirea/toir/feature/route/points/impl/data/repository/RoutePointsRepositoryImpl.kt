@@ -6,7 +6,8 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
@@ -40,12 +41,12 @@ internal class RoutePointsRepositoryImpl(
 
     override fun observeRoutePoints(
         inspectionId: String,
-    ): Flow<Pair<String, List<DomainRoutePoint>>> {
+    ): Flow<Pair<String, List<DomainRoutePoint>>> = flow {
         val inspection = inspectionStorage.selectInspectionById(inspectionId)
-            ?: return flowOf("" to emptyList())
-        // Reference data: captured once at subscription time. Routes don't change while a
-        // user inspects, so combining a third Flow would only add noise. .flowOn(io) below
-        // moves these synchronous reads off the caller's dispatcher anyway.
+            ?: error("Inspection not found: $inspectionId")
+        // Reference data (route, equipment, location) is stable for the lifetime of a
+        // subscription — fetched once on the io dispatcher via flow {} + flowOn(io). Routes
+        // don't change while a user inspects, so combining a third Flow would only add noise.
         val route = routeStorage.selectRouteById(inspection.routeId)
         val routeName = route?.name.orEmpty()
 
@@ -53,30 +54,32 @@ internal class RoutePointsRepositoryImpl(
         val equipmentResultsFlow =
             inspectionStorage.observeEquipmentResultsByInspectionId(inspectionId)
 
-        return combine(pointsFlow, equipmentResultsFlow) { points, results ->
-            val resultByPoint = results.associateBy { it.routePointId }
-            val domainPoints = points.map { point ->
-                val equipment = equipmentStorage.selectById(point.equipmentId)
-                val locationName = equipment?.locationId
-                    ?.let { locationStorage.selectById(it)?.name }
-                    .orEmpty()
-                val result = resultByPoint[point.id]
-                DomainRoutePoint(
-                    routePointId = point.id,
-                    equipmentId = point.equipmentId,
-                    equipmentCode = equipment?.code.orEmpty(),
-                    equipmentName = equipment?.name.orEmpty(),
-                    locationName = locationName,
-                    equipmentResultId = result?.id,
-                    status = EquipmentResultStatus.fromString(
-                        result?.status?.name ?: LocalEquipmentResultStatus.NOT_STARTED.name
-                    ),
-                    hasIssues = result?.status == LocalEquipmentResultStatus.SKIPPED,
-                )
+        emitAll(
+            combine(pointsFlow, equipmentResultsFlow) { points, results ->
+                val resultByPoint = results.associateBy { it.routePointId }
+                val domainPoints = points.map { point ->
+                    val equipment = equipmentStorage.selectById(point.equipmentId)
+                    val locationName = equipment?.locationId
+                        ?.let { locationStorage.selectById(it)?.name }
+                        .orEmpty()
+                    val result = resultByPoint[point.id]
+                    DomainRoutePoint(
+                        routePointId = point.id,
+                        equipmentId = point.equipmentId,
+                        equipmentCode = equipment?.code.orEmpty(),
+                        equipmentName = equipment?.name.orEmpty(),
+                        locationName = locationName,
+                        equipmentResultId = result?.id,
+                        status = EquipmentResultStatus.fromString(
+                            result?.status?.name ?: LocalEquipmentResultStatus.NOT_STARTED.name
+                        ),
+                        hasIssues = result?.status == LocalEquipmentResultStatus.SKIPPED,
+                    )
+                }
+                routeName to domainPoints
             }
-            routeName to domainPoints
-        }.flowOn(coroutineDispatchers.io)
-    }
+        )
+    }.flowOn(coroutineDispatchers.io)
 
     @OptIn(ExperimentalTime::class)
     override suspend fun finishInspection(inspectionId: String): Result<Unit> =
