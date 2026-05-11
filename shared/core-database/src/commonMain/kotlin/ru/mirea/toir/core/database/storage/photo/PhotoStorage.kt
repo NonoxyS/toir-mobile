@@ -1,5 +1,6 @@
 package ru.mirea.toir.core.database.storage.photo
 
+import kotlinx.coroutines.flow.Flow
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 
 interface PhotoStorage {
@@ -12,6 +13,10 @@ interface PhotoStorage {
     )
 
     fun selectByChecklistItemResultId(checklistItemResultId: String): List<LocalPhoto>
+
+    fun observePhotosByEquipmentResultId(
+        equipmentResultId: String,
+    ): Flow<List<LocalPhoto>>
 
     fun selectPending(): List<LocalPhoto>
 

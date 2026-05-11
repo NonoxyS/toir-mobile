@@ -1,10 +1,18 @@
 package ru.mirea.toir.core.database.storage.photo
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.core.database.Photos
 import ru.mirea.toir.core.database.ToirDatabase
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 
-internal class PhotoStorageImpl(db: ToirDatabase) : PhotoStorage {
+internal class PhotoStorageImpl(
+    db: ToirDatabase,
+    private val dispatchers: CoroutineDispatchers,
+) : PhotoStorage {
 
     private val queries = db.photoQueries
 
@@ -29,6 +37,14 @@ internal class PhotoStorageImpl(db: ToirDatabase) : PhotoStorage {
             .selectByChecklistItemResultId(checklistItemResultId)
             .executeAsList()
             .map { it.toLocal() }
+
+    override fun observePhotosByEquipmentResultId(
+        equipmentResultId: String,
+    ): Flow<List<LocalPhoto>> =
+        queries.selectByEquipmentResultId(equipmentResultId)
+            .asFlow()
+            .mapToList(dispatchers.io)
+            .map { list -> list.map { it.toLocal() } }
 
     override fun selectPending(): List<LocalPhoto> =
         queries

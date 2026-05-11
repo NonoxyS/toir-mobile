@@ -56,8 +56,9 @@ internal class ChecklistRepositoryImpl(
         // Reference data (equipment result + route point) is stable for the lifetime of a
         // subscription: equipment_result.route_point_id and route_point.checklist_id do not
         // change. Fetched once inside flow {} + flowOn(io) to keep DB access off the main
-        // thread. Reactive parts are the checklist items (catalog edits) and the answer
-        // results (every write triggers a new emission).
+        // thread. Reactive parts are the checklist items (catalog edits), the answer
+        // results (every save triggers a new emission), and the photos (every photo
+        // capture triggers a new emission via a JOIN-based observe-query).
         val equipmentResult = inspectionStorage.selectEquipmentResultById(equipmentResultId)
             ?: error("EquipmentResult not found: $equipmentResultId")
         val routePoint = routeStorage.selectPointById(equipmentResult.routePointId)
@@ -66,16 +67,18 @@ internal class ChecklistRepositoryImpl(
         val itemsFlow = checklistStorage.observeItemsByChecklistId(routePoint.checklistId)
         val resultsFlow = inspectionStorage
             .observeChecklistItemResultsByEquipmentResult(equipmentResultId)
+        val photosFlow = photoStorage.observePhotosByEquipmentResultId(equipmentResultId)
 
         emitAll(
-            combine(itemsFlow, resultsFlow) { items, results ->
+            combine(itemsFlow, resultsFlow, photosFlow) { items, results, photos ->
                 val resultByItemId = results.associateBy { it.checklistItemId }
+                val photoCountByResultId = photos
+                    .groupingBy { it.checklistItemResultId }
+                    .eachCount()
                 items.map { localItem ->
                     val resultEntry = resultByItemId[localItem.id]
-                    // PhotoStorage has no observe-flow, so photo counts are read eagerly per
-                    // emission. The count refreshes whenever items or results change.
                     val photoCount = resultEntry
-                        ?.let { photoStorage.selectByChecklistItemResultId(it.id).size }
+                        ?.let { photoCountByResultId[it.id] }
                         ?: 0
                     localItem.toDomain(resultEntry, photoCount)
                 }
