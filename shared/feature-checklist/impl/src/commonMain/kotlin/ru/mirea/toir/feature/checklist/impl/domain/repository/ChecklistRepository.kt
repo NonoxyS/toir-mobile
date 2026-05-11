@@ -1,9 +1,10 @@
 package ru.mirea.toir.feature.checklist.impl.domain.repository
 
+import kotlinx.coroutines.flow.Flow
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 
 internal interface ChecklistRepository {
-    suspend fun getChecklistItems(equipmentResultId: String): Result<List<DomainChecklistItem>>
+    fun observeChecklistItems(equipmentResultId: String): Flow<List<DomainChecklistItem>>
 
     suspend fun saveBooleanAnswer(
         equipmentResultId: String,

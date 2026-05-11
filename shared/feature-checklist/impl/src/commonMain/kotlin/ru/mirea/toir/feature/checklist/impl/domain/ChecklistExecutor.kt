@@ -1,7 +1,13 @@
 package ru.mirea.toir.feature.checklist.impl.domain
 
+import io.github.aakira.napier.Napier
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
 import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
@@ -18,10 +24,11 @@ internal class ChecklistExecutor(
 ) : BaseExecutor<Intent, Action, State, Message, Label>(
     mainContext = mainDispatcher,
 ) {
+    private var subscriptionJob: Job? = null
 
     override suspend fun suspendExecuteAction(action: Action) {
         when (action) {
-            Action.Load -> loadItems()
+            Action.Load -> subscribeToChecklist(state().equipmentResultId)
         }
     }
 
@@ -29,7 +36,6 @@ internal class ChecklistExecutor(
         when (intent) {
             is Intent.OnBooleanAnswer -> {
                 repository.saveBooleanAnswer(state().equipmentResultId, intent.itemId, intent.value)
-                reloadItems()
             }
 
             is Intent.OnNumberAnswer -> {
@@ -39,22 +45,18 @@ internal class ChecklistExecutor(
                 val max = item.numericMax
                 if ((min != null && number < min) || (max != null && number > max)) return
                 repository.saveNumberAnswer(state().equipmentResultId, intent.itemId, number)
-                reloadItems()
             }
 
             is Intent.OnTextAnswer -> {
                 repository.saveTextAnswer(state().equipmentResultId, intent.itemId, intent.value)
-                reloadItems()
             }
 
             is Intent.OnSelectAnswer -> {
                 repository.saveSelectAnswer(state().equipmentResultId, intent.itemId, intent.value)
-                reloadItems()
             }
 
             is Intent.OnConfirm -> {
                 repository.saveConfirm(state().equipmentResultId, intent.itemId, intent.value)
-                reloadItems()
             }
 
             is Intent.OnAddPhoto -> {
@@ -67,29 +69,16 @@ internal class ChecklistExecutor(
         }
     }
 
-    private suspend fun loadItems() {
-        dispatch(Message.SetLoading)
-        val equipmentResultId = state().equipmentResultId
-        repository.getChecklistItems(equipmentResultId).fold(
-            onSuccess = { items ->
-                dispatch(Message.SetItems(items.toImmutableList()))
-            },
-            onFailure = {
+    private fun subscribeToChecklist(equipmentResultId: String) {
+        subscriptionJob?.cancel()
+        subscriptionJob = repository.observeChecklistItems(equipmentResultId)
+            .onStart { dispatch(Message.SetLoading) }
+            .onEach { items -> dispatch(Message.SetItems(items.toImmutableList())) }
+            .catch { throwable ->
+                Napier.e(message = "observeChecklistItems failed", throwable = throwable)
                 dispatch(Message.SetError)
-            },
-        )
-    }
-
-    private suspend fun reloadItems() {
-        val equipmentResultId = state().equipmentResultId
-        repository.getChecklistItems(equipmentResultId).fold(
-            onSuccess = { items ->
-                dispatch(Message.SetItems(items.toImmutableList()))
-            },
-            onFailure = {
-                dispatch(Message.SetError)
-            },
-        )
+            }
+            .launchIn(scope)
     }
 
     private suspend fun finishChecklist() {

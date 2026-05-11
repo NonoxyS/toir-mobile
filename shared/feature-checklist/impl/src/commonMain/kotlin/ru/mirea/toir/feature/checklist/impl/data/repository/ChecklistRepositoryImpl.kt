@@ -1,6 +1,11 @@
 package ru.mirea.toir.feature.checklist.impl.data.repository
 
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.json.Json
@@ -45,38 +50,38 @@ internal class ChecklistRepositoryImpl(
 
     private val json: Json = Json { ignoreUnknownKeys = true }
 
-    override suspend fun getChecklistItems(
+    override fun observeChecklistItems(
         equipmentResultId: String,
-    ): Result<List<DomainChecklistItem>> =
-        withContext(coroutineDispatchers.io) {
-            coRunCatching(
-                tryBlock = {
-                    val equipmentResult = inspectionStorage.selectEquipmentResultById(equipmentResultId)
-                        ?: error("EquipmentResult not found: $equipmentResultId")
-                    val routePoint = routeStorage.selectPointById(equipmentResult.routePointId)
-                        ?: error("RoutePoint not found: ${equipmentResult.routePointId}")
+    ): Flow<List<DomainChecklistItem>> = flow {
+        // Reference data (equipment result + route point) is stable for the lifetime of a
+        // subscription: equipment_result.route_point_id and route_point.checklist_id do not
+        // change. Fetched once inside flow {} + flowOn(io) to keep DB access off the main
+        // thread. Reactive parts are the checklist items (catalog edits) and the answer
+        // results (every write triggers a new emission).
+        val equipmentResult = inspectionStorage.selectEquipmentResultById(equipmentResultId)
+            ?: error("EquipmentResult not found: $equipmentResultId")
+        val routePoint = routeStorage.selectPointById(equipmentResult.routePointId)
+            ?: error("RoutePoint not found: ${equipmentResult.routePointId}")
 
-                    val checklistItems = checklistStorage.selectItemsByChecklistId(routePoint.checklistId)
-                    val existingResults = inspectionStorage
-                        .selectChecklistItemResultsByEquipmentResult(equipmentResultId)
-                        .associateBy { it.checklistItemId }
+        val itemsFlow = checklistStorage.observeItemsByChecklistId(routePoint.checklistId)
+        val resultsFlow = inspectionStorage
+            .observeChecklistItemResultsByEquipmentResult(equipmentResultId)
 
-                    checklistItems
-                        .map { localItem ->
-                            val resultEntry = existingResults[localItem.id]
-                            val photoCount = resultEntry
-                                ?.let { photoStorage.selectByChecklistItemResultId(it.id).size }
-                                ?: 0
-                            localItem.toDomain(resultEntry, photoCount)
-                        }
-                        .wrapResultSuccess()
-                },
-                catchBlock = { throwable ->
-                    Napier.e(message = "getChecklistItems failed", throwable = throwable)
-                    throwable.wrapResultFailure()
-                },
-            )
-        }
+        emitAll(
+            combine(itemsFlow, resultsFlow) { items, results ->
+                val resultByItemId = results.associateBy { it.checklistItemId }
+                items.map { localItem ->
+                    val resultEntry = resultByItemId[localItem.id]
+                    // PhotoStorage has no observe-flow, so photo counts are read eagerly per
+                    // emission. The count refreshes whenever items or results change.
+                    val photoCount = resultEntry
+                        ?.let { photoStorage.selectByChecklistItemResultId(it.id).size }
+                        ?: 0
+                    localItem.toDomain(resultEntry, photoCount)
+                }
+            }
+        )
+    }.flowOn(coroutineDispatchers.io)
 
     override suspend fun saveBooleanAnswer(
         equipmentResultId: String,
