@@ -1,4 +1,5 @@
 import extensions.androidLibraryConfig
+import extensions.androidMainDependencies
 import extensions.commonMainDependencies
 import extensions.implementations
 
@@ -12,4 +13,8 @@ commonMainDependencies {
         libs.kotlin.datetime,
         libs.kotlin.immutableCollections,
     )
+}
+
+androidMainDependencies {
+    implementations(libs.koin.android)
 }
