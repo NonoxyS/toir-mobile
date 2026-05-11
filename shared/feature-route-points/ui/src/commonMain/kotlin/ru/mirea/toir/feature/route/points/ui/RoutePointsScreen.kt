@@ -1,5 +1,6 @@
 package ru.mirea.toir.feature.route.points.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,8 +26,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -48,6 +53,7 @@ internal fun RoutePointsScreen(
     inspectionId: String,
     onNavigateToEquipmentCard: (inspectionId: String, routePointId: String) -> Unit,
     onInspectionFinish: () -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: RoutePointsViewModel = koinViewModel { parametersOf(inspectionId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -63,7 +69,7 @@ internal fun RoutePointsScreen(
 
     Scaffold(
         containerColor = ToirTheme.colors.background,
-        topBar = { RoutePointsTopBar(state = state) },
+        topBar = { RoutePointsTopBar(state = state, onNavigateBack = onNavigateBack) },
         bottomBar = {
             if (state.canFinish) {
                 RoutePointsFinishButton(onClick = viewModel::onFinishInspection)
@@ -98,7 +104,10 @@ internal fun RoutePointsScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun RoutePointsTopBar(state: UiRoutePointsState) {
+private fun RoutePointsTopBar(
+    state: UiRoutePointsState,
+    onNavigateBack: () -> Unit,
+) {
     val colors = ToirTheme.colors
     Column {
         TopAppBar(
@@ -108,6 +117,18 @@ private fun RoutePointsTopBar(state: UiRoutePointsState) {
                     style = ToirTheme.typography.headline,
                     color = colors.textPrimary,
                 )
+            },
+            navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Image(
+                        painter = painterResource(MR.images.ic_arrow_back),
+                        contentDescription = stringResource(
+                            MR.strings.route_points_back_content_description,
+                        ),
+                        modifier = Modifier.size(24.dp),
+                        colorFilter = ColorFilter.tint(colors.textSecondary),
+                    )
+                }
             },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = colors.background,

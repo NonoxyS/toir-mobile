@@ -1,5 +1,11 @@
 package ru.mirea.toir.core.database.storage.inspection
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.core.database.Checklist_item_results
 import ru.mirea.toir.core.database.Inspection_equipment_results
 import ru.mirea.toir.core.database.Inspections
@@ -11,7 +17,10 @@ import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResul
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.inspection.models.LocalInspection
 
-internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
+internal class InspectionStorageImpl(
+    db: ToirDatabase,
+    private val dispatchers: CoroutineDispatchers,
+) : InspectionStorage {
 
     private val inspectionQueries = db.inspectionQueries
     private val equipmentResultQueries = db.inspectionEquipmentResultQueries
@@ -171,6 +180,43 @@ internal class InspectionStorageImpl(db: ToirDatabase) : InspectionStorage {
     override fun updateChecklistItemResultSyncStatus(id: String, syncStatus: LocalSyncStatus) {
         checklistItemResultQueries.updateSyncStatus(sync_status = syncStatus, id = id)
     }
+
+    override fun observeInspectionByAssignmentId(assignmentId: String): Flow<LocalInspection?> =
+        inspectionQueries.selectByAssignmentId(assignmentId)
+            .asFlow()
+            .mapToOneOrNull(dispatchers.io)
+            .map { it?.toLocal() }
+
+    override fun observeEquipmentResultsByInspectionId(
+        inspectionId: String,
+    ): Flow<List<LocalEquipmentResult>> =
+        equipmentResultQueries.selectByInspectionId(inspectionId)
+            .asFlow()
+            .mapToList(dispatchers.io)
+            .map { list -> list.map { it.toLocal() } }
+
+    override fun observeEquipmentResultByRoutePoint(
+        routePointId: String,
+        inspectionId: String,
+    ): Flow<LocalEquipmentResult?> =
+        equipmentResultQueries.selectByRoutePointAndInspection(routePointId, inspectionId)
+            .asFlow()
+            .mapToOneOrNull(dispatchers.io)
+            .map { it?.toLocal() }
+
+    override fun observeEquipmentResultById(id: String): Flow<LocalEquipmentResult?> =
+        equipmentResultQueries.selectById(id)
+            .asFlow()
+            .mapToOneOrNull(dispatchers.io)
+            .map { it?.toLocal() }
+
+    override fun observeChecklistItemResultsByEquipmentResult(
+        equipmentResultId: String,
+    ): Flow<List<LocalChecklistItemResult>> =
+        checklistItemResultQueries.selectByEquipmentResultId(equipmentResultId)
+            .asFlow()
+            .mapToList(dispatchers.io)
+            .map { list -> list.map { it.toLocal() } }
 
     private fun Inspections.toLocal() = LocalInspection(
         id = id,

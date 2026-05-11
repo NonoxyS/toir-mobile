@@ -1,5 +1,6 @@
 package ru.mirea.toir.core.database.storage.inspection
 
+import kotlinx.coroutines.flow.Flow
 import ru.mirea.toir.core.database.models.LocalInspectionStatus
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 import ru.mirea.toir.core.database.storage.inspection.models.LocalChecklistItemResult
@@ -94,4 +95,19 @@ interface InspectionStorage {
     fun selectPendingChecklistItemResults(): List<LocalChecklistItemResult>
 
     fun updateChecklistItemResultSyncStatus(id: String, syncStatus: LocalSyncStatus)
+
+    fun observeInspectionByAssignmentId(assignmentId: String): Flow<LocalInspection?>
+
+    fun observeEquipmentResultsByInspectionId(inspectionId: String): Flow<List<LocalEquipmentResult>>
+
+    fun observeEquipmentResultByRoutePoint(
+        routePointId: String,
+        inspectionId: String,
+    ): Flow<LocalEquipmentResult?>
+
+    fun observeEquipmentResultById(id: String): Flow<LocalEquipmentResult?>
+
+    fun observeChecklistItemResultsByEquipmentResult(
+        equipmentResultId: String,
+    ): Flow<List<LocalChecklistItemResult>>
 }

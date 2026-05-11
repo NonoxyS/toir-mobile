@@ -24,6 +24,7 @@ sqldelight {
 
 commonMainDependencies {
     implementations(
+        projects.shared.common,
         libs.sqldelight.runtime,
         libs.sqldelight.coroutines,
         libs.sqldelight.primitiveAdapters,

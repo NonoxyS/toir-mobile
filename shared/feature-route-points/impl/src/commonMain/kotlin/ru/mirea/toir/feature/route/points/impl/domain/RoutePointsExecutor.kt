@@ -1,6 +1,12 @@
 package ru.mirea.toir.feature.route.points.impl.domain
 
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
 import ru.mirea.toir.feature.route.points.api.store.RoutePointsStore.Intent
 import ru.mirea.toir.feature.route.points.api.store.RoutePointsStore.Label
@@ -15,9 +21,11 @@ internal class RoutePointsExecutor(
 ) : BaseExecutor<Intent, Action, State, Message, Label>(
     mainContext = mainDispatcher,
 ) {
+    private var subscriptionJob: Job? = null
+
     override suspend fun suspendExecuteAction(action: Action) {
         when (action) {
-            Action.Load -> loadPoints()
+            Action.Load -> subscribeToRoutePoints(state().inspectionId)
         }
     }
 
@@ -30,22 +38,28 @@ internal class RoutePointsExecutor(
         }
     }
 
-    private suspend fun loadPoints() {
-        val inspectionId = state().inspectionId
-        dispatch(Message.SetLoading)
-        repository.getRoutePoints(inspectionId).fold(
-            onSuccess = { (routeName, points) ->
+    private fun subscribeToRoutePoints(inspectionId: String) {
+        subscriptionJob?.cancel()
+        subscriptionJob = repository.observeRoutePoints(inspectionId)
+            .onStart { dispatch(Message.SetLoading) }
+            .onEach { (routeName, points) ->
                 dispatch(Message.SetData(routeName = routeName, points = points))
-            },
-            onFailure = { dispatch(Message.SetError) },
-        )
+            }
+            .catch { throwable ->
+                Napier.e(message = "observeRoutePoints failed", throwable = throwable)
+                dispatch(Message.SetError)
+            }
+            .launchIn(scope)
     }
 
     private suspend fun finishInspection() {
         val inspectionId = state().inspectionId
         repository.finishInspection(inspectionId).fold(
             onSuccess = { publish(Label.InspectionFinished) },
-            onFailure = { dispatch(Message.SetError) },
+            onFailure = { throwable ->
+                Napier.e(message = "finishInspection failed", throwable = throwable)
+                dispatch(Message.SetError)
+            },
         )
     }
 }

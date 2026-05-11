@@ -28,6 +28,7 @@ fun NavController.navigateToRoutePointsScreen(
 fun NavGraphBuilder.composableRoutePointsScreen(
     onNavigateToEquipmentCard: (inspectionId: String, routePointId: String) -> Unit,
     onInspectionFinish: () -> Unit,
+    onNavigateBack: () -> Unit,
 ) {
     composable<RoutePointsRoute> { backStackEntry ->
         val route = backStackEntry.toRoute<RoutePointsRoute>()
@@ -35,6 +36,7 @@ fun NavGraphBuilder.composableRoutePointsScreen(
             inspectionId = route.inspectionId,
             onNavigateToEquipmentCard = onNavigateToEquipmentCard,
             onInspectionFinish = onInspectionFinish,
+            onNavigateBack = onNavigateBack,
         )
     }
 }

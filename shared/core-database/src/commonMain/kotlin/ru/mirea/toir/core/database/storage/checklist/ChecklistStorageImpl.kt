@@ -1,12 +1,20 @@
 package ru.mirea.toir.core.database.storage.checklist
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.core.database.Checklist_items
 import ru.mirea.toir.core.database.Checklists
 import ru.mirea.toir.core.database.ToirDatabase
 import ru.mirea.toir.core.database.storage.checklist.models.LocalChecklist
 import ru.mirea.toir.core.database.storage.checklist.models.LocalChecklistItem
 
-internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
+internal class ChecklistStorageImpl(
+    db: ToirDatabase,
+    private val dispatchers: CoroutineDispatchers,
+) : ChecklistStorage {
 
     private val checklistQueries = db.checklistQueries
     private val itemQueries = db.checklistItemQueries
@@ -82,6 +90,12 @@ internal class ChecklistStorageImpl(db: ToirDatabase) : ChecklistStorage {
         checklistQueries.deleteAll()
         itemQueries.deleteAll()
     }
+
+    override fun observeItemsByChecklistId(checklistId: String): Flow<List<LocalChecklistItem>> =
+        itemQueries.selectByChecklistId(checklistId)
+            .asFlow()
+            .mapToList(dispatchers.io)
+            .map { list -> list.map { it.toLocal() } }
 
     private fun Checklists.toLocal() = LocalChecklist(
         id = id,

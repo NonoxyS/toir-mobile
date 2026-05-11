@@ -16,6 +16,12 @@ VALUES (?, ?, ?, ?, ?, ?);
 selectByChecklistItemResultId:
 SELECT * FROM photos WHERE checklist_item_result_id = ?;
 
+selectByEquipmentResultId:
+SELECT photos.* FROM photos
+JOIN checklist_item_results
+    ON photos.checklist_item_result_id = checklist_item_results.id
+WHERE checklist_item_results.inspection_equipment_result_id = ?;
+
 selectPending:
 SELECT * FROM photos WHERE sync_status = 'pending';
 

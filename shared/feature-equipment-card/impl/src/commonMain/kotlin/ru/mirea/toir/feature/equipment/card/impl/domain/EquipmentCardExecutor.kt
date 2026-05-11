@@ -1,6 +1,12 @@
 package ru.mirea.toir.feature.equipment.card.impl.domain
 
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
 import ru.mirea.toir.feature.equipment.card.api.store.EquipmentCardStore.Intent
 import ru.mirea.toir.feature.equipment.card.api.store.EquipmentCardStore.Label
@@ -17,6 +23,8 @@ internal class EquipmentCardExecutor(
 ) : BaseExecutor<Intent, Action, State, Message, Label>(
     mainContext = mainDispatcher,
 ) {
+    private var subscriptionJob: Job? = null
+
     override suspend fun suspendExecuteAction(action: Action) {
         when (action) {
             Action.Load -> loadCard()
@@ -34,9 +42,24 @@ internal class EquipmentCardExecutor(
 
     private suspend fun loadCard() {
         dispatch(Message.SetLoading)
-        repository.getOrCreateEquipmentResult(inspectionId, routePointId).fold(
-            onSuccess = { card -> dispatch(Message.SetCard(card)) },
-            onFailure = { dispatch(Message.SetError) },
+        repository.ensureEquipmentResult(inspectionId, routePointId).fold(
+            onSuccess = { subscribeToEquipmentCard(inspectionId, routePointId) },
+            onFailure = { throwable ->
+                Napier.e(message = "ensureEquipmentResult failed", throwable = throwable)
+                dispatch(Message.SetError)
+            },
         )
+    }
+
+    private fun subscribeToEquipmentCard(inspectionId: String, routePointId: String) {
+        subscriptionJob?.cancel()
+        subscriptionJob = repository.observeEquipmentCard(inspectionId, routePointId)
+            .onStart { dispatch(Message.SetLoading) }
+            .onEach { card -> dispatch(Message.SetCard(card)) }
+            .catch { throwable ->
+                Napier.e(message = "observeEquipmentCard failed", throwable = throwable)
+                dispatch(Message.SetError)
+            }
+            .launchIn(scope)
     }
 }

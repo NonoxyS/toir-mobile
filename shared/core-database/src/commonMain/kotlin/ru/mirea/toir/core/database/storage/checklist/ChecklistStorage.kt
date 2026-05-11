@@ -1,5 +1,6 @@
 package ru.mirea.toir.core.database.storage.checklist
 
+import kotlinx.coroutines.flow.Flow
 import ru.mirea.toir.core.database.storage.checklist.models.LocalChecklist
 import ru.mirea.toir.core.database.storage.checklist.models.LocalChecklistItem
 
@@ -41,4 +42,6 @@ interface ChecklistStorage {
     fun deleteItemById(id: String)
 
     fun deleteAll()
+
+    fun observeItemsByChecklistId(checklistId: String): Flow<List<LocalChecklistItem>>
 }
