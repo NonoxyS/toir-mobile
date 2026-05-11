@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package ru.mirea.toir.feature.routes.list.impl.data.repository
 
 import io.github.aakira.napier.Napier
@@ -39,7 +41,6 @@ internal class RoutesListRepositoryImpl(
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : RoutesListRepository {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override fun observeAssignments(): Flow<List<DomainRouteAssignment>> =
         routeStorage.observeAllAssignments()
             .flatMapLatest { assignments ->
@@ -49,15 +50,16 @@ internal class RoutesListRepositoryImpl(
                     val perAssignmentFlows = assignments.map { assignment ->
                         buildAssignmentFlow(assignment)
                     }
-                    combine(perAssignmentFlows) { it.toList() }
+                    combine(perAssignmentFlows) { it.asList() }
                 }
             }
             .flowOn(coroutineDispatchers.io)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun buildAssignmentFlow(
         assignment: LocalRouteAssignment,
     ): Flow<DomainRouteAssignment> {
+        // Routes are reference data that change only via applyConfigChanges
+        // (not during a session) — safe to capture once at subscription time.
         val route = routeStorage.selectRouteById(assignment.routeId)
         val pointsFlow = routeStorage.observePointsByRouteId(assignment.routeId)
         val inspectionFlow = inspectionStorage.observeInspectionByAssignmentId(assignment.id)
