@@ -10,6 +10,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.collections.immutable.persistentListOf
@@ -36,6 +38,10 @@ internal fun RoutesListScreen(
         when (label) {
             is UiRoutesListLabel.NavigateToRoutePoints -> onNavigateToRoutePoints(label.inspectionId)
         }
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.onRefresh()
     }
 
     Scaffold(
