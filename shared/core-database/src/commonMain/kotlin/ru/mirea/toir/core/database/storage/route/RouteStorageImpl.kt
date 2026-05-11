@@ -81,10 +81,6 @@ internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
     override fun selectAssignmentById(id: String): LocalRouteAssignment? =
         assignmentQueries.selectById(id).executeAsOneOrNull()?.toLocal()
 
-    override fun updateAssignmentStatus(id: String, status: LocalRouteAssignmentStatus) {
-        assignmentQueries.updateStatus(status = status, id = id)
-    }
-
     override fun deleteAssignmentById(id: String) {
         assignmentQueries.deleteById(id)
     }
