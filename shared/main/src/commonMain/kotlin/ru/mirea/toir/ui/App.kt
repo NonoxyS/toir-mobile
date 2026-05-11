@@ -55,6 +55,7 @@ fun App() {
                 onInspectionFinish = {
                     navController.popBackStack(RoutesListRoute, inclusive = false)
                 },
+                onNavigateBack = { navController.popBackStack() },
             )
             composableEquipmentCardScreen(
                 onNavigateToChecklist = { equipmentResultId ->

@@ -101,6 +101,9 @@
     <!-- Equipment Card — accessibility -->
     <string name="equipment_card_back_content_description">Назад</string>
 
+    <!-- Route Points — accessibility -->
+    <string name="route_points_back_content_description">Назад</string>
+
     <!-- Photo Capture -->
     <string name="photo_capture_title_with_progress">Фотофиксация · %1$d / %2$d</string>
     <string name="photo_capture_empty_title">Нет фотографий</string>
