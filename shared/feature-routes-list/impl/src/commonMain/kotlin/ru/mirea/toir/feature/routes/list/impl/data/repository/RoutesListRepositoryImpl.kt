@@ -18,6 +18,7 @@ import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
+import ru.mirea.toir.feature.routes.list.api.models.RouteAssignmentStatus
 import ru.mirea.toir.feature.routes.list.impl.data.mappers.RouteAssignmentMapper
 import ru.mirea.toir.feature.routes.list.impl.domain.repository.RoutesListRepository
 import kotlin.uuid.ExperimentalUuidApi
@@ -48,9 +49,16 @@ internal class RoutesListRepositoryImpl(
                         }
                         val hasPendingSync = inspection?.syncStatus == LocalSyncStatus.PENDING &&
                             inspection.status in COMPLETED_INSPECTION_STATUSES
+                        val effectiveStatus = resolveEffectiveStatus(
+                            assignmentStatus = assignment.status,
+                            inspectionStatus = inspection?.status,
+                            totalPoints = points.size,
+                            completedCount = completedCount,
+                        )
                         mapper.map(
                             assignment = assignment,
                             route = route,
+                            status = effectiveStatus,
                             totalPoints = points.size,
                             completedPoints = completedCount,
                             inspectionId = inspection?.id,
@@ -87,10 +95,6 @@ internal class RoutesListRepositoryImpl(
                         createdAt = now,
                         updatedAt = now,
                     )
-                    routeStorage.updateAssignmentStatus(
-                        id = assignmentId,
-                        status = LocalRouteAssignmentStatus.IN_PROGRESS,
-                    )
                     actionLogger.log(
                         actionType = ActionLogType.INSPECTION_STARTED,
                         entityType = ActionLogEntityType.INSPECTION,
@@ -104,6 +108,33 @@ internal class RoutesListRepositoryImpl(
                 },
             )
         }
+
+    private fun resolveEffectiveStatus(
+        assignmentStatus: LocalRouteAssignmentStatus,
+        inspectionStatus: LocalInspectionStatus?,
+        totalPoints: Int,
+        completedCount: Int,
+    ): RouteAssignmentStatus = when {
+        assignmentStatus == LocalRouteAssignmentStatus.CANCELLED -> RouteAssignmentStatus.CANCELLED
+        inspectionStatus == LocalInspectionStatus.IN_PROGRESS -> RouteAssignmentStatus.IN_PROGRESS
+        inspectionStatus == LocalInspectionStatus.COMPLETED -> {
+            if (totalPoints > 0 && completedCount == totalPoints) {
+                RouteAssignmentStatus.COMPLETED
+            } else {
+                RouteAssignmentStatus.PARTIALLY_COMPLETED
+            }
+        }
+        inspectionStatus == LocalInspectionStatus.PARTIALLY_COMPLETED -> RouteAssignmentStatus.PARTIALLY_COMPLETED
+        else -> assignmentStatus.toDomain()
+    }
+
+    private fun LocalRouteAssignmentStatus.toDomain(): RouteAssignmentStatus = when (this) {
+        LocalRouteAssignmentStatus.ASSIGNED -> RouteAssignmentStatus.ASSIGNED
+        LocalRouteAssignmentStatus.IN_PROGRESS -> RouteAssignmentStatus.IN_PROGRESS
+        LocalRouteAssignmentStatus.COMPLETED -> RouteAssignmentStatus.COMPLETED
+        LocalRouteAssignmentStatus.PARTIALLY_COMPLETED -> RouteAssignmentStatus.PARTIALLY_COMPLETED
+        LocalRouteAssignmentStatus.CANCELLED -> RouteAssignmentStatus.CANCELLED
+    }
 
     private companion object {
         val COMPLETED_INSPECTION_STATUSES = setOf(

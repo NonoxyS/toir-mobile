@@ -45,8 +45,6 @@ interface RouteStorage {
 
     fun selectAssignmentById(id: String): LocalRouteAssignment?
 
-    fun updateAssignmentStatus(id: String, status: LocalRouteAssignmentStatus)
-
     fun deleteAssignmentById(id: String)
 
     fun deleteAllRoutes()
