@@ -1,6 +1,13 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package ru.mirea.toir.feature.route.points.impl.data.repository
 
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -31,42 +38,45 @@ internal class RoutePointsRepositoryImpl(
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : RoutePointsRepository {
 
-    override suspend fun getRoutePoints(inspectionId: String): Result<Pair<String, List<DomainRoutePoint>>> =
-        withContext(coroutineDispatchers.io) {
-            coRunCatching(
-                tryBlock = {
-                    val inspection = inspectionStorage.selectInspectionById(inspectionId)
-                        ?: error("Inspection not found: $inspectionId")
-                    val route = routeStorage.selectRouteById(inspection.routeId)
-                    val routePoints = routeStorage.selectPointsByRouteId(inspection.routeId)
-                    val equipmentResults = inspectionStorage.selectEquipmentResultsByInspectionId(inspectionId)
+    override fun observeRoutePoints(
+        inspectionId: String,
+    ): Flow<Pair<String, List<DomainRoutePoint>>> {
+        val inspection = inspectionStorage.selectInspectionById(inspectionId)
+            ?: return flowOf("" to emptyList())
+        // Reference data: captured once at subscription time. Routes don't change while a
+        // user inspects, so combining a third Flow would only add noise. .flowOn(io) below
+        // moves these synchronous reads off the caller's dispatcher anyway.
+        val route = routeStorage.selectRouteById(inspection.routeId)
+        val routeName = route?.name.orEmpty()
 
-                    val points = routePoints.map { point ->
-                        val equipment = equipmentStorage.selectById(point.equipmentId)
-                        val locationName = equipment?.locationId?.let { locationStorage.selectById(it)?.name }
-                        val result = equipmentResults.firstOrNull { it.routePointId == point.id }
-                        DomainRoutePoint(
-                            routePointId = point.id,
-                            equipmentId = point.equipmentId,
-                            equipmentCode = equipment?.code.orEmpty(),
-                            equipmentName = equipment?.name.orEmpty(),
-                            locationName = locationName.orEmpty(),
-                            equipmentResultId = result?.id,
-                            status = EquipmentResultStatus.fromString(
-                                result?.status?.name ?: LocalEquipmentResultStatus.NOT_STARTED.name
-                            ),
-                            hasIssues = result?.status == LocalEquipmentResultStatus.SKIPPED,
-                        )
-                    }
+        val pointsFlow = routeStorage.observePointsByRouteId(inspection.routeId)
+        val equipmentResultsFlow =
+            inspectionStorage.observeEquipmentResultsByInspectionId(inspectionId)
 
-                    (route?.name.orEmpty() to points).wrapResultSuccess()
-                },
-                catchBlock = { throwable ->
-                    Napier.e(message = "getRoutePoints failed", throwable = throwable)
-                    throwable.wrapResultFailure()
-                },
-            )
-        }
+        return combine(pointsFlow, equipmentResultsFlow) { points, results ->
+            val resultByPoint = results.associateBy { it.routePointId }
+            val domainPoints = points.map { point ->
+                val equipment = equipmentStorage.selectById(point.equipmentId)
+                val locationName = equipment?.locationId
+                    ?.let { locationStorage.selectById(it)?.name }
+                    .orEmpty()
+                val result = resultByPoint[point.id]
+                DomainRoutePoint(
+                    routePointId = point.id,
+                    equipmentId = point.equipmentId,
+                    equipmentCode = equipment?.code.orEmpty(),
+                    equipmentName = equipment?.name.orEmpty(),
+                    locationName = locationName,
+                    equipmentResultId = result?.id,
+                    status = EquipmentResultStatus.fromString(
+                        result?.status?.name ?: LocalEquipmentResultStatus.NOT_STARTED.name
+                    ),
+                    hasIssues = result?.status == LocalEquipmentResultStatus.SKIPPED,
+                )
+            }
+            routeName to domainPoints
+        }.flowOn(coroutineDispatchers.io)
+    }
 
     @OptIn(ExperimentalTime::class)
     override suspend fun finishInspection(inspectionId: String): Result<Unit> =
