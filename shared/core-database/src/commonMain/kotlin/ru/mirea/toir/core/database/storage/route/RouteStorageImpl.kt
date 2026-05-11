@@ -1,5 +1,11 @@
 package ru.mirea.toir.core.database.storage.route
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.core.database.Route_assignments
 import ru.mirea.toir.core.database.Route_points
 import ru.mirea.toir.core.database.Routes
@@ -9,7 +15,10 @@ import ru.mirea.toir.core.database.storage.route.models.LocalRoute
 import ru.mirea.toir.core.database.storage.route.models.LocalRouteAssignment
 import ru.mirea.toir.core.database.storage.route.models.LocalRoutePoint
 
-internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
+internal class RouteStorageImpl(
+    db: ToirDatabase,
+    private val dispatchers: CoroutineDispatchers,
+) : RouteStorage {
 
     private val routeQueries = db.routeQueries
     private val pointQueries = db.routePointQueries
@@ -96,6 +105,19 @@ internal class RouteStorageImpl(db: ToirDatabase) : RouteStorage {
     override fun deleteAllAssignments() {
         assignmentQueries.deleteAll()
     }
+
+    override fun observeAllAssignments(): Flow<List<LocalRouteAssignment>> =
+        assignmentQueries.selectAll().asFlow().mapToList(dispatchers.io).map { list ->
+            list.map { it.toLocal() }
+        }
+
+    override fun observeAssignmentById(id: String): Flow<LocalRouteAssignment?> =
+        assignmentQueries.selectById(id).asFlow().mapToOneOrNull(dispatchers.io).map { it?.toLocal() }
+
+    override fun observePointsByRouteId(routeId: String): Flow<List<LocalRoutePoint>> =
+        pointQueries.selectByRouteId(routeId).asFlow().mapToList(dispatchers.io).map { list ->
+            list.map { it.toLocal() }
+        }
 
     private fun Routes.toLocal() = LocalRoute(
         id = id,

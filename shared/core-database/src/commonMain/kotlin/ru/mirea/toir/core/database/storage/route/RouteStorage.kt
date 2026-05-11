@@ -1,5 +1,6 @@
 package ru.mirea.toir.core.database.storage.route
 
+import kotlinx.coroutines.flow.Flow
 import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.storage.route.models.LocalRoute
 import ru.mirea.toir.core.database.storage.route.models.LocalRouteAssignment
@@ -52,4 +53,10 @@ interface RouteStorage {
     fun deleteAllPoints()
 
     fun deleteAllAssignments()
+
+    fun observeAllAssignments(): Flow<List<LocalRouteAssignment>>
+
+    fun observeAssignmentById(id: String): Flow<LocalRouteAssignment?>
+
+    fun observePointsByRouteId(routeId: String): Flow<List<LocalRoutePoint>>
 }

@@ -1,10 +1,18 @@
 package ru.mirea.toir.core.database.storage.equipment
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToOneOrNull
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.core.database.Equipment
 import ru.mirea.toir.core.database.ToirDatabase
 import ru.mirea.toir.core.database.storage.equipment.models.LocalEquipment
 
-internal class EquipmentStorageImpl(db: ToirDatabase) : EquipmentStorage {
+internal class EquipmentStorageImpl(
+    db: ToirDatabase,
+    private val dispatchers: CoroutineDispatchers,
+) : EquipmentStorage {
 
     private val queries = db.equipmentQueries
 
@@ -42,6 +50,9 @@ internal class EquipmentStorageImpl(db: ToirDatabase) : EquipmentStorage {
     override fun deleteById(id: String) {
         queries.deleteById(id)
     }
+
+    override fun observeEquipmentById(id: String): Flow<LocalEquipment?> =
+        queries.selectById(id).asFlow().mapToOneOrNull(dispatchers.io).map { it?.toLocal() }
 
     private fun Equipment.toLocal() = LocalEquipment(
         id = id,

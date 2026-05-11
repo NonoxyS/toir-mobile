@@ -1,5 +1,6 @@
 package ru.mirea.toir.core.database.storage.equipment
 
+import kotlinx.coroutines.flow.Flow
 import ru.mirea.toir.core.database.storage.equipment.models.LocalEquipment
 
 interface EquipmentStorage {
@@ -22,4 +23,6 @@ interface EquipmentStorage {
     fun deleteAll()
 
     fun deleteById(id: String)
+
+    fun observeEquipmentById(id: String): Flow<LocalEquipment?>
 }
