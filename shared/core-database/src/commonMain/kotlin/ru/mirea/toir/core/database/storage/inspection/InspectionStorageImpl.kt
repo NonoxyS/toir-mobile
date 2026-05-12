@@ -2,6 +2,7 @@ package ru.mirea.toir.core.database.storage.inspection
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOne
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -68,12 +69,31 @@ internal class InspectionStorageImpl(
         )
     }
 
-    override fun selectPendingInspections(): List<LocalInspection> =
-        inspectionQueries.selectPending().executeAsList().map { it.toLocal() }
+    override fun selectPendingInspections(now: String): List<LocalInspection> =
+        inspectionQueries.selectPendingReady(now).executeAsList().map { it.toLocal() }
 
-    override fun updateInspectionSyncStatus(id: String, syncStatus: LocalSyncStatus) {
-        inspectionQueries.updateSyncStatus(sync_status = syncStatus, id = id)
+    override fun markInspectionSynced(id: String) {
+        inspectionQueries.markSynced(id = id)
     }
+
+    override fun markInspectionRetryScheduled(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        lastError: String?,
+    ) {
+        inspectionQueries.markRetryScheduled(
+            attemptCount = attemptCount,
+            nextAt = nextAttemptAt,
+            reason = lastError,
+            id = id,
+        )
+    }
+
+    override fun observeInspectionPendingCount(): Flow<Long> =
+        inspectionQueries.selectPendingCount()
+            .asFlow()
+            .mapToOne(dispatchers.io)
 
     override fun insertEquipmentResult(
         id: String,
@@ -127,12 +147,31 @@ internal class InspectionStorageImpl(
         )
     }
 
-    override fun selectPendingEquipmentResults(): List<LocalEquipmentResult> =
-        equipmentResultQueries.selectPending().executeAsList().map { it.toLocal() }
+    override fun selectPendingEquipmentResults(now: String): List<LocalEquipmentResult> =
+        equipmentResultQueries.selectPendingReady(now).executeAsList().map { it.toLocal() }
 
-    override fun updateEquipmentResultSyncStatus(id: String, syncStatus: LocalSyncStatus) {
-        equipmentResultQueries.updateSyncStatus(sync_status = syncStatus, id = id)
+    override fun markEquipmentResultSynced(id: String) {
+        equipmentResultQueries.markSynced(id = id)
     }
+
+    override fun markEquipmentResultRetryScheduled(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        lastError: String?,
+    ) {
+        equipmentResultQueries.markRetryScheduled(
+            attemptCount = attemptCount,
+            nextAt = nextAttemptAt,
+            reason = lastError,
+            id = id,
+        )
+    }
+
+    override fun observeEquipmentResultPendingCount(): Flow<Long> =
+        equipmentResultQueries.selectPendingCount()
+            .asFlow()
+            .mapToOne(dispatchers.io)
 
     override fun insertOrReplaceChecklistItemResult(
         id: String,
@@ -174,12 +213,31 @@ internal class InspectionStorageImpl(
         checklistItemResultQueries.selectByChecklistItemAndEquipmentResult(checklistItemId, equipmentResultId)
             .executeAsOneOrNull()?.toLocal()
 
-    override fun selectPendingChecklistItemResults(): List<LocalChecklistItemResult> =
-        checklistItemResultQueries.selectPending().executeAsList().map { it.toLocal() }
+    override fun selectPendingChecklistItemResults(now: String): List<LocalChecklistItemResult> =
+        checklistItemResultQueries.selectPendingReady(now).executeAsList().map { it.toLocal() }
 
-    override fun updateChecklistItemResultSyncStatus(id: String, syncStatus: LocalSyncStatus) {
-        checklistItemResultQueries.updateSyncStatus(sync_status = syncStatus, id = id)
+    override fun markChecklistItemResultSynced(id: String) {
+        checklistItemResultQueries.markSynced(id = id)
     }
+
+    override fun markChecklistItemResultRetryScheduled(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        lastError: String?,
+    ) {
+        checklistItemResultQueries.markRetryScheduled(
+            attemptCount = attemptCount,
+            nextAt = nextAttemptAt,
+            reason = lastError,
+            id = id,
+        )
+    }
+
+    override fun observeChecklistItemResultPendingCount(): Flow<Long> =
+        checklistItemResultQueries.selectPendingCount()
+            .asFlow()
+            .mapToOne(dispatchers.io)
 
     override fun observeInspectionByAssignmentId(assignmentId: String): Flow<LocalInspection?> =
         inspectionQueries.selectByAssignmentId(assignmentId)
@@ -228,6 +286,9 @@ internal class InspectionStorageImpl(
         createdAt = created_at,
         updatedAt = updated_at,
         syncStatus = sync_status,
+        syncAttemptCount = sync_attempt_count,
+        syncNextAttemptAt = sync_next_attempt_at,
+        syncLastError = sync_last_error,
     )
 
     private fun Inspection_equipment_results.toLocal() = LocalEquipmentResult(
@@ -241,6 +302,9 @@ internal class InspectionStorageImpl(
         createdAt = created_at,
         updatedAt = updated_at,
         syncStatus = sync_status,
+        syncAttemptCount = sync_attempt_count,
+        syncNextAttemptAt = sync_next_attempt_at,
+        syncLastError = sync_last_error,
     )
 
     private fun Checklist_item_results.toLocal() = LocalChecklistItemResult(
@@ -255,5 +319,8 @@ internal class InspectionStorageImpl(
         createdAt = created_at,
         updatedAt = updated_at,
         syncStatus = sync_status,
+        syncAttemptCount = sync_attempt_count,
+        syncNextAttemptAt = sync_next_attempt_at,
+        syncLastError = sync_last_error,
     )
 }

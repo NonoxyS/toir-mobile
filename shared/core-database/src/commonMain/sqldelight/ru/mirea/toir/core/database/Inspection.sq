@@ -10,7 +10,10 @@ CREATE TABLE IF NOT EXISTS inspections (
     completed_at TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    sync_status TEXT AS LocalSyncStatus NOT NULL
+    sync_status TEXT AS LocalSyncStatus NOT NULL,
+    sync_attempt_count INTEGER NOT NULL DEFAULT 0,
+    sync_next_attempt_at TEXT,
+    sync_last_error TEXT
 );
 
 insertInspection:
@@ -26,8 +29,25 @@ SELECT * FROM inspections WHERE id = ?;
 updateStatus:
 UPDATE inspections SET status = ?, completed_at = ?, updated_at = ? WHERE id = ?;
 
-selectPending:
-SELECT * FROM inspections WHERE sync_status = 'pending';
+selectPendingReady:
+SELECT * FROM inspections
+WHERE sync_status = 'pending'
+  AND (sync_next_attempt_at IS NULL OR sync_next_attempt_at <= :now);
 
-updateSyncStatus:
-UPDATE inspections SET sync_status = ? WHERE id = ?;
+selectPendingCount:
+SELECT count(*) FROM inspections WHERE sync_status = 'pending';
+
+markRetryScheduled:
+UPDATE inspections
+SET sync_attempt_count = :attemptCount,
+    sync_next_attempt_at = :nextAt,
+    sync_last_error = :reason
+WHERE id = :id;
+
+markSynced:
+UPDATE inspections
+SET sync_status = 'synced',
+    sync_attempt_count = 0,
+    sync_next_attempt_at = NULL,
+    sync_last_error = NULL
+WHERE id = :id;

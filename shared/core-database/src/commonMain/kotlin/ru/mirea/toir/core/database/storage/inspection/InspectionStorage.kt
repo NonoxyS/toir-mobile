@@ -2,7 +2,6 @@ package ru.mirea.toir.core.database.storage.inspection
 
 import kotlinx.coroutines.flow.Flow
 import ru.mirea.toir.core.database.models.LocalInspectionStatus
-import ru.mirea.toir.core.database.models.LocalSyncStatus
 import ru.mirea.toir.core.database.storage.inspection.models.LocalChecklistItemResult
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResult
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
@@ -32,9 +31,18 @@ interface InspectionStorage {
         updatedAt: String,
     )
 
-    fun selectPendingInspections(): List<LocalInspection>
+    fun selectPendingInspections(now: String): List<LocalInspection>
 
-    fun updateInspectionSyncStatus(id: String, syncStatus: LocalSyncStatus)
+    fun markInspectionSynced(id: String)
+
+    fun markInspectionRetryScheduled(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        lastError: String?,
+    )
+
+    fun observeInspectionPendingCount(): Flow<Long>
 
     @Suppress("LongParameterList")
     fun insertEquipmentResult(
@@ -65,9 +73,18 @@ interface InspectionStorage {
         updatedAt: String,
     )
 
-    fun selectPendingEquipmentResults(): List<LocalEquipmentResult>
+    fun selectPendingEquipmentResults(now: String): List<LocalEquipmentResult>
 
-    fun updateEquipmentResultSyncStatus(id: String, syncStatus: LocalSyncStatus)
+    fun markEquipmentResultSynced(id: String)
+
+    fun markEquipmentResultRetryScheduled(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        lastError: String?,
+    )
+
+    fun observeEquipmentResultPendingCount(): Flow<Long>
 
     @Suppress("LongParameterList")
     fun insertOrReplaceChecklistItemResult(
@@ -92,9 +109,18 @@ interface InspectionStorage {
         equipmentResultId: String,
     ): LocalChecklistItemResult?
 
-    fun selectPendingChecklistItemResults(): List<LocalChecklistItemResult>
+    fun selectPendingChecklistItemResults(now: String): List<LocalChecklistItemResult>
 
-    fun updateChecklistItemResultSyncStatus(id: String, syncStatus: LocalSyncStatus)
+    fun markChecklistItemResultSynced(id: String)
+
+    fun markChecklistItemResultRetryScheduled(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        lastError: String?,
+    )
+
+    fun observeChecklistItemResultPendingCount(): Flow<Long>
 
     fun observeInspectionByAssignmentId(assignmentId: String): Flow<LocalInspection?>
 

@@ -11,6 +11,8 @@ import ru.mirea.toir.core.database.Photos
 import ru.mirea.toir.core.database.Route_assignments
 import ru.mirea.toir.core.database.Sync_batches
 import ru.mirea.toir.core.database.ToirDatabase
+import ru.mirea.toir.core.database.TransactionRunner
+import ru.mirea.toir.core.database.TransactionRunnerImpl
 import ru.mirea.toir.core.database.adapters.EnumColumnAdapter
 import ru.mirea.toir.core.database.driver.DatabaseDriverFactory
 import ru.mirea.toir.core.database.models.LocalBatchStatus
@@ -82,4 +84,5 @@ val coreDatabaseModule = module {
     factory<ActionLogStorage> { new(::ActionLogStorageImpl) }
     single { new(::ActionLogger) }
     factory<SyncMetaStorage> { new(::SyncMetaStorageImpl) }
+    factory<TransactionRunner> { new(::TransactionRunnerImpl) }
 }

@@ -14,4 +14,7 @@ data class LocalChecklistItemResult(
     val createdAt: String,
     val updatedAt: String,
     val syncStatus: LocalSyncStatus,
+    val syncAttemptCount: Long = 0L,
+    val syncNextAttemptAt: String? = null,
+    val syncLastError: String? = null,
 )

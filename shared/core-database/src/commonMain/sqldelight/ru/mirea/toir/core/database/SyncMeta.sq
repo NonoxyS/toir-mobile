@@ -8,3 +8,6 @@ INSERT OR REPLACE INTO sync_meta (key, value) VALUES (?, ?);
 
 selectByKey:
 SELECT value FROM sync_meta WHERE key = ?;
+
+selectByKeyAsFlow:
+SELECT value FROM sync_meta WHERE key = ?;
