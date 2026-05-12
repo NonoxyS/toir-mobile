@@ -64,6 +64,10 @@ internal class PhotoStorageImpl(
         )
     }
 
+    override fun delete(id: String) {
+        queries.deletePhoto(id)
+    }
+
     private fun Photos.toLocal() = LocalPhoto(
         id = id,
         checklistItemResultId = checklist_item_result_id,

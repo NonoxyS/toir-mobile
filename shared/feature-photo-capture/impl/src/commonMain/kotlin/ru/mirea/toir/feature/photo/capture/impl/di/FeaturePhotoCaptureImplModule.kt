@@ -9,6 +9,8 @@ import ru.mirea.toir.feature.photo.capture.impl.domain.PhotoCaptureStoreFactory
 import ru.mirea.toir.feature.photo.capture.impl.domain.repository.PhotoCaptureRepository
 
 val featurePhotoCaptureImplModule = module {
+    includes(platformFeaturePhotoCaptureImplModule)
+
     factory<PhotoCaptureRepository> { new(::PhotoCaptureRepositoryImpl) }
 
     factory<PhotoCaptureStore> { params ->

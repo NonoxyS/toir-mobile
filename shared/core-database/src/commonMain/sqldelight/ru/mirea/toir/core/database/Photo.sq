@@ -27,3 +27,6 @@ SELECT * FROM photos WHERE sync_status = 'pending';
 
 updateSyncStatus:
 UPDATE photos SET sync_status = ?, storage_key = ? WHERE id = ?;
+
+deletePhoto:
+DELETE FROM photos WHERE id = ?;

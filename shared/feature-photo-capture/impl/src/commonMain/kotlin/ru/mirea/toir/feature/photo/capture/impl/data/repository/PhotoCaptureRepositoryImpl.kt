@@ -12,12 +12,14 @@ import ru.mirea.toir.core.database.storage.action_log.ActionLogEntityType
 import ru.mirea.toir.core.database.storage.action_log.ActionLogType
 import ru.mirea.toir.core.database.storage.action_log.ActionLogger
 import ru.mirea.toir.core.database.storage.photo.PhotoStorage
+import ru.mirea.toir.feature.photo.capture.impl.data.files.PhotoFileDeleter
 import ru.mirea.toir.feature.photo.capture.impl.domain.repository.PhotoCaptureRepository
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 internal class PhotoCaptureRepositoryImpl(
     private val photoStorage: PhotoStorage,
+    private val photoFileDeleter: PhotoFileDeleter,
     private val actionLogger: ActionLogger,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : PhotoCaptureRepository {
@@ -63,4 +65,31 @@ internal class PhotoCaptureRepositoryImpl(
                 },
             )
         }
+
+    override suspend fun deletePhoto(
+        checklistItemResultId: String,
+        fileUri: String,
+    ): Result<Unit> = withContext(coroutineDispatchers.io) {
+        coRunCatching(
+            tryBlock = {
+                val photo = photoStorage
+                    .selectByChecklistItemResultId(checklistItemResultId)
+                    .firstOrNull { it.fileUri == fileUri }
+                    ?: error("Photo not found for uri=$fileUri")
+                photoStorage.delete(photo.id)
+                photoFileDeleter.delete(fileUri)
+                actionLogger.log(
+                    actionType = ActionLogType.PHOTO_DELETED,
+                    entityType = ActionLogEntityType.CHECKLIST_ITEM_RESULT,
+                    entityId = checklistItemResultId,
+                    payloadJson = """{"photoId":"${photo.id}","fileUri":"$fileUri"}""",
+                )
+                Unit.wrapResultSuccess()
+            },
+            catchBlock = { throwable ->
+                Napier.e(message = "deletePhoto failed", throwable = throwable)
+                throwable.wrapResultFailure()
+            },
+        )
+    }
 }

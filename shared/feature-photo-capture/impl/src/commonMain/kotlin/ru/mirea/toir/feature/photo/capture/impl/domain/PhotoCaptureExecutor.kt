@@ -24,7 +24,7 @@ internal class PhotoCaptureExecutor(
     override suspend fun suspendExecuteIntent(intent: Intent) {
         when (intent) {
             is Intent.OnPhotoTaken -> savePhoto(intent.fileUri)
-            is Intent.OnPhotoDeleted -> dispatch(Message.PhotoRemoved(intent.fileUri))
+            is Intent.OnPhotoDeleted -> deletePhoto(intent.fileUri)
             Intent.OnConfirm -> publish(Label.PhotoConfirmed)
         }
     }
@@ -46,6 +46,14 @@ internal class PhotoCaptureExecutor(
                 dispatch(Message.SetLoading(false))
             },
             onFailure = { dispatch(Message.SetLoading(false)) },
+        )
+    }
+
+    private suspend fun deletePhoto(fileUri: String) {
+        val resultId = state().checklistItemResultId
+        repository.deletePhoto(resultId, fileUri).fold(
+            onSuccess = { dispatch(Message.PhotoRemoved(fileUri)) },
+            onFailure = { /* keep state unchanged so UI doesn't lie; logged in repo */ },
         )
     }
 }

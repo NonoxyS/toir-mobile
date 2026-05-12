@@ -21,6 +21,8 @@ interface PhotoStorage {
     fun selectPending(): List<LocalPhoto>
 
     fun updateSyncStatus(id: String, syncStatus: LocalSyncStatus, storageKey: String?)
+
+    fun delete(id: String)
 }
 
 data class LocalPhoto(

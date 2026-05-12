@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
@@ -18,17 +19,25 @@ internal actual fun rememberPlatformCameraTrigger(
 ): () -> Unit {
     val context = LocalContext.current
     val currentOnPhotoTaken = rememberUpdatedState(onPhotoTaken)
-    val photoUri = remember { createPhotoUri(context) }
+    val pendingUri = remember { mutableStateOf<Uri?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
     ) { success ->
-        if (success) {
-            currentOnPhotoTaken.value(photoUri.toString())
+        val captured = pendingUri.value
+        pendingUri.value = null
+        if (success && captured != null) {
+            currentOnPhotoTaken.value(captured.toString())
         }
     }
 
-    return remember(launcher) { { launcher.launch(photoUri) } }
+    return remember(launcher) {
+        {
+            val uri = createPhotoUri(context)
+            pendingUri.value = uri
+            launcher.launch(uri)
+        }
+    }
 }
 
 private fun createPhotoUri(context: Context): Uri {
