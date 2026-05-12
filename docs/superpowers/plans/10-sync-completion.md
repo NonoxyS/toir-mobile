@@ -51,7 +51,7 @@
 3. `SyncRepositoryImpl.fetchAndApplyDeltaChanges` применяет ответ вне транзакции — при крэше посередине БД остаётся в неконсистентном состоянии.
 4. `SyncManager.syncBlocking()` не проверяет результаты трёх шагов (свидетельствует о незакрытости контракта).
 5. `SyncWorker.doWork` вызывает `syncManager.syncNow()` который возвращает `Job` и сразу возвращает `Result.success()` — Worker завершается до окончания фактической синхронизации. Это баг: WorkManager-механизм отчётности не работает.
-6. Нет `feature-sync-status` (или эквивалента) для отображения состояния.
+6. Нет UI для отображения состояния синхронизации (планируется bottom sheet внутри `feature-routes-list/ui`, не отдельный feature-модуль — см. Phase 3).
 7. `SyncScheduler` использует `ExistingPeriodicWorkPolicy.KEEP` — при изменении интервала на установленном устройстве конфиг не обновится.
 
 ---
@@ -233,17 +233,12 @@ shared/feature-routes-list/impl/src/commonMain/
 shared/feature-routes-list/api/src/commonMain/
 └── kotlin/.../models/RoutesListSyncIndicator.kt             [new]
 
-shared/feature-routes-list/presentation/...                  [edit: indicator state]
+shared/feature-routes-list/presentation/...                  [edit: indicator state, sheet visibility]
 shared/feature-routes-list/ui/components/SyncIndicatorIcon.kt [new]
+shared/feature-routes-list/ui/components/SyncStatusBottomSheet.kt [new — bottom sheet, отдельного экрана нет]
 shared/feature-routes-list/ui/RouteCard.kt                   [edit: pending-sync stripe]
 
-shared/feature-sync-status/                                  [new — 4-modular feature, scope confirmed in Task 3.0]
-├── api/
-├── impl/
-├── presentation/
-└── ui/
-
-docs/design-system/pages/sync-status.md                      [new — output of Task 3.0 DS audit]
+docs/design-system/pages/routes-list.md                      [edit — добавлен раздел Bottom sheet (вместо нового sync-status.md)]
 ```
 
 ---
@@ -383,16 +378,14 @@ docs/design-system/pages/sync-status.md                      [new — output of 
 - Левая полоска 3dp `color.sync` + иконка ⇅ на карточках в состоянии «Ожидает синхр.».
 - Текстовое состояние карточки «Завершён, не синхр.» в порядке сортировки.
 
-Никаких отдельных «банеров» под App Bar — это противоречит DS. Только иконка + отдельный экран «Статус синхронизации».
+Никаких отдельных «банеров» под App Bar — это противоречит DS. Только иконка в App Bar + **bottom sheet «Статус синхронизации»** (отдельного экрана нет — решение зафиксировано 2026-05-12 после ревью: информации мало, пустой экран = over-engineering, ломает контекст списка маршрутов).
 
-#### Task 3.0: Аудит и спека UI через ui-ux-pro-max
+#### Task 3.0: Обновлён DS (`routes-list.md`) — bottom sheet вместо экрана ✅
 
-- [ ] Перед реализацией вызвать `ui-ux-pro-max:ui-ux-pro-max` (action=`review` + `plan`) для:
-  - аудита sync-иконки в App Bar (цвета, анимация spin, тап-таргет ≥ 44dp);
-  - спеки экрана «Статус синхронизации» (структура, типографика, тач-таргеты, состояния пусто/идёт/ошибка/успех);
-  - проверки, что новые состояния карточек («Ожидает синхр.») соответствуют DS;
-  - подтверждения текстов snackbar (`color.error`/`color.warning` фон, длительность, кнопка действия).
-- [ ] Результат фиксируется в `docs/design-system/pages/sync-status.md` (новый файл). Имплементация Phase 3 идёт по этому файлу.
+- [x] В `docs/design-system/pages/routes-list.md` зафиксирован раздел «Bottom sheet «Статус синхронизации»» с ASCII-мокапом, поведением, состояниями.
+- [x] Pin `feedback_ui_overengineering`: не делать отдельный screen ради 3 строк информации.
+
+> Дизайн-аудит `ui-ux-pro-max:ui-ux-pro-max` НЕ вызывается — DS уже содержит исчерпывающую спеку. Если в процессе появятся развилки (анимации, цвета, размеры) — поднять отдельно.
 
 #### Task 3.1: Доменные потоки и проекция UI-состояния
 
@@ -415,8 +408,8 @@ docs/design-system/pages/sync-status.md                      [new — output of 
   - `lastError != null` → `Icon(error_outline)` с `color.error`.
   - иначе → `Icon(check_circle)` с `color.success`.
   - Тап-таргет 44dp (через `Modifier.size(44.dp)` или Material IconButton).
-- [ ] Тап → navigation: открыть экран `SyncStatusScreen` (Task 3.4).
-- [ ] Long-press → ручной запуск `syncManager.syncNow(Manual)` (опционально, обсудить с DS-аудитом в Task 3.0).
+- [ ] Тап → открывает `SyncStatusBottomSheet` (Task 3.4) — установка `state.isSyncSheetVisible = true` через `Intent.OnSyncIndicatorClicked`.
+- [ ] **Long-press НЕ реализуем** — скрытый жест, не соответствует accessibility; ручной запуск только через кнопку в bottom sheet.
 
 #### Task 3.3: Левая полоска и состояние карточки «Ожидает синхр.»
 
@@ -426,22 +419,23 @@ docs/design-system/pages/sync-status.md                      [new — output of 
   - иконка ⇅ в строке метаданных при `hasPendingSync=true`.
 - [ ] Добавить `color.sync` в `shared/common-ui/.../theme/Colors.kt` если ещё нет (проверить — должно быть; иначе — отдельный коммит в Theme).
 
-#### Task 3.4: Экран «Статус синхронизации»
+#### Task 3.4: `SyncStatusBottomSheet` Composable
 
-- [ ] Новый модуль `shared/feature-sync-status/` (4-модульный: `api`, `impl`, `presentation`, `ui`) ИЛИ — если scope позволяет — отдельный экран внутри `feature-routes-list/impl` (меньше boilerplate, но нарушает паттерн фичей). **Решение в Task 3.0 после DS-аудита.**
-- [ ] Содержимое экрана (по спеке из Task 3.0, ожидаемая структура):
-  - Заголовок «Статус синхронизации».
-  - Карточка «Последняя синхронизация»: время (`type.bodyLarge`), статус (`Success/Failed reason`, цвет соответствует).
-  - Карточка «Ожидает отправки»: количество (`type.headline`), по необходимости — раскрывающийся список (5 первых записей: `<entity> · <updatedAt>` — берём из `inspectionStorage`/`photoStorage`/`actionLogStorage`).
-  - Кнопка `Primary` «Синхронизировать сейчас» (disabled при `isRunning`, заменяется на progress).
-  - При `isRunning` — общий top-bar progress.
-- [ ] Подписка на `SyncManager.status` и `pendingCount`.
-- [ ] При `Failed(NETWORK/AUTH/SERVER)` — текст ошибки по строкам из Task 3.6.
+> Реализуется как Composable внутри `feature-routes-list/ui/components/SyncStatusBottomSheet.kt`. Отдельный feature-модуль НЕ создаётся (отказались от `feature-sync-status` — over-engineering для 3 строк информации).
 
-#### Task 3.5: Snackbar при ручном вызове из App Bar (опционально)
+- [ ] `SyncStatusBottomSheet(state: RoutesListSyncIndicator, lastSuccessAt: Instant?, lastFailedAt: Instant?, isVisible: Boolean, onDismiss: () -> Unit, onSyncNow: () -> Unit)`.
+- [ ] Material 3 `ModalBottomSheet` с `sheetState = rememberModalBottomSheetState()`. Top corners — `radius.lg` (16dp).
+- [ ] Содержимое (по спеке `routes-list.md` → раздел «Bottom sheet»):
+  - Заголовок «Статус синхронизации» (`type.displayMedium`).
+  - Карточка «Последняя синхронизация»: время + статус-иконка (✓ success / ✕ error) + текст причины при `Failed`.
+  - Карточка «Ожидают отправки»: счётчик (`type.displayLarge`) или текст «Все данные отправлены» при `pendingCount=0`.
+  - Кнопка `Primary` «Синхронизировать сейчас» (disabled при `isRunning`). При `isRunning` — progress bar height 4dp `color.warning` вместо кнопки.
+- [ ] При `onSyncNow` — `syncManager.syncNow(SyncTrigger.Manual)`. Sheet не закрывается автоматически — пользователь видит переход в Running → Success/Failed.
+- [ ] Тексты ошибок из Task 3.6.
 
-- [ ] При `long-press` или альтернативном жесте manual sync — если результат `Failed`, показать snackbar в текущем экране (host = scaffold of `RoutesListScreen`). Тексты — Task 3.6.
-- [ ] Если решено в Task 3.0, что long-press не нужен (ручной запуск только из `SyncStatusScreen`) — этот таск удаляется.
+#### Task 3.5: ~~Snackbar при ручном вызове из App Bar~~ — удалено
+
+Long-press жест отказались делать (см. Task 3.2). Ручной запуск только через bottom sheet, где результат виден напрямую в карточке «Последняя синхронизация». Snackbar избыточен.
 
 #### Task 3.6: Локализация
 
@@ -461,23 +455,22 @@ docs/design-system/pages/sync-status.md                      [new — output of 
 
 #### Task 3.7: Презентация и executor routes-list
 
-- [ ] В `RoutesListState` добавить `syncIndicator: RoutesListSyncIndicator`.
-- [ ] В `RoutesListReducer`: новый `Msg.SyncIndicatorChanged(RoutesListSyncIndicator)`.
-- [ ] В `RoutesListExecutor`: подписка на `repository.observeSyncIndicator()` в `Action.Init`.
-- [ ] Новый intent `OnSyncIndicatorClicked` → navigation event `NavigateToSyncStatus`.
+- [ ] В `RoutesListState` добавить `syncIndicator: RoutesListSyncIndicator`, `isSyncSheetVisible: Boolean`, `syncLastSuccessAt: Instant?`, `syncLastFailedAt: Instant?`.
+- [ ] В `RoutesListReducer`: `Msg.SyncIndicatorChanged(...)`, `Msg.SyncSheetVisibilityChanged(Boolean)`.
+- [ ] В `RoutesListExecutor`: подписка на `repository.observeSyncIndicator()` + `observeByKey(KEY_LAST_SYNC_AT_SUCCESS / KEY_LAST_SYNC_ERROR_AT)` в `Action.Init`.
+- [ ] Intent-ы: `OnSyncIndicatorClicked` → `SyncSheetVisibilityChanged(true)`; `OnSyncSheetDismissed` → `SyncSheetVisibilityChanged(false)`; `OnSyncNowClicked` → `syncManager.syncNow(SyncTrigger.Manual)`.
 
 #### Phase 3 — Verification
 
-- [ ] DS-аудит (Task 3.0) приложен к PR; файл `docs/design-system/pages/sync-status.md` создан.
-- [ ] Скриншоты всех четырёх состояний sync-иконки в App Bar приложены к PR.
+- [ ] Скриншоты четырёх состояний sync-иконки в App Bar приложены к PR.
 - [ ] Скриншот карточки в состоянии «Ожидает синхр.» с полоской `color.sync` приложен.
-- [ ] Скриншот экрана «Статус синхронизации» в четырёх состояниях (Idle/Running/Success/Failed) приложен.
+- [ ] Скриншот bottom sheet «Статус синхронизации» в четырёх состояниях (Idle/Running/Success/Failed) приложен.
 - [ ] Smoke на устройстве:
   - В оффлайне завершить обход → иконка переходит в `color.warning` ⇅, на карточке появляется полоска.
-  - Включить сеть → тап на иконку → экран «Статус синхронизации» → кнопка «Синхронизировать сейчас» → spin → success ✓.
-  - Намеренный 500 (через wrong baseUrl) → иконка `color.error` ✕, текст ошибки на экране.
-- [ ] UI-юнит тесты для `RoutesListReducer` на `Msg.SyncIndicatorChanged`.
-- [ ] Коммит: `feat(sync): manual trigger, status screen, app-bar indicator (Phase 3)`.
+  - Включить сеть → тап на иконку → открывается bottom sheet → кнопка «Синхронизировать сейчас» → spin → success ✓.
+  - Намеренный 500 (через wrong baseUrl) → иконка `color.error` ✕, текст ошибки в карточке «Последняя синхронизация».
+- [ ] UI-юнит тесты для `RoutesListReducer` на `Msg.SyncIndicatorChanged` и `Msg.SyncSheetVisibilityChanged`.
+- [ ] Коммит: `feat(sync): manual trigger, status sheet, app-bar indicator (Phase 3)`.
 
 ---
 
@@ -546,12 +539,12 @@ docs/design-system/pages/sync-status.md                      [new — output of 
 | 2.1 Загрузка маршрутов | После Bootstrap пользователь видит назначенные маршруты в `routes-list` без сети | существующее поведение, не регрессировано |
 | 2.2 Обновление без дубликатов | Повторный delta-fetch не создаёт дублей, не обнуляет более свежие локальные данные | unit applier-test + smoke |
 | 3.1 Передача результатов | Бэкенд получает inspection/equipment/checklist/actionLogs/photos с client-UUID | в существующих тестах + ручная сверка с API логом |
-| 3.2 Подтверждение / описание ошибки | Экран «Статус синхронизации» отображает текст причины при `Failed` | UI smoke в Phase 3 |
+| 3.2 Подтверждение / описание ошибки | Bottom sheet «Статус синхронизации» отображает текст причины при `Failed` | UI smoke в Phase 3 |
 | 4. Offline работа | Полный сценарий «логин → старт → завершение обхода» в режиме полёта работает | smoke E2E |
 | 4. Авто после восстановления | При появлении сети sync стартует в течение ≤ 2 с | smoke в Phase 4 |
-| 4. Ручной запуск | Кнопка «Синхронизировать сейчас» на экране «Статус синхронизации» запускает sync | smoke в Phase 3 |
-| 5. Фиксация неуспешной | `KEY_LAST_SYNC_ERROR_*` заполнены, видны на экране «Статус синхронизации» | smoke в Phase 3 |
-| 5. Уведомлять о PENDING | Иконка App Bar в `color.warning` + полоска `color.sync` на карточке + счётчик на экране «Статус синхронизации» | smoke в Phase 3 |
+| 4. Ручной запуск | Кнопка «Синхронизировать сейчас» в bottom sheet «Статус синхронизации» запускает sync | smoke в Phase 3 |
+| 5. Фиксация неуспешной | `KEY_LAST_SYNC_ERROR_*` заполнены, видны в bottom sheet «Статус синхронизации» | smoke в Phase 3 |
+| 5. Уведомлять о PENDING | Иконка App Bar в `color.warning` + полоска `color.sync` на карточке + счётчик в bottom sheet | smoke в Phase 3 |
 | 5. Повторная попытка | Через backoff sync дёргается повторно, данные уходят | smoke + unit |
 | 5. Без дублирования | Бэкенд idempotent + `markSynced` no-op на SYNCED | unit Phase 5 + ручная проверка API логов |
 | 6. Конфликты | `updated_at` guard в applier; client-wins до push | unit Phase 5 |
