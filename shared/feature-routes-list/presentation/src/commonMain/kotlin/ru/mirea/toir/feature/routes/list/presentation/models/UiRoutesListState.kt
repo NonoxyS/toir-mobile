@@ -15,7 +15,8 @@ data class UiRoutesListState(
 
 data class UiSyncIndicator(
     val isRunning: Boolean = false,
-    val pendingCount: Int = 0,
+    val hasPending: Boolean = false,
+    val pendingInspections: List<UiPendingInspection> = emptyList(),
     val lastError: UiSyncFailure? = null,
 )
 

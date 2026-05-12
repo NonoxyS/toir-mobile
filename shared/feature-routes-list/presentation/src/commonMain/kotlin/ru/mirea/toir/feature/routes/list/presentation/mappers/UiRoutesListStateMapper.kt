@@ -4,9 +4,15 @@ import kotlinx.collections.immutable.toImmutableList
 import ru.mirea.toir.common.mappers.Mapper
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.RouteAssignmentStatus
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspection
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspectionStatus
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListRejectionReason
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncFailure
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncIndicator
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore
+import ru.mirea.toir.feature.routes.list.presentation.models.UiPendingInspection
+import ru.mirea.toir.feature.routes.list.presentation.models.UiPendingInspectionStatus
+import ru.mirea.toir.feature.routes.list.presentation.models.UiRejectionReason
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteAssignment
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteStatus
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRoutesListState
@@ -49,9 +55,38 @@ internal class UiRoutesListStateMapperImpl : UiRoutesListStateMapper {
 
     private fun RoutesListSyncIndicator.toUi(): UiSyncIndicator = UiSyncIndicator(
         isRunning = isRunning,
-        pendingCount = pendingCount,
+        hasPending = hasPending,
+        pendingInspections = pendingInspections.map { it.toUi() },
         lastError = lastError?.toUi(),
     )
+
+    private fun RoutesListPendingInspection.toUi(): UiPendingInspection =
+        UiPendingInspection(
+            inspectionId = inspectionId,
+            routeName = routeName,
+            completedAt = completedAt,
+            status = status.toUi(),
+            attemptCount = attemptCount,
+            rejectionReason = rejectionReason?.toUi(),
+        )
+
+    private fun RoutesListPendingInspectionStatus.toUi(): UiPendingInspectionStatus = when (this) {
+        RoutesListPendingInspectionStatus.COMPLETED -> UiPendingInspectionStatus.COMPLETED
+        RoutesListPendingInspectionStatus.PARTIALLY_COMPLETED -> UiPendingInspectionStatus.PARTIALLY_COMPLETED
+        RoutesListPendingInspectionStatus.CANCELLED -> UiPendingInspectionStatus.CANCELLED
+    }
+
+    private fun RoutesListRejectionReason.toUi(): UiRejectionReason = when (this) {
+        RoutesListRejectionReason.INVALID_ASSIGNMENT_ID -> UiRejectionReason.INVALID_ASSIGNMENT_ID
+        RoutesListRejectionReason.INVALID_ROUTE_ID -> UiRejectionReason.INVALID_ROUTE_ID
+        RoutesListRejectionReason.ROUTE_ASSIGNMENT_NOT_FOUND_OR_FORBIDDEN ->
+            UiRejectionReason.ROUTE_ASSIGNMENT_NOT_FOUND_OR_FORBIDDEN
+        RoutesListRejectionReason.ROUTE_ID_MISMATCH -> UiRejectionReason.ROUTE_ID_MISMATCH
+        RoutesListRejectionReason.INSPECTION_NOT_FOUND -> UiRejectionReason.INSPECTION_NOT_FOUND
+        RoutesListRejectionReason.ROUTE_POINT_NOT_FOUND -> UiRejectionReason.ROUTE_POINT_NOT_FOUND
+        RoutesListRejectionReason.EQUIPMENT_MISMATCH -> UiRejectionReason.EQUIPMENT_MISMATCH
+        RoutesListRejectionReason.UNKNOWN -> UiRejectionReason.UNKNOWN
+    }
 
     private fun RoutesListSyncFailure.toUi(): UiSyncFailure = when (this) {
         RoutesListSyncFailure.NETWORK -> UiSyncFailure.NETWORK
