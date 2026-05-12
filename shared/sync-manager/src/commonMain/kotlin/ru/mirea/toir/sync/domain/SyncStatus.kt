@@ -9,8 +9,8 @@ sealed interface SyncStatus {
     data object Running : SyncStatus
     data class Success(
         val finishedAt: Instant,
-        val pushedCount: Int,
-        val uploadedPhotoCount: Int,
+        val pushedCount: Long,
+        val uploadedPhotoCount: Long,
     ) : SyncStatus
     data class Failed(
         val finishedAt: Instant,
