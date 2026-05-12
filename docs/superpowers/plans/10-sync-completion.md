@@ -358,15 +358,19 @@ docs/design-system/pages/sync-status.md                      [new — output of 
 
 ---
 
-### Phase 2 — Авто-sync после завершения обхода (краткая спека)
+### Phase 2 — Авто-sync после завершения обхода ✅
 
 **Цель:** ВКР п.3 — статус задания становится «выполнено» после успешной передачи.
 
 **Суть:** инжектировать `SyncManager` в `feature-route-points`, в `RoutePointsRepositoryImpl.finishInspection` после `actionLogger.log(INSPECTION_COMPLETED, …)` вызывать `syncManager.syncNow(SyncTrigger.AfterInspection)` (fire-and-forget).
 
-**Verification:** в logcat виден старт sync через ≤1с после завершения; offline → статус `Failed(NETWORK)`, данные остались PENDING.
+- [x] `shared/feature-route-points/impl/build.gradle.kts`: добавлен `projects.shared.syncManager` в `implementations`.
+- [x] `RoutePointsRepositoryImpl`: добавлен `syncManager: SyncManager` в конструктор; вызов `syncManager.syncNow(SyncTrigger.AfterInspection)` после `actionLogger.log(INSPECTION_COMPLETED, …)`.
+- [x] DI без правок: Koin DSL `new(::RoutePointsRepositoryImpl)` сам резолвит `SyncManager` (зарегистрирован как `single` в `syncManagerModule`).
+- [x] `./gradlew :shared:feature-route-points:impl:assemble` зелёный.
+- [x] `./gradlew :android:app:assembleDebug` зелёный.
 
-**Детальную спеку зафиксировать перед началом фазы.**
+**Verification (smoke на устройстве):** в logcat виден старт sync через ≤1с после завершения; offline → статус `Failed(NETWORK)`, данные остались PENDING. **Будет проверено в Phase 3 smoke-тесте, когда появится UI-индикатор.**
 
 ---
 

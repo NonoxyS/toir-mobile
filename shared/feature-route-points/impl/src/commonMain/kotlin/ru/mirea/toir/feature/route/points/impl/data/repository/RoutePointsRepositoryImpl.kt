@@ -29,6 +29,8 @@ import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.feature.route.points.api.models.DomainRoutePoint
 import ru.mirea.toir.feature.route.points.api.models.EquipmentResultStatus
 import ru.mirea.toir.feature.route.points.impl.domain.repository.RoutePointsRepository
+import ru.mirea.toir.sync.domain.SyncManager
+import ru.mirea.toir.sync.domain.SyncTrigger
 
 internal class RoutePointsRepositoryImpl(
     private val inspectionStorage: InspectionStorage,
@@ -36,6 +38,7 @@ internal class RoutePointsRepositoryImpl(
     private val equipmentStorage: EquipmentStorage,
     private val locationStorage: LocationStorage,
     private val actionLogger: ActionLogger,
+    private val syncManager: SyncManager,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : RoutePointsRepository {
 
@@ -101,6 +104,7 @@ internal class RoutePointsRepositoryImpl(
                         entityId = inspectionId,
                         payloadJson = """{"status":"${finalStatus.localValue}"}""",
                     )
+                    syncManager.syncNow(SyncTrigger.AfterInspection)
                     Unit.wrapResultSuccess()
                 },
                 catchBlock = { throwable ->
