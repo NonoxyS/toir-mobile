@@ -12,7 +12,8 @@ class LocalRejectionReasonMapperTest {
         val expected = mapOf(
             LocalRejectionReason.INVALID_ASSIGNMENT_ID to InspectionRejectionReason.INVALID_ASSIGNMENT_ID,
             LocalRejectionReason.INVALID_ROUTE_ID to InspectionRejectionReason.INVALID_ROUTE_ID,
-            LocalRejectionReason.ROUTE_ASSIGNMENT_NOT_FOUND_OR_FORBIDDEN to InspectionRejectionReason.ROUTE_ASSIGNMENT_NOT_FOUND_OR_FORBIDDEN,
+            LocalRejectionReason.ROUTE_ASSIGNMENT_NOT_FOUND_OR_FORBIDDEN to
+                InspectionRejectionReason.ROUTE_ASSIGNMENT_NOT_FOUND_OR_FORBIDDEN,
             LocalRejectionReason.ROUTE_ID_MISMATCH to InspectionRejectionReason.ROUTE_ID_MISMATCH,
             LocalRejectionReason.INSPECTION_NOT_FOUND to InspectionRejectionReason.INSPECTION_NOT_FOUND,
             LocalRejectionReason.ROUTE_POINT_NOT_FOUND to InspectionRejectionReason.ROUTE_POINT_NOT_FOUND,
