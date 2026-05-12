@@ -66,7 +66,8 @@ internal class SyncRepositoryImpl(
                 tryBlock = {
                     val now = Clock.System.now()
                     val nowIso = now.toString()
-                    val deviceId = tokenStorage.getOrCreateDeviceCode()
+                    val deviceId = tokenStorage.getDeviceId()
+                        ?: error("Device is not registered. Re-login required.")
 
                     val pendingInspections = inspectionStorage.selectPendingInspections(nowIso)
                     val pendingEquipmentResults = inspectionStorage.selectPendingEquipmentResults(nowIso)

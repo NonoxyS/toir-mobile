@@ -41,6 +41,7 @@ internal class AuthRepositoryImpl(
                     ).getOrThrow()
 
                     tokenStorage.saveTokens(bearerTokens = response.toBearerTokens())
+                    tokenStorage.saveDeviceId(deviceId = response.device.id)
 
                     userMapper.map(response.user).wrapResultSuccess()
                 },

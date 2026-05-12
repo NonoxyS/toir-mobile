@@ -42,6 +42,7 @@ internal class TokenStorageImpl(
         dataStore.edit { prefs ->
             prefs.remove(KEY_ACCESS_TOKEN)
             prefs.remove(KEY_REFRESH_TOKEN)
+            prefs.remove(KEY_DEVICE_ID)
         }
     }
 
@@ -54,9 +55,17 @@ internal class TokenStorageImpl(
         return newCode
     }
 
+    override suspend fun saveDeviceId(deviceId: String) {
+        dataStore.edit { it[KEY_DEVICE_ID] = deviceId }
+    }
+
+    override suspend fun getDeviceId(): String? =
+        dataStore.data.map { it[KEY_DEVICE_ID] }.firstOrNull()
+
     private companion object {
         val KEY_ACCESS_TOKEN = stringPreferencesKey("auth_access_token")
         val KEY_REFRESH_TOKEN = stringPreferencesKey("auth_refresh_token")
         val KEY_DEVICE_CODE = stringPreferencesKey("auth_device_code")
+        val KEY_DEVICE_ID = stringPreferencesKey("auth_device_id")
     }
 }

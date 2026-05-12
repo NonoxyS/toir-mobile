@@ -7,4 +7,6 @@ interface TokenStorage {
     suspend fun getBearerTokens(): BearerTokens?
     suspend fun clearTokens()
     suspend fun getOrCreateDeviceCode(): String
+    suspend fun saveDeviceId(deviceId: String)
+    suspend fun getDeviceId(): String?
 }
