@@ -2,26 +2,35 @@ package ru.mirea.toir.sync.domain
 
 import io.github.aakira.napier.Napier
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.core.database.storage.action_log.ActionLogType
 import ru.mirea.toir.core.database.storage.action_log.ActionLogger
+import ru.mirea.toir.sync.domain.network.NetworkMonitor
 import ru.mirea.toir.sync.domain.repository.SyncRepository
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, FlowPreview::class)
 class SyncManager internal constructor(
     private val syncRepository: SyncRepository,
     private val actionLogger: ActionLogger,
+    private val networkMonitor: NetworkMonitor,
     coroutineDispatchers: CoroutineDispatchers,
 ) {
     private val scope = CoroutineScope(coroutineDispatchers.io + SupervisorJob())
@@ -31,6 +40,18 @@ class SyncManager internal constructor(
     val status: StateFlow<SyncStatus> = _status.asStateFlow()
 
     val pendingCount: Flow<Long> = syncRepository.observePendingCount()
+
+    init {
+        networkMonitor.isOnline
+            .drop(1)
+            .filter { it }
+            .debounce(CONNECTIVITY_DEBOUNCE)
+            .onEach {
+                Napier.d("SyncManager: connectivity restored, triggering sync")
+                runOnce(SyncTrigger.Connectivity)
+            }
+            .launchIn(scope)
+    }
 
     fun syncNow(trigger: SyncTrigger): Job = scope.launch {
         runOnce(trigger)
@@ -112,5 +133,9 @@ class SyncManager internal constructor(
             actionLogger.log(actionType = ActionLogType.SYNC_FAILED)
             Result.failure(failure)
         }
+    }
+
+    private companion object {
+        val CONNECTIVITY_DEBOUNCE = 1.seconds
     }
 }

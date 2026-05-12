@@ -478,18 +478,22 @@ Long-press жест отказались делать (см. Task 3.2). Ручн
 
 ---
 
-### Phase 4 — Сетевой триггер NetworkMonitor (краткая спека)
+### Phase 4 — Сетевой триггер NetworkMonitor ✅
 
 **Цель:** ВКР п.4 «автоматическая передача после восстановления соединения».
 
-**Суть:** `expect interface NetworkMonitor { val isOnline: StateFlow<Boolean> }`.
-- Android actual: `ConnectivityManager.registerNetworkCallback` с `NET_CAPABILITY_INTERNET + VALIDATED`.
-- iOS actual: `NWPathMonitor` на dispatch_queue.
-- В `SyncManager.init`: подписка `isOnline.drop(1).filter { it }.debounce(1.seconds).onEach { syncNow(Connectivity) }`.
+**Реализовано:**
+- [x] `NetworkMonitor` interface в `shared/sync-manager/.../domain/network/NetworkMonitor.kt` — `val isOnline: StateFlow<Boolean>`.
+- [x] Android actual `AndroidNetworkMonitor`: `ConnectivityManager.registerNetworkCallback` с `NET_CAPABILITY_INTERNET + VALIDATED`, callbackFlow + stateIn (SharingStarted.Eagerly). Permission `ACCESS_NETWORK_STATE` уже мержится из transitive манифестов WorkManager.
+- [x] iOS actual `IosNetworkMonitor`: `nw_path_monitor_create()` + `nw_path_monitor_set_queue` + `nw_path_monitor_set_update_handler`, `nw_path_status_satisfied` → online.
+- [x] DI: `PlatformSyncManagerModule` (expect/actual `Module`) включён в `syncManagerModule` через `includes(platformSyncManagerModule)`. NetworkMonitor зарегистрирован как `single`.
+- [x] `SyncManager.init`: `networkMonitor.isOnline.drop(1).filter{it}.debounce(1.seconds).onEach { runOnce(SyncTrigger.Connectivity) }.launchIn(scope)`.
 
-**Verification:** offline → завершение обхода → online → ≤2с старт sync на обеих платформах.
-
-**Детальную спеку зафиксировать перед началом фазы.**
+**Verification:**
+- [x] `./gradlew :shared:sync-manager:assemble` — зелёный (Android + iOS таргеты).
+- [x] `./gradlew :shared:sync-manager:allTests` — зелёный.
+- [x] `./gradlew :android:app:assembleDebug detekt` — зелёный.
+- [ ] Smoke на устройстве: offline → завершение обхода → включить сеть → ≤2с старт sync (Connectivity trigger в logcat / iOS Console).
 
 ---
 
