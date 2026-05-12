@@ -7,11 +7,8 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -37,29 +34,14 @@ internal fun SyncIndicatorIcon(
         onClick = onClick,
         modifier = modifier.size(44.dp),
     ) {
-        BadgedBox(
-            badge = {
-                val showBadge =
-                    !indicator.isRunning && indicator.lastError == null && indicator.pendingCount > 0
-                if (showBadge) {
-                    Badge(
-                        containerColor = ToirTheme.colors.warning,
-                        contentColor = Color.White,
-                    ) {
-                        Text(indicator.pendingCount.toString())
-                    }
-                }
-            }
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                contentDescription = stringResource(MR.strings.sync_indicator_content_description),
-                tint = tint,
-                modifier = Modifier
-                    .size(24.dp)
-                    .let { if (indicator.isRunning) it.rotate(rotation) else it },
-            )
-        }
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = stringResource(MR.strings.sync_indicator_content_description),
+            tint = tint,
+            modifier = Modifier
+                .size(24.dp)
+                .let { if (indicator.isRunning) it.rotate(rotation) else it },
+        )
     }
 }
 
@@ -69,7 +51,7 @@ private fun resolveIconAndTint(indicator: UiSyncIndicator): Pair<dev.icerock.mok
     return when {
         indicator.isRunning -> MR.images.ic_sync_alt to colors.textPrimary
         indicator.lastError != null -> MR.images.ic_error_outline to colors.error
-        indicator.pendingCount > 0 -> MR.images.ic_sync_alt to colors.warning
+        indicator.hasPending -> MR.images.ic_sync_alt to colors.warning
         else -> MR.images.ic_check_circle to colors.success
     }
 }
