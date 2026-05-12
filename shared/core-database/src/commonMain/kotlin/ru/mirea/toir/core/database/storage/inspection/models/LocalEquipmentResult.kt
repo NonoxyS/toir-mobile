@@ -1,5 +1,6 @@
 package ru.mirea.toir.core.database.storage.inspection.models
 
+import ru.mirea.toir.core.database.models.LocalRejectionReason
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 
 data class LocalEquipmentResult(
@@ -15,5 +16,5 @@ data class LocalEquipmentResult(
     val syncStatus: LocalSyncStatus,
     val syncAttemptCount: Long = 0L,
     val syncNextAttemptAt: String? = null,
-    val syncLastError: String? = null,
+    val syncRejectionReason: LocalRejectionReason? = null,
 )

@@ -2,10 +2,12 @@ package ru.mirea.toir.core.database.storage.inspection
 
 import kotlinx.coroutines.flow.Flow
 import ru.mirea.toir.core.database.models.LocalInspectionStatus
+import ru.mirea.toir.core.database.models.LocalRejectionReason
 import ru.mirea.toir.core.database.storage.inspection.models.LocalChecklistItemResult
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResult
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.inspection.models.LocalInspection
+import ru.mirea.toir.core.database.storage.inspection.models.LocalPendingInspection
 
 interface InspectionStorage {
 
@@ -39,10 +41,18 @@ interface InspectionStorage {
         id: String,
         attemptCount: Long,
         nextAttemptAt: String,
-        lastError: String?,
     )
 
-    fun observeInspectionPendingCount(): Flow<Long>
+    fun markInspectionRejected(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        reason: LocalRejectionReason,
+    )
+
+    fun observeHasPending(): Flow<Boolean>
+
+    fun observePendingInspections(): Flow<List<LocalPendingInspection>>
 
     @Suppress("LongParameterList")
     fun insertEquipmentResult(
@@ -81,10 +91,14 @@ interface InspectionStorage {
         id: String,
         attemptCount: Long,
         nextAttemptAt: String,
-        lastError: String?,
     )
 
-    fun observeEquipmentResultPendingCount(): Flow<Long>
+    fun markEquipmentResultRejected(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        reason: LocalRejectionReason,
+    )
 
     @Suppress("LongParameterList")
     fun insertOrReplaceChecklistItemResult(
@@ -117,10 +131,14 @@ interface InspectionStorage {
         id: String,
         attemptCount: Long,
         nextAttemptAt: String,
-        lastError: String?,
     )
 
-    fun observeChecklistItemResultPendingCount(): Flow<Long>
+    fun markChecklistItemResultRejected(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        reason: LocalRejectionReason,
+    )
 
     fun observeInspectionByAssignmentId(assignmentId: String): Flow<LocalInspection?>
 
