@@ -39,7 +39,8 @@ class SyncManager internal constructor(
     private val _status = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
     val status: StateFlow<SyncStatus> = _status.asStateFlow()
 
-    val pendingCount: Flow<Long> = syncRepository.observePendingCount()
+    val hasPending: Flow<Boolean> = syncRepository.observeHasPending()
+    val pendingInspections: Flow<List<DomainPendingInspection>> = syncRepository.observePendingInspections()
 
     init {
         networkMonitor.isOnline

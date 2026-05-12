@@ -7,8 +7,7 @@ import kotlin.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
@@ -25,6 +24,8 @@ import ru.mirea.toir.core.database.storage.inspection.models.LocalInspection
 import ru.mirea.toir.core.database.storage.photo.PhotoStorage
 import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorage
 import ru.mirea.toir.sync.data.applier.ConfigChangesApplier
+import ru.mirea.toir.sync.data.mappers.toDomain
+import ru.mirea.toir.sync.data.mappers.toLocal
 import ru.mirea.toir.sync.data.network.SyncApiClient
 import ru.mirea.toir.sync.data.network.models.RemoteSyncActionLog
 import ru.mirea.toir.sync.data.network.models.RemoteSyncChecklistItemResult
@@ -34,6 +35,7 @@ import ru.mirea.toir.sync.data.network.models.RemoteSyncPushRequest
 import ru.mirea.toir.sync.data.network.models.RemoteSyncRejected
 import ru.mirea.toir.sync.data.network.models.RemoteSyncRejectedEntityType
 import ru.mirea.toir.sync.data.readFileBytes
+import ru.mirea.toir.sync.domain.DomainPendingInspection
 import ru.mirea.toir.sync.domain.SyncFailureReason
 import ru.mirea.toir.sync.domain.models.SyncResult
 import ru.mirea.toir.sync.domain.repository.SyncRepository
@@ -100,7 +102,6 @@ internal class SyncRepositoryImpl(
                     } catch (throwable: Throwable) {
                         scheduleBatchRetry(
                             now = now,
-                            reason = throwable.toSyncFailureReason().name,
                             inspections = pendingInspections,
                             equipmentResults = pendingEquipmentResults,
                             checklistResults = pendingChecklistResults,
@@ -216,14 +217,12 @@ internal class SyncRepositoryImpl(
             )
         }
 
-    // TODO(Task-6): replace stubs with real observeXxxPendingCount once SyncRepositoryImpl is rewritten
-    override fun observePendingCount(): Flow<Long> = combine(
-        flowOf(0L), // inspectionStorage pending count — stub until Task-6
-        flowOf(0L), // equipmentResult pending count — stub until Task-6
-        flowOf(0L), // checklistItemResult pending count — stub until Task-6
-        photoStorage.observePhotoPendingCount(),
-        actionLogStorage.observePendingCount(),
-    ) { a, b, c, d, e -> a + b + c + d + e }
+    override fun observeHasPending(): Flow<Boolean> =
+        inspectionStorage.observeHasPending()
+
+    override fun observePendingInspections(): Flow<List<DomainPendingInspection>> =
+        inspectionStorage.observePendingInspections()
+            .map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun recordSuccessfulRun(finishedAt: Instant) {
         withContext(coroutineDispatchers.io) {
@@ -326,7 +325,6 @@ internal class SyncRepositoryImpl(
 
     private fun scheduleBatchRetry(
         now: Instant,
-        reason: String,
         inspections: List<LocalInspection>,
         equipmentResults: List<LocalEquipmentResult>,
         checklistResults: List<LocalChecklistItemResult>,
@@ -334,19 +332,19 @@ internal class SyncRepositoryImpl(
     ) {
         val total =
             inspections.size + equipmentResults.size + checklistResults.size + logs.size
-        Napier.w("Batch push failed (reason=$reason); scheduling retry for $total records")
+        Napier.w("Batch push failed; scheduling retry for $total records")
         transactionRunner.transactional {
             inspections.forEach {
-                scheduleRetry(RetryEntity.INSPECTION, it.id, it.syncAttemptCount, now, reason)
+                scheduleRetry(RetryEntity.INSPECTION, it.id, it.syncAttemptCount, now)
             }
             equipmentResults.forEach {
-                scheduleRetry(RetryEntity.EQUIPMENT_RESULT, it.id, it.syncAttemptCount, now, reason)
+                scheduleRetry(RetryEntity.EQUIPMENT_RESULT, it.id, it.syncAttemptCount, now)
             }
             checklistResults.forEach {
-                scheduleRetry(RetryEntity.CHECKLIST_ITEM_RESULT, it.id, it.syncAttemptCount, now, reason)
+                scheduleRetry(RetryEntity.CHECKLIST_ITEM_RESULT, it.id, it.syncAttemptCount, now)
             }
             logs.forEach {
-                scheduleRetry(RetryEntity.ACTION_LOG, it.id, it.syncAttemptCount, now, reason)
+                scheduleRetry(RetryEntity.ACTION_LOG, it.id, it.syncAttemptCount, now)
             }
         }
     }
@@ -368,14 +366,38 @@ internal class SyncRepositoryImpl(
                 return
             }
         }
-        val current = attemptsById[entity to rejected.entityId]
-        if (current == null) {
+        val current = attemptsById[entity to rejected.entityId] ?: run {
             Napier.e(
                 "Server rejected id=${rejected.entityId} (entity=$entity) which was not in pushed batch; skipping",
             )
             return
         }
-        scheduleRetry(entity, rejected.entityId, current, now, rejected.reason.name)
+        val localReason = rejected.reason.toLocal()
+        val nextAttempt = current + 1
+        val nextAt = nextAttemptIso(now, nextAttempt)
+        when (entity) {
+            RetryEntity.INSPECTION -> inspectionStorage.markInspectionRejected(
+                id = rejected.entityId,
+                attemptCount = nextAttempt,
+                nextAttemptAt = nextAt,
+                reason = localReason,
+            )
+            RetryEntity.EQUIPMENT_RESULT -> inspectionStorage.markEquipmentResultRejected(
+                id = rejected.entityId,
+                attemptCount = nextAttempt,
+                nextAttemptAt = nextAt,
+                reason = localReason,
+            )
+            RetryEntity.CHECKLIST_ITEM_RESULT -> inspectionStorage.markChecklistItemResultRejected(
+                id = rejected.entityId,
+                attemptCount = nextAttempt,
+                nextAttemptAt = nextAt,
+                reason = localReason,
+            )
+            RetryEntity.ACTION_LOG -> Napier.e(
+                "ActionLog reject not expected; skipping id=${rejected.entityId}",
+            )
+        }
     }
 
     private fun scheduleRetry(
@@ -383,7 +405,6 @@ internal class SyncRepositoryImpl(
         id: String,
         currentAttempt: Long,
         now: Instant,
-        reason: String,
     ) {
         val newAttempt = currentAttempt + 1
         val nextAt = nextAttemptIso(now, newAttempt)
@@ -407,7 +428,7 @@ internal class SyncRepositoryImpl(
                 id = id,
                 attemptCount = newAttempt,
                 nextAttemptAt = nextAt,
-                lastError = reason,
+                lastError = null,
             )
         }
     }
