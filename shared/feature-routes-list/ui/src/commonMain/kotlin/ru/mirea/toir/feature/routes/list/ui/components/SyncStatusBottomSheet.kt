@@ -1,7 +1,6 @@
 package ru.mirea.toir.feature.routes.list.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -58,7 +57,7 @@ internal fun SyncStatusBottomSheet(
             Spacer16()
             LastSyncCard(indicator = indicator, lastSuccessAt = lastSuccessAt, lastFailedAt = lastFailedAt)
             Spacer12()
-            PendingCountCard(indicator = indicator)
+            PendingInspectionsSection(indicator = indicator)
             Spacer16()
             ToirPrimaryButton(
                 onClick = onSyncNow,
@@ -131,39 +130,6 @@ private fun LastSyncCard(
                     modifier = Modifier.padding(start = 8.dp),
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun PendingCountCard(indicator: UiSyncIndicator) {
-    val colors = ToirTheme.colors
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(ToirTheme.shapes.md)
-            .background(colors.surface2)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Text(
-            text = stringResource(MR.strings.sync_status_pending_label),
-            style = ToirTheme.typography.caption,
-            color = colors.textSecondary,
-        )
-        if (indicator.pendingCount == 0) {
-            Text(
-                text = stringResource(MR.strings.sync_status_pending_zero),
-                style = ToirTheme.typography.bodyMedium,
-                color = colors.textSecondary,
-            )
-        } else {
-            Text(
-                text = indicator.pendingCount.toString(),
-                style = ToirTheme.typography.displayLarge,
-                color = colors.textPrimary,
-            )
         }
     }
 }
