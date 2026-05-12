@@ -1,5 +1,6 @@
 import ru.mirea.toir.core.database.models.LocalInspectionStatus;
 import ru.mirea.toir.core.database.models.LocalSyncStatus;
+import ru.mirea.toir.core.database.models.LocalRejectionReason;
 
 CREATE TABLE IF NOT EXISTS inspections (
     id TEXT NOT NULL PRIMARY KEY,
@@ -13,7 +14,7 @@ CREATE TABLE IF NOT EXISTS inspections (
     sync_status TEXT AS LocalSyncStatus NOT NULL,
     sync_attempt_count INTEGER NOT NULL DEFAULT 0,
     sync_next_attempt_at TEXT,
-    sync_last_error TEXT
+    sync_rejection_reason TEXT AS LocalRejectionReason
 );
 
 insertInspection:
@@ -40,8 +41,14 @@ SELECT count(*) FROM inspections WHERE sync_status = 'pending';
 markRetryScheduled:
 UPDATE inspections
 SET sync_attempt_count = :attemptCount,
+    sync_next_attempt_at = :nextAt
+WHERE id = :id;
+
+markRejected:
+UPDATE inspections
+SET sync_attempt_count = :attemptCount,
     sync_next_attempt_at = :nextAt,
-    sync_last_error = :reason
+    sync_rejection_reason = :reason
 WHERE id = :id;
 
 markSynced:
@@ -49,5 +56,32 @@ UPDATE inspections
 SET sync_status = 'synced',
     sync_attempt_count = 0,
     sync_next_attempt_at = NULL,
-    sync_last_error = NULL
+    sync_rejection_reason = NULL
 WHERE id = :id;
+
+selectHasPending:
+SELECT (
+    EXISTS(SELECT 1 FROM inspections WHERE sync_status = 'pending')
+    OR EXISTS(SELECT 1 FROM inspection_equipment_results WHERE sync_status = 'pending')
+    OR EXISTS(SELECT 1 FROM checklist_item_results WHERE sync_status = 'pending')
+    OR EXISTS(SELECT 1 FROM photos WHERE sync_status = 'pending')
+);
+
+selectPendingInspections:
+SELECT i.id, i.assignment_id, i.route_id, i.status, i.completed_at,
+       i.sync_attempt_count, i.sync_rejection_reason
+FROM inspections i
+WHERE i.status IN ('completed', 'partially_completed', 'cancelled')
+  AND (
+    i.sync_status = 'pending'
+    OR EXISTS (SELECT 1 FROM inspection_equipment_results
+               WHERE inspection_id = i.id AND sync_status = 'pending')
+    OR EXISTS (SELECT 1 FROM checklist_item_results cir
+               JOIN inspection_equipment_results ier ON cir.inspection_equipment_result_id = ier.id
+               WHERE ier.inspection_id = i.id AND cir.sync_status = 'pending')
+    OR EXISTS (SELECT 1 FROM photos p
+               JOIN checklist_item_results cir ON p.checklist_item_result_id = cir.id
+               JOIN inspection_equipment_results ier ON cir.inspection_equipment_result_id = ier.id
+               WHERE ier.inspection_id = i.id AND p.sync_status = 'pending')
+  )
+ORDER BY i.completed_at DESC;

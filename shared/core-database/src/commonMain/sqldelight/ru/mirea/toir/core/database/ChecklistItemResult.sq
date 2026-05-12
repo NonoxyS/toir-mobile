@@ -1,4 +1,5 @@
 import ru.mirea.toir.core.database.models.LocalSyncStatus;
+import ru.mirea.toir.core.database.models.LocalRejectionReason;
 
 CREATE TABLE IF NOT EXISTS checklist_item_results (
     id TEXT NOT NULL PRIMARY KEY,
@@ -14,7 +15,7 @@ CREATE TABLE IF NOT EXISTS checklist_item_results (
     sync_status TEXT AS LocalSyncStatus NOT NULL,
     sync_attempt_count INTEGER NOT NULL DEFAULT 0,
     sync_next_attempt_at TEXT,
-    sync_last_error TEXT
+    sync_rejection_reason TEXT AS LocalRejectionReason
 );
 
 insertOrReplaceResult:
@@ -43,8 +44,14 @@ SELECT count(*) FROM checklist_item_results WHERE sync_status = 'pending';
 markRetryScheduled:
 UPDATE checklist_item_results
 SET sync_attempt_count = :attemptCount,
+    sync_next_attempt_at = :nextAt
+WHERE id = :id;
+
+markRejected:
+UPDATE checklist_item_results
+SET sync_attempt_count = :attemptCount,
     sync_next_attempt_at = :nextAt,
-    sync_last_error = :reason
+    sync_rejection_reason = :reason
 WHERE id = :id;
 
 markSynced:
@@ -52,5 +59,5 @@ UPDATE checklist_item_results
 SET sync_status = 'synced',
     sync_attempt_count = 0,
     sync_next_attempt_at = NULL,
-    sync_last_error = NULL
+    sync_rejection_reason = NULL
 WHERE id = :id;
