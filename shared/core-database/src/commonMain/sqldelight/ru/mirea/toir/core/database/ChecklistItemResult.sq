@@ -47,6 +47,8 @@ SET sync_attempt_count = :attemptCount,
     sync_next_attempt_at = :nextAt
 WHERE id = :id;
 
+-- Rejected record stays in sync_status='pending' intentionally.
+-- See docs/superpowers/specs/2026-05-12-sync-pending-indicator-redesign.md (Known issues).
 markRejected:
 UPDATE checklist_item_results
 SET sync_attempt_count = :attemptCount,
