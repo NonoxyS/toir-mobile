@@ -15,7 +15,8 @@ interface RoutesListStore : Store<Intent, State, Label> {
         val isError: Boolean = false,
         val syncIndicator: RoutesListSyncIndicator = RoutesListSyncIndicator(
             isRunning = false,
-            pendingCount = 0,
+            hasPending = false,
+            pendingInspections = emptyList(),
             lastError = null,
         ),
         val syncLastSuccessAt: String? = null,
