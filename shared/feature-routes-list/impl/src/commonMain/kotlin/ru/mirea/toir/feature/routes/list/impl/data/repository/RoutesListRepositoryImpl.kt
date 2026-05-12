@@ -30,10 +30,16 @@ import ru.mirea.toir.core.database.storage.route.models.LocalRouteAssignment
 import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorage
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.RouteAssignmentStatus
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspection
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspectionStatus
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListRejectionReason
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncFailure
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncIndicator
 import ru.mirea.toir.feature.routes.list.impl.data.mappers.RouteAssignmentMapper
 import ru.mirea.toir.feature.routes.list.impl.domain.repository.RoutesListRepository
+import ru.mirea.toir.sync.domain.DomainPendingInspection
+import ru.mirea.toir.sync.domain.InspectionRejectionReason
+import ru.mirea.toir.sync.domain.PendingInspectionStatus
 import ru.mirea.toir.sync.domain.SyncFailureReason
 import ru.mirea.toir.sync.domain.SyncManager
 import ru.mirea.toir.sync.domain.SyncStatus
@@ -170,20 +176,23 @@ internal class RoutesListRepositoryImpl(
         combine(
             syncManager.status,
             syncManager.hasPending,
+            syncManager.pendingInspections,
             syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_ERROR_REASON),
             syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_ERROR_AT),
             syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_AT_SUCCESS),
         ) { values ->
             val status = values[0] as SyncStatus
             val hasPending = values[1] as Boolean
-            val errorReason = values[2] as String?
-            val errorAt = values[3] as String?
-            val successAt = values[4] as String?
+
+            @Suppress("UNCHECKED_CAST")
+            val domainPending = values[2] as List<DomainPendingInspection>
+            val errorReason = values[3] as String?
+            val errorAt = values[4] as String?
+            val successAt = values[5] as String?
             RoutesListSyncIndicator(
                 isRunning = status is SyncStatus.Running,
                 hasPending = hasPending,
-                // TODO(Task-10): wire to observePendingInspections() mapper
-                pendingInspections = emptyList(),
+                pendingInspections = domainPending.map { it.toApi() },
                 lastError = resolveLastError(status, errorReason, errorAt, successAt),
             )
         }.flowOn(coroutineDispatchers.io)
@@ -216,6 +225,36 @@ internal class RoutesListRepositoryImpl(
 
     override fun triggerManualSync() {
         syncManager.syncNow(SyncTrigger.Manual)
+    }
+
+    private fun DomainPendingInspection.toApi(): RoutesListPendingInspection {
+        val routeName = routeStorage.selectRouteById(routeId)?.name
+        return RoutesListPendingInspection(
+            inspectionId = inspectionId,
+            routeName = routeName,
+            completedAt = completedAt,
+            status = status.toApi(),
+            attemptCount = attemptCount,
+            rejectionReason = rejectionReason?.toApi(),
+        )
+    }
+
+    private fun PendingInspectionStatus.toApi(): RoutesListPendingInspectionStatus = when (this) {
+        PendingInspectionStatus.COMPLETED -> RoutesListPendingInspectionStatus.COMPLETED
+        PendingInspectionStatus.PARTIALLY_COMPLETED -> RoutesListPendingInspectionStatus.PARTIALLY_COMPLETED
+        PendingInspectionStatus.CANCELLED -> RoutesListPendingInspectionStatus.CANCELLED
+    }
+
+    private fun InspectionRejectionReason.toApi(): RoutesListRejectionReason = when (this) {
+        InspectionRejectionReason.INVALID_ASSIGNMENT_ID -> RoutesListRejectionReason.INVALID_ASSIGNMENT_ID
+        InspectionRejectionReason.INVALID_ROUTE_ID -> RoutesListRejectionReason.INVALID_ROUTE_ID
+        InspectionRejectionReason.ROUTE_ASSIGNMENT_NOT_FOUND_OR_FORBIDDEN ->
+            RoutesListRejectionReason.ROUTE_ASSIGNMENT_NOT_FOUND_OR_FORBIDDEN
+        InspectionRejectionReason.ROUTE_ID_MISMATCH -> RoutesListRejectionReason.ROUTE_ID_MISMATCH
+        InspectionRejectionReason.INSPECTION_NOT_FOUND -> RoutesListRejectionReason.INSPECTION_NOT_FOUND
+        InspectionRejectionReason.ROUTE_POINT_NOT_FOUND -> RoutesListRejectionReason.ROUTE_POINT_NOT_FOUND
+        InspectionRejectionReason.EQUIPMENT_MISMATCH -> RoutesListRejectionReason.EQUIPMENT_MISMATCH
+        InspectionRejectionReason.UNKNOWN -> RoutesListRejectionReason.UNKNOWN
     }
 
     private fun SyncFailureReason.toApi(): RoutesListSyncFailure = when (this) {
