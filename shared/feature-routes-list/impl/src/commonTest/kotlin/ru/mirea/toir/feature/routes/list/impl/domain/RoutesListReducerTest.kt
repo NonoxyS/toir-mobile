@@ -1,5 +1,7 @@
 package ru.mirea.toir.feature.routes.list.impl.domain
 
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspection
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspectionStatus
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncFailure
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncIndicator
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore
@@ -40,15 +42,26 @@ class RoutesListReducerTest {
 
     @Test
     fun `SetSyncIndicator updates only indicator`() {
+        val pending = RoutesListPendingInspection(
+            inspectionId = "ins-1",
+            routeName = "КО-1",
+            completedAt = null,
+            status = RoutesListPendingInspectionStatus.COMPLETED,
+            attemptCount = 0,
+            rejectionReason = null,
+        )
         val indicator = RoutesListSyncIndicator(
             isRunning = true,
-            pendingCount = 3,
+            hasPending = true,
+            pendingInspections = listOf(pending),
             lastError = null,
         )
         val result = with(reducer) {
             initial.copy(isLoading = false).reduce(Message.SetSyncIndicator(indicator))
         }
         assertEquals(indicator, result.syncIndicator)
+        assertTrue(result.syncIndicator.hasPending)
+        assertEquals(listOf(pending), result.syncIndicator.pendingInspections)
         assertFalse(result.isLoading)
     }
 
@@ -56,12 +69,26 @@ class RoutesListReducerTest {
     fun `SetSyncIndicator carries error reason`() {
         val indicator = RoutesListSyncIndicator(
             isRunning = false,
-            pendingCount = 1,
+            hasPending = true,
+            pendingInspections = emptyList(),
             lastError = RoutesListSyncFailure.NETWORK,
         )
         val result = with(reducer) { initial.reduce(Message.SetSyncIndicator(indicator)) }
         assertEquals(RoutesListSyncFailure.NETWORK, result.syncIndicator.lastError)
-        assertEquals(1, result.syncIndicator.pendingCount)
+        assertTrue(result.syncIndicator.hasPending)
+    }
+
+    @Test
+    fun `SetSyncIndicator with hasPending true and empty list keeps both`() {
+        val indicator = RoutesListSyncIndicator(
+            isRunning = false,
+            hasPending = true,
+            pendingInspections = emptyList(),
+            lastError = null,
+        )
+        val result = with(reducer) { initial.reduce(Message.SetSyncIndicator(indicator)) }
+        assertTrue(result.syncIndicator.hasPending)
+        assertTrue(result.syncIndicator.pendingInspections.isEmpty())
     }
 
     @Test

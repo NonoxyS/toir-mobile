@@ -169,19 +169,21 @@ internal class RoutesListRepositoryImpl(
     override fun observeSyncIndicator(): Flow<RoutesListSyncIndicator> =
         combine(
             syncManager.status,
-            syncManager.pendingCount,
+            syncManager.hasPending,
             syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_ERROR_REASON),
             syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_ERROR_AT),
             syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_AT_SUCCESS),
         ) { values ->
             val status = values[0] as SyncStatus
-            val pending = values[1] as Long
+            val hasPending = values[1] as Boolean
             val errorReason = values[2] as String?
             val errorAt = values[3] as String?
             val successAt = values[4] as String?
             RoutesListSyncIndicator(
                 isRunning = status is SyncStatus.Running,
-                pendingCount = pending.toInt(),
+                hasPending = hasPending,
+                // TODO(Task-10): wire to observePendingInspections() mapper
+                pendingInspections = emptyList(),
                 lastError = resolveLastError(status, errorReason, errorAt, successAt),
             )
         }.flowOn(coroutineDispatchers.io)
