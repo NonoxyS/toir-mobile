@@ -21,7 +21,10 @@ import ru.mirea.toir.feature.routes.list.presentation.RoutesListViewModel
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteAssignment
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteStatus
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRoutesListLabel
+import ru.mirea.toir.feature.routes.list.presentation.models.UiSyncIndicator
 import ru.mirea.toir.feature.routes.list.ui.components.RoutesListContent
+import ru.mirea.toir.feature.routes.list.ui.components.SyncIndicatorIcon
+import ru.mirea.toir.feature.routes.list.ui.components.SyncStatusBottomSheet
 import ru.mirea.toir.res.MR
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +42,12 @@ internal fun RoutesListScreen(
     }
 
     Scaffold(
-        topBar = { RoutesListTopBar() },
+        topBar = {
+            RoutesListTopBar(
+                syncIndicator = state.syncIndicator,
+                onSyncIconClick = viewModel::onSyncIndicatorClicked,
+            )
+        },
         containerColor = ToirTheme.colors.background,
     ) { paddingValues ->
         RoutesListContent(
@@ -55,17 +63,36 @@ internal fun RoutesListScreen(
                 .padding(paddingValues),
         )
     }
+
+    if (state.isSyncSheetVisible) {
+        SyncStatusBottomSheet(
+            indicator = state.syncIndicator,
+            lastSuccessAt = state.syncLastSuccessAt,
+            lastFailedAt = state.syncLastFailedAt,
+            onSyncNow = viewModel::onSyncNowClicked,
+            onDismiss = viewModel::onSyncSheetDismissed,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun RoutesListTopBar() {
+private fun RoutesListTopBar(
+    syncIndicator: UiSyncIndicator = UiSyncIndicator(),
+    onSyncIconClick: () -> Unit = {},
+) {
     TopAppBar(
         title = {
             Text(
                 text = stringResource(MR.strings.routes_list_title),
                 style = ToirTheme.typography.headline,
                 color = ToirTheme.colors.textPrimary,
+            )
+        },
+        actions = {
+            SyncIndicatorIcon(
+                indicator = syncIndicator,
+                onClick = onSyncIconClick,
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = ToirTheme.colors.background),

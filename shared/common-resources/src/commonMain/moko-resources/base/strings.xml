@@ -125,4 +125,20 @@
     <string name="common_button_cancel">Отмена</string>
     <string name="common_button_delete">Удалить</string>
     <string name="common_button_continue_capture">Продолжить съёмку</string>
+
+    <!-- Sync status (App Bar indicator + bottom sheet) -->
+    <string name="sync_indicator_content_description">Статус синхронизации</string>
+    <string name="sync_status_title">Статус синхронизации</string>
+    <string name="sync_status_last_label">Последняя синхронизация</string>
+    <string name="sync_status_last_success_full">%1$s · Успешно</string>
+    <string name="sync_status_last_failed_full">%1$s · %2$s</string>
+    <string name="sync_status_never">Синхронизации ещё не было</string>
+    <string name="sync_status_running">Идёт синхронизация…</string>
+    <string name="sync_status_pending_label">Ожидают отправки</string>
+    <string name="sync_status_pending_zero">Все данные отправлены</string>
+    <string name="sync_action_manual">Синхронизировать сейчас</string>
+    <string name="sync_error_network">Нет соединения</string>
+    <string name="sync_error_auth">Сессия истекла, войдите заново</string>
+    <string name="sync_error_server">Сервер недоступен, повторите позже</string>
+    <string name="sync_error_unknown">Не удалось синхронизировать</string>
 </resources>

@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -26,10 +27,17 @@ import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.core.database.storage.route.models.LocalRouteAssignment
+import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorage
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.RouteAssignmentStatus
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncFailure
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncIndicator
 import ru.mirea.toir.feature.routes.list.impl.data.mappers.RouteAssignmentMapper
 import ru.mirea.toir.feature.routes.list.impl.domain.repository.RoutesListRepository
+import ru.mirea.toir.sync.domain.SyncFailureReason
+import ru.mirea.toir.sync.domain.SyncManager
+import ru.mirea.toir.sync.domain.SyncStatus
+import ru.mirea.toir.sync.domain.SyncTrigger
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -37,6 +45,8 @@ internal class RoutesListRepositoryImpl(
     private val routeStorage: RouteStorage,
     private val inspectionStorage: InspectionStorage,
     private val actionLogger: ActionLogger,
+    private val syncManager: SyncManager,
+    private val syncMetaStorage: SyncMetaStorage,
     private val mapper: RouteAssignmentMapper,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : RoutesListRepository {
@@ -154,6 +164,63 @@ internal class RoutesListRepositoryImpl(
         LocalRouteAssignmentStatus.COMPLETED -> RouteAssignmentStatus.COMPLETED
         LocalRouteAssignmentStatus.PARTIALLY_COMPLETED -> RouteAssignmentStatus.PARTIALLY_COMPLETED
         LocalRouteAssignmentStatus.CANCELLED -> RouteAssignmentStatus.CANCELLED
+    }
+
+    override fun observeSyncIndicator(): Flow<RoutesListSyncIndicator> =
+        combine(
+            syncManager.status,
+            syncManager.pendingCount,
+            syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_ERROR_REASON),
+            syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_ERROR_AT),
+            syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_AT_SUCCESS),
+        ) { values ->
+            val status = values[0] as SyncStatus
+            val pending = values[1] as Long
+            val errorReason = values[2] as String?
+            val errorAt = values[3] as String?
+            val successAt = values[4] as String?
+            RoutesListSyncIndicator(
+                isRunning = status is SyncStatus.Running,
+                pendingCount = pending.toInt(),
+                lastError = resolveLastError(status, errorReason, errorAt, successAt),
+            )
+        }.flowOn(coroutineDispatchers.io)
+
+    private fun resolveLastError(
+        status: SyncStatus,
+        errorReason: String?,
+        errorAt: String?,
+        successAt: String?,
+    ): RoutesListSyncFailure? = when (status) {
+        is SyncStatus.Failed -> status.reason.toApi()
+        is SyncStatus.Success -> null
+        SyncStatus.Running, SyncStatus.Idle -> {
+            val errorIsFresh = errorAt != null && (successAt == null || errorAt > successAt)
+            if (errorIsFresh && errorReason != null) {
+                runCatching { SyncFailureReason.valueOf(errorReason) }.getOrNull()?.toApi()
+            } else {
+                null
+            }
+        }
+    }
+
+    override fun observeLastSuccessAt(): Flow<String?> =
+        syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_AT_SUCCESS)
+            .flowOn(coroutineDispatchers.io)
+
+    override fun observeLastFailedAt(): Flow<String?> =
+        syncMetaStorage.observeByKey(SyncMetaStorage.KEY_LAST_SYNC_ERROR_AT)
+            .flowOn(coroutineDispatchers.io)
+
+    override fun triggerManualSync() {
+        syncManager.syncNow(SyncTrigger.Manual)
+    }
+
+    private fun SyncFailureReason.toApi(): RoutesListSyncFailure = when (this) {
+        SyncFailureReason.NETWORK -> RoutesListSyncFailure.NETWORK
+        SyncFailureReason.AUTH -> RoutesListSyncFailure.AUTH
+        SyncFailureReason.SERVER -> RoutesListSyncFailure.SERVER
+        SyncFailureReason.UNKNOWN -> RoutesListSyncFailure.UNKNOWN
     }
 
     private companion object {

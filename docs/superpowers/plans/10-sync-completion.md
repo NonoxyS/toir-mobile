@@ -255,24 +255,24 @@ docs/design-system/pages/routes-list.md                      [edit — доба�
 
 > **Без миграции** — правим CREATE TABLE напрямую (приложение в активной разработке, продакшен-БД ещё нет).
 
-- [ ] **Step 1:** В `Inspection.sq`, `InspectionEquipmentResult.sq`, `ChecklistItemResult.sq`, `ActionLog.sq`, `Photo.sq` добавить в CREATE TABLE:
+- [x] **Step 1:** В `Inspection.sq`, `InspectionEquipmentResult.sq`, `ChecklistItemResult.sq`, `ActionLog.sq`, `Photo.sq` добавить в CREATE TABLE:
   ```
   sync_attempt_count INTEGER NOT NULL DEFAULT 0,
   sync_next_attempt_at TEXT,
   sync_last_error TEXT
   ```
-- [ ] **Step 2:** В каждом `.sq` заменить `selectPending` → `selectPendingReady(now: TEXT)` с условием `sync_status = 'pending' AND (sync_next_attempt_at IS NULL OR sync_next_attempt_at <= :now)`.
-- [ ] **Step 3:** Добавить queries:
+- [x] **Step 2:** В каждом `.sq` заменить `selectPending` → `selectPendingReady(now: TEXT)` с условием `sync_status = 'pending' AND (sync_next_attempt_at IS NULL OR sync_next_attempt_at <= :now)`.
+- [x] **Step 3:** Добавить queries:
   - `markRetryScheduled(id, attemptCount, nextAt, reason)` — обновляет три новые колонки, статус остаётся PENDING.
   - `markSynced(id)` — `sync_status='synced'`, обнуляет `attempt_count=0`, `next_attempt_at=NULL`, `last_error=NULL`.
   - `selectPendingCount` (Long) для UI.
-- [ ] **Step 4:** Обновить `InspectionStorage`, `PhotoStorage`, `ActionLogStorage` интерфейсы и реализации: новые методы вместо `selectPending` / `updateXSyncStatus`.
-- [ ] **Step 5:** Найти всех потребителей старых сигнатур (`SyncRepositoryImpl` — переезжает в Task 1.5; других не должно быть).
-- [ ] **Step 6:** Сборка `./gradlew :shared:core-database:assemble` зелёная.
+- [x] **Step 4:** Обновить `InspectionStorage`, `PhotoStorage`, `ActionLogStorage` интерфейсы и реализации: новые методы вместо `selectPending` / `updateXSyncStatus`.
+- [x] **Step 5:** Найти всех потребителей старых сигнатур (`SyncRepositoryImpl` — переезжает в Task 1.5; других не должно быть).
+- [x] **Step 6:** Сборка `./gradlew :shared:core-database:assemble` зелёная.
 
 #### Task 1.2: `BackoffPolicy`
 
-- [ ] Создать `sync/domain/retry/BackoffPolicy.kt`:
+- [x] Создать `sync/domain/retry/BackoffPolicy.kt`:
   ```kotlin
   internal object BackoffPolicy {
       private val MAX = 1.hours
@@ -281,24 +281,24 @@ docs/design-system/pages/routes-list.md                      [edit — доба�
           minOf(BASE * (1 shl (attemptCount - 1).coerceIn(0, 10)), MAX)
   }
   ```
-- [ ] Юнит-тест в `commonTest`: для attempt=1 → 30s; attempt=5 → 8m; attempt=12 → 1h (cap).
+- [x] Юнит-тест в `commonTest`: для attempt=1 → 30s; attempt=5 → 8m; attempt=12 → 1h (cap).
 
 #### Task 1.3: `SyncTrigger`, `SyncStatus` (+ `SyncFailureReason`)
 
-- [ ] Создать `SyncTrigger.kt` (enum: `Periodic`, `Manual`, `AfterInspection`, `Connectivity`, `Bootstrap`) и `SyncStatus.kt` (sealed interface + `enum class SyncFailureReason` в том же файле — это его единственный пользователь).
-- [ ] `SyncFailureReason` классифицируется из `Throwable`: сетевые → `NETWORK`, `HttpStatusCode.Unauthorized` → `AUTH`, 5xx → `SERVER`, остальное → `UNKNOWN`. Реализовать `fun Throwable.toSyncFailureReason(): SyncFailureReason`.
+- [x] Создать `SyncTrigger.kt` (enum: `Periodic`, `Manual`, `AfterInspection`, `Connectivity`, `Bootstrap`) и `SyncStatus.kt` (sealed interface + `enum class SyncFailureReason` в том же файле — это его единственный пользователь).
+- [x] `SyncFailureReason` классифицируется из `Throwable`: сетевые → `NETWORK`, `HttpStatusCode.Unauthorized` → `AUTH`, 5xx → `SERVER`, остальное → `UNKNOWN`. Реализовать `fun Throwable.toSyncFailureReason(): SyncFailureReason`.
 
 #### Task 1.4: Транзакции в `ConfigChangesApplier`
 
-- [ ] Инжектировать `ToirDatabase` в applier (или прокси-обёртку `TransactionRunner` чтобы не утекал SQLDelight в domain).
-- [ ] Обернуть `apply()` в `db.transaction { }`.
-- [ ] Добавить optimistic check `updated_at` для assignments, routes, routePoints, equipment, locations, checklists, checklistItems.
+- [x] Инжектировать `ToirDatabase` в applier (или прокси-обёртку `TransactionRunner` чтобы не утекал SQLDelight в domain).
+- [x] Обернуть `apply()` в `db.transaction { }`.
+- [x] Добавить optimistic check `updated_at` для assignments, routes, routePoints, equipment, locations, checklists, checklistItems.
 
 #### Task 1.5: Транзакции и retry в `SyncRepositoryImpl.pushPendingData`
 
-- [ ] Перейти на `selectPendingReady(now)`.
-- [ ] Все updates по результату `RemoteSyncPushResponse` — внутри одной транзакции.
-- [ ] Удалить `markRejectedAsFailed`. Вместо неё `markRejectedForRetry`:
+- [x] Перейти на `selectPendingReady(now)`.
+- [x] Все updates по результату `RemoteSyncPushResponse` — внутри одной транзакции.
+- [x] Удалить `markRejectedAsFailed`. Вместо неё `markRejectedForRetry`:
   ```kotlin
   private fun markRejectedForRetry(rejected: RemoteSyncRejected, db: ToirDatabase) {
       val (attempt, next) = computeNextAttempt(rejected.entityType, rejected.entityId)
@@ -308,11 +308,11 @@ docs/design-system/pages/routes-list.md                      [edit — доба�
       }
   }
   ```
-- [ ] При успешном accepted — `markSynced(id)` (сбрасывает счётчик).
+- [x] При успешном accepted — `markSynced(id)` (сбрасывает счётчик).
 
 #### Task 1.6: `SyncManager.runOnce` + StateFlow статуса
 
-- [ ] Рефакторить `SyncManager`:
+- [x] Рефакторить `SyncManager`:
   ```kotlin
   class SyncManager internal constructor(...) {
       private val _status = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
@@ -327,29 +327,29 @@ docs/design-system/pages/routes-list.md                      [edit — доба�
       fun syncNow(trigger: SyncTrigger): Job = scope.launch { runOnce(trigger) }
   }
   ```
-- [ ] `runOnce` устанавливает `_status = Running`, в конце — `Success(...)` или `Failed(finishedAt, reason)`. Возвращает `Result.success(Unit)` или `Result.failure(throwable)`. Записывает в `SyncMetaStorage` ключи `KEY_LAST_SYNC_AT_SUCCESS`, `KEY_LAST_SYNC_ERROR_REASON`, `KEY_LAST_SYNC_ERROR_AT`.
-- [ ] Внутри `runOnce` — три шага. Первая ошибка → останавливаемся, возвращаем `Result.failure`. Worker сам решит retry через WorkManager backoff.
-- [ ] Удалить `syncBlocking()`.
+- [x] `runOnce` устанавливает `_status = Running`, в конце — `Success(...)` или `Failed(finishedAt, reason)`. Возвращает `Result.success(Unit)` или `Result.failure(throwable)`. Записывает в `SyncMetaStorage` ключи `KEY_LAST_SYNC_AT_SUCCESS`, `KEY_LAST_SYNC_ERROR_REASON`, `KEY_LAST_SYNC_ERROR_AT`.
+- [x] Внутри `runOnce` — три шага. Первая ошибка → останавливаемся, возвращаем `Result.failure`. Worker сам решит retry через WorkManager backoff.
+- [x] Удалить `syncBlocking()`.
 
 #### Task 1.7: Исправить `SyncWorker`
 
-- [ ] `doWork` теперь `suspend` вызывает `runOnce(Periodic)` и маппит результат.
-- [ ] `SyncScheduler` сменить `ExistingPeriodicWorkPolicy.KEEP` → `UPDATE`.
+- [x] `doWork` теперь `suspend` вызывает `runOnce(Periodic)` и маппит результат.
+- [x] `SyncScheduler` сменить `ExistingPeriodicWorkPolicy.KEEP` → `UPDATE`.
 
 #### Task 1.8: Новые ключи `SyncMetaStorage`
 
-- [ ] В `SyncMetaStorage.companion` добавить:
+- [x] В `SyncMetaStorage.companion` добавить:
   - `KEY_LAST_SYNC_AT_SUCCESS = "last_sync_at_success"`
   - `KEY_LAST_SYNC_ERROR_REASON = "last_sync_error_reason"`
   - `KEY_LAST_SYNC_ERROR_AT = "last_sync_error_at"`
-- [ ] Добавить `observeByKey(key): Flow<String?>` (SQLDelight Flow) — пригодится UI в Phase 3.
+- [x] Добавить `observeByKey(key): Flow<String?>` (SQLDelight Flow) — пригодится UI в Phase 3.
 
 #### Phase 1 — Verification
 
-- [ ] `./gradlew :shared:core-database:assemble :shared:sync-manager:assemble` зелёный.
-- [ ] `./gradlew :shared:sync-manager:allTests` — BackoffPolicy + SyncFailureReason classifier тесты проходят.
-- [ ] Smoke: на эмуляторе после периодического срабатывания WorkManager (форсировать через ADB: `adb shell cmd jobscheduler run -f ru.mirea.toir.dev <jobid>`) видим в БД, что отвергнутые записи получили `sync_attempt_count=1` и `sync_next_attempt_at` в будущем, статус остался `PENDING`.
-- [ ] Коммит: `feat(sync): retry policy, transactions, structured status (Phase 1)`.
+- [x] `./gradlew :shared:core-database:assemble :shared:sync-manager:assemble` зелёный.
+- [x] `./gradlew :shared:sync-manager:allTests` — BackoffPolicy + SyncFailureReason classifier тесты проходят.
+- [x] Smoke: на эмуляторе после периодического срабатывания WorkManager (форсировать через ADB: `adb shell cmd jobscheduler run -f ru.mirea.toir.dev <jobid>`) видим в БД, что отвергнутые записи получили `sync_attempt_count=1` и `sync_next_attempt_at` в будущем, статус остался `PENDING`.
+- [x] Коммит: `feat(sync): retry policy, transactions, structured status (Phase 1)`.
 
 ---
 
@@ -389,7 +389,7 @@ docs/design-system/pages/routes-list.md                      [edit — доба�
 
 #### Task 3.1: Доменные потоки и проекция UI-состояния
 
-- [ ] В `feature-routes-list/api/models/` добавить `RoutesListSyncIndicator`:
+- [x] В `feature-routes-list/api/models/` добавить `RoutesListSyncIndicator`:
   ```kotlin
   data class RoutesListSyncIndicator(
       val isRunning: Boolean,
@@ -398,40 +398,40 @@ docs/design-system/pages/routes-list.md                      [edit — доба�
   )
   ```
   (Соответствует четырём состояниям иконки из DS: spin / ⇅ warning / ✕ error / ✓ success.)
-- [ ] В `RoutesListRepository` добавить `fun observeSyncIndicator(): Flow<RoutesListSyncIndicator>` — combine из `SyncManager.status` + `SyncManager.pendingCount` + `syncMetaStorage.observeByKey(KEY_LAST_SYNC_ERROR_REASON)`.
+- [x] В `RoutesListRepository` добавить `fun observeSyncIndicator(): Flow<RoutesListSyncIndicator>` — combine из `SyncManager.status` + `SyncManager.pendingCount` + `syncMetaStorage.observeByKey(KEY_LAST_SYNC_ERROR_REASON)`.
 
 #### Task 3.2: Sync-иконка в App Bar (RoutesList)
 
-- [ ] В `feature-routes-list/ui/` создать `SyncIndicatorIcon` Composable (поместить в `ui/components/`, не в общий `common-ui` — пока используется в одном экране):
+- [x] В `feature-routes-list/ui/` создать `SyncIndicatorIcon` Composable (поместить в `ui/components/`, не в общий `common-ui` — пока используется в одном экране):
   - `isRunning=true` → `Icon(refresh)` с `infiniteRotation`, цвет `MaterialTheme.colorScheme.onSurface`.
   - `pendingCount > 0, lastError == null` → `Icon(sync_alt)` с `color.warning`.
   - `lastError != null` → `Icon(error_outline)` с `color.error`.
   - иначе → `Icon(check_circle)` с `color.success`.
   - Тап-таргет 44dp (через `Modifier.size(44.dp)` или Material IconButton).
-- [ ] Тап → открывает `SyncStatusBottomSheet` (Task 3.4) — установка `state.isSyncSheetVisible = true` через `Intent.OnSyncIndicatorClicked`.
-- [ ] **Long-press НЕ реализуем** — скрытый жест, не соответствует accessibility; ручной запуск только через кнопку в bottom sheet.
+- [x] Тап → открывает `SyncStatusBottomSheet` (Task 3.4) — установка `state.isSyncSheetVisible = true` через `Intent.OnSyncIndicatorClicked`.
+- [x] **Long-press НЕ реализуем** — скрытый жест, не соответствует accessibility; ручной запуск только через кнопку в bottom sheet.
 
 #### Task 3.3: Левая полоска и состояние карточки «Ожидает синхр.»
 
-- [ ] В `RoutesListRepositoryImpl` уже есть `hasPendingSync` (см. `RoutesListRepositoryImpl.kt:77`). Прокинуть значение в `DomainRoute` → `UiRoute` → карточку.
-- [ ] В `RouteCard` Composable добавить:
+- [x] В `RoutesListRepositoryImpl` уже есть `hasPendingSync` (см. `RoutesListRepositoryImpl.kt:77`). Прокинуть значение в `DomainRoute` → `UiRoute` → карточку.
+- [x] В `RouteCard` Composable добавить:
   - левая полоска `Modifier.drawBehind { ... width=3.dp, color = colorScheme.sync }` при `hasPendingSync=true`;
   - иконка ⇅ в строке метаданных при `hasPendingSync=true`.
-- [ ] Добавить `color.sync` в `shared/common-ui/.../theme/Colors.kt` если ещё нет (проверить — должно быть; иначе — отдельный коммит в Theme).
+- [x] Добавить `color.sync` в `shared/common-ui/.../theme/Colors.kt` если ещё нет (проверить — должно быть; иначе — отдельный коммит в Theme).
 
 #### Task 3.4: `SyncStatusBottomSheet` Composable
 
 > Реализуется как Composable внутри `feature-routes-list/ui/components/SyncStatusBottomSheet.kt`. Отдельный feature-модуль НЕ создаётся (отказались от `feature-sync-status` — over-engineering для 3 строк информации).
 
-- [ ] `SyncStatusBottomSheet(state: RoutesListSyncIndicator, lastSuccessAt: Instant?, lastFailedAt: Instant?, isVisible: Boolean, onDismiss: () -> Unit, onSyncNow: () -> Unit)`.
-- [ ] Material 3 `ModalBottomSheet` с `sheetState = rememberModalBottomSheetState()`. Top corners — `radius.lg` (16dp).
-- [ ] Содержимое (по спеке `routes-list.md` → раздел «Bottom sheet»):
+- [x] `SyncStatusBottomSheet(state: RoutesListSyncIndicator, lastSuccessAt: Instant?, lastFailedAt: Instant?, isVisible: Boolean, onDismiss: () -> Unit, onSyncNow: () -> Unit)`.
+- [x] Material 3 `ModalBottomSheet` с `sheetState = rememberModalBottomSheetState()`. Top corners — `radius.lg` (16dp).
+- [x] Содержимое (по спеке `routes-list.md` → раздел «Bottom sheet»):
   - Заголовок «Статус синхронизации» (`type.displayMedium`).
   - Карточка «Последняя синхронизация»: время + статус-иконка (✓ success / ✕ error) + текст причины при `Failed`.
   - Карточка «Ожидают отправки»: счётчик (`type.displayLarge`) или текст «Все данные отправлены» при `pendingCount=0`.
   - Кнопка `Primary` «Синхронизировать сейчас» (disabled при `isRunning`). При `isRunning` — progress bar height 4dp `color.warning` вместо кнопки.
-- [ ] При `onSyncNow` — `syncManager.syncNow(SyncTrigger.Manual)`. Sheet не закрывается автоматически — пользователь видит переход в Running → Success/Failed.
-- [ ] Тексты ошибок из Task 3.6.
+- [x] При `onSyncNow` — `syncManager.syncNow(SyncTrigger.Manual)`. Sheet не закрывается автоматически — пользователь видит переход в Running → Success/Failed.
+- [x] Тексты ошибок из Task 3.6.
 
 #### Task 3.5: ~~Snackbar при ручном вызове из App Bar~~ — удалено
 
@@ -439,7 +439,7 @@ Long-press жест отказались делать (см. Task 3.2). Ручн
 
 #### Task 3.6: Локализация
 
-- [ ] В `shared/common-resources/src/commonMain/moko-resources/base/strings.xml`:
+- [x] В `shared/common-resources/src/commonMain/moko-resources/base/strings.xml`:
   ```xml
   <string name="sync_status_title">Статус синхронизации</string>
   <string name="sync_status_last_success">Последняя синхронизация: %s</string>
@@ -455,13 +455,17 @@ Long-press жест отказались делать (см. Task 3.2). Ручн
 
 #### Task 3.7: Презентация и executor routes-list
 
-- [ ] В `RoutesListState` добавить `syncIndicator: RoutesListSyncIndicator`, `isSyncSheetVisible: Boolean`, `syncLastSuccessAt: Instant?`, `syncLastFailedAt: Instant?`.
-- [ ] В `RoutesListReducer`: `Msg.SyncIndicatorChanged(...)`, `Msg.SyncSheetVisibilityChanged(Boolean)`.
-- [ ] В `RoutesListExecutor`: подписка на `repository.observeSyncIndicator()` + `observeByKey(KEY_LAST_SYNC_AT_SUCCESS / KEY_LAST_SYNC_ERROR_AT)` в `Action.Init`.
-- [ ] Intent-ы: `OnSyncIndicatorClicked` → `SyncSheetVisibilityChanged(true)`; `OnSyncSheetDismissed` → `SyncSheetVisibilityChanged(false)`; `OnSyncNowClicked` → `syncManager.syncNow(SyncTrigger.Manual)`.
+- [x] В `RoutesListState` добавить `syncIndicator: RoutesListSyncIndicator`, `isSyncSheetVisible: Boolean`, `syncLastSuccessAt: Instant?`, `syncLastFailedAt: Instant?`.
+- [x] В `RoutesListReducer`: `Msg.SyncIndicatorChanged(...)`, `Msg.SyncSheetVisibilityChanged(Boolean)`.
+- [x] В `RoutesListExecutor`: подписка на `repository.observeSyncIndicator()` + `observeByKey(KEY_LAST_SYNC_AT_SUCCESS / KEY_LAST_SYNC_ERROR_AT)` в `Action.Init`.
+- [x] Intent-ы: `OnSyncIndicatorClicked` → `SyncSheetVisibilityChanged(true)`; `OnSyncSheetDismissed` → `SyncSheetVisibilityChanged(false)`; `OnSyncNowClicked` → `syncManager.syncNow(SyncTrigger.Manual)`.
 
 #### Phase 3 — Verification
 
+- [x] `./gradlew :shared:feature-routes-list:impl:assemble :shared:feature-routes-list:presentation:assemble :shared:feature-routes-list:ui:assemble` — зелёный.
+- [x] `./gradlew :android:app:assembleDebug` — зелёный.
+- [x] `./gradlew :shared:feature-routes-list:impl:allTests` — Reducer тесты на новые `Msg.SetSyncIndicator / SetSyncLastSuccessAt / SetSyncLastFailedAt / SetSyncSheetVisible` проходят.
+- [x] `./gradlew detekt` — зелёный.
 - [ ] Скриншоты четырёх состояний sync-иконки в App Bar приложены к PR.
 - [ ] Скриншот карточки в состоянии «Ожидает синхр.» с полоской `color.sync` приложен.
 - [ ] Скриншот bottom sheet «Статус синхронизации» в четырёх состояниях (Idle/Running/Success/Failed) приложен.
@@ -469,8 +473,8 @@ Long-press жест отказались делать (см. Task 3.2). Ручн
   - В оффлайне завершить обход → иконка переходит в `color.warning` ⇅, на карточке появляется полоска.
   - Включить сеть → тап на иконку → открывается bottom sheet → кнопка «Синхронизировать сейчас» → spin → success ✓.
   - Намеренный 500 (через wrong baseUrl) → иконка `color.error` ✕, текст ошибки в карточке «Последняя синхронизация».
-- [ ] UI-юнит тесты для `RoutesListReducer` на `Msg.SyncIndicatorChanged` и `Msg.SyncSheetVisibilityChanged`.
-- [ ] Коммит: `feat(sync): manual trigger, status sheet, app-bar indicator (Phase 3)`.
+- [x] UI-юнит тесты для `RoutesListReducer` на `Msg.SyncIndicatorChanged` и `Msg.SyncSheetVisibilityChanged`.
+- [x] Коммит: `feat(sync): manual trigger, status sheet, app-bar indicator (Phase 3)`.
 
 ---
 

@@ -4,10 +4,14 @@ import kotlinx.collections.immutable.toImmutableList
 import ru.mirea.toir.common.mappers.Mapper
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.RouteAssignmentStatus
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncFailure
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncIndicator
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteAssignment
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteStatus
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRoutesListState
+import ru.mirea.toir.feature.routes.list.presentation.models.UiSyncFailure
+import ru.mirea.toir.feature.routes.list.presentation.models.UiSyncIndicator
 
 interface UiRoutesListStateMapper : Mapper<RoutesListStore.State, UiRoutesListState>
 
@@ -16,6 +20,10 @@ internal class UiRoutesListStateMapperImpl : UiRoutesListStateMapper {
         assignments = item.assignments.map { it.toUi() }.toImmutableList(),
         isLoading = item.isLoading,
         isError = item.isError,
+        syncIndicator = item.syncIndicator.toUi(),
+        syncLastSuccessAt = item.syncLastSuccessAt,
+        syncLastFailedAt = item.syncLastFailedAt,
+        isSyncSheetVisible = item.isSyncSheetVisible,
     )
 
     private fun DomainRouteAssignment.toUi(): UiRouteAssignment = UiRouteAssignment(
@@ -37,5 +45,18 @@ internal class UiRoutesListStateMapperImpl : UiRoutesListStateMapper {
         RouteAssignmentStatus.COMPLETED -> UiRouteStatus.COMPLETED
         RouteAssignmentStatus.PARTIALLY_COMPLETED -> UiRouteStatus.PARTIALLY_COMPLETED
         RouteAssignmentStatus.CANCELLED -> UiRouteStatus.CANCELLED
+    }
+
+    private fun RoutesListSyncIndicator.toUi(): UiSyncIndicator = UiSyncIndicator(
+        isRunning = isRunning,
+        pendingCount = pendingCount,
+        lastError = lastError?.toUi(),
+    )
+
+    private fun RoutesListSyncFailure.toUi(): UiSyncFailure = when (this) {
+        RoutesListSyncFailure.NETWORK -> UiSyncFailure.NETWORK
+        RoutesListSyncFailure.AUTH -> UiSyncFailure.AUTH
+        RoutesListSyncFailure.SERVER -> UiSyncFailure.SERVER
+        RoutesListSyncFailure.UNKNOWN -> UiSyncFailure.UNKNOWN
     }
 }

@@ -5,6 +5,7 @@ import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import kotlinx.coroutines.CoroutineDispatcher
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
+import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncIndicator
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore.Intent
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore.Label
@@ -31,5 +32,9 @@ internal class RoutesListStoreFactory(
         data object SetLoading : Message
         data object SetError : Message
         data class SetAssignments(val list: List<DomainRouteAssignment>) : Message
+        data class SetSyncIndicator(val indicator: RoutesListSyncIndicator) : Message
+        data class SetSyncLastSuccessAt(val value: String?) : Message
+        data class SetSyncLastFailedAt(val value: String?) : Message
+        data class SetSyncSheetVisible(val visible: Boolean) : Message
     }
 }

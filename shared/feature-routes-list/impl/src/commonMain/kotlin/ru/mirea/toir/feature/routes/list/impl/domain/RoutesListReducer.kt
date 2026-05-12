@@ -9,5 +9,9 @@ internal class RoutesListReducer : Reducer<State, Message> {
         Message.SetLoading -> copy(isLoading = true, isError = false)
         Message.SetError -> copy(isLoading = false, isError = true)
         is Message.SetAssignments -> copy(isLoading = false, assignments = msg.list, isError = false)
+        is Message.SetSyncIndicator -> copy(syncIndicator = msg.indicator)
+        is Message.SetSyncLastSuccessAt -> copy(syncLastSuccessAt = msg.value)
+        is Message.SetSyncLastFailedAt -> copy(syncLastFailedAt = msg.value)
+        is Message.SetSyncSheetVisible -> copy(isSyncSheetVisible = msg.visible)
     }
 }
