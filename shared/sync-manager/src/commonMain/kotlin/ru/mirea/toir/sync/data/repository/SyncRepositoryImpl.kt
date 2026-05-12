@@ -8,6 +8,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
@@ -215,10 +216,11 @@ internal class SyncRepositoryImpl(
             )
         }
 
+    // TODO(Task-6): replace stubs with real observeXxxPendingCount once SyncRepositoryImpl is rewritten
     override fun observePendingCount(): Flow<Long> = combine(
-        inspectionStorage.observeInspectionPendingCount(),
-        inspectionStorage.observeEquipmentResultPendingCount(),
-        inspectionStorage.observeChecklistItemResultPendingCount(),
+        flowOf(0L), // inspectionStorage pending count — stub until Task-6
+        flowOf(0L), // equipmentResult pending count — stub until Task-6
+        flowOf(0L), // checklistItemResult pending count — stub until Task-6
         photoStorage.observePhotoPendingCount(),
         actionLogStorage.observePendingCount(),
     ) { a, b, c, d, e -> a + b + c + d + e }
@@ -390,19 +392,16 @@ internal class SyncRepositoryImpl(
                 id = id,
                 attemptCount = newAttempt,
                 nextAttemptAt = nextAt,
-                lastError = reason,
             )
             RetryEntity.EQUIPMENT_RESULT -> inspectionStorage.markEquipmentResultRetryScheduled(
                 id = id,
                 attemptCount = newAttempt,
                 nextAttemptAt = nextAt,
-                lastError = reason,
             )
             RetryEntity.CHECKLIST_ITEM_RESULT -> inspectionStorage.markChecklistItemResultRetryScheduled(
                 id = id,
                 attemptCount = newAttempt,
                 nextAttemptAt = nextAt,
-                lastError = reason,
             )
             RetryEntity.ACTION_LOG -> actionLogStorage.markRetryScheduled(
                 id = id,
