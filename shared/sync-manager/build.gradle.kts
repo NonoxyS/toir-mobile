@@ -37,7 +37,5 @@ commonTestDependencies {
         libs.ktor.contentNegotiation,
         libs.ktor.serializationJson,
         libs.sqldelight.native,
-        projects.shared.coreDatabase,
-        projects.shared.coreNetwork,
     )
 }
