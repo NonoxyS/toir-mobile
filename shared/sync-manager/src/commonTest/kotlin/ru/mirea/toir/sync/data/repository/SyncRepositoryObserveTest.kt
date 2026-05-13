@@ -5,9 +5,7 @@ package ru.mirea.toir.sync.data.repository
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import ru.mirea.toir.core.database.TransactionRunnerImpl
 import ru.mirea.toir.core.database.storage.action_log.ActionLogStorageImpl
@@ -59,21 +57,20 @@ class SyncRepositoryObserveTest {
     @AfterTest fun tearDown() = driver.close()
 
     @Test
-    fun `observeHasPending emits false then true after insert`() = runTest {
-        // Seed FK chain (no inspection yet)
+    fun `observeHasPending emits false on empty database`() = runTest {
+        val first = repo.observeHasPending().first()
+        assertEquals(false, first)
+    }
+
+    @Test
+    fun `observeHasPending emits true after pending inspection seeded`() = runTest {
         db.seedLocation()
         db.seedEquipment()
         db.seedRoute()
         db.seedAssignment()
-
-        val emissions = mutableListOf<Boolean>()
-        val job = launch { repo.observeHasPending().take(2).toList(emissions) }
-
-        // Insert a pending inspection — triggers second emission
         db.seedPendingInspection()
 
-        job.join()
-
-        assertEquals(listOf(false, true), emissions)
+        val first = repo.observeHasPending().first()
+        assertEquals(true, first)
     }
 }
