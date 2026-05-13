@@ -134,4 +134,22 @@ class SyncRepositoryPushTest {
         assertEquals(0, syncResult.rejectedCount)
         assertEquals(0, syncApi.capturedRequests.count { it.url.encodedPath.contains("/api/v1/mobile/sync/push") })
     }
+
+    @Test
+    fun `pushPendingData HTTP 500 - Result_failure - rows stay PENDING with incremented attempt`() = runTest {
+        db.seedFullPendingScenario()
+
+        syncApi.stubPush {
+            with(TestSyncApi) { respondJson("server down", io.ktor.http.HttpStatusCode.InternalServerError) }
+        }
+
+        val result = repo.pushPendingData()
+
+        assertTrue(result.isFailure, "Expected failure but was $result")
+
+        val inspection = db.inspectionQueries.selectById(TestData.INSPECTION_ID).executeAsOne()
+        assertEquals(LocalSyncStatus.PENDING, inspection.sync_status)
+        assertEquals(1L, inspection.sync_attempt_count, "scheduleBatchRetry should increment attempt count")
+        assertTrue(inspection.sync_next_attempt_at != null, "next_attempt_at should be set after retry schedule")
+    }
 }
