@@ -6,9 +6,9 @@ import kotlin.test.assertNull
 
 class TestDatabaseSmokeTest {
 
-    private val pair = TestDatabase.create()
-    private val db = pair.first
-    private val driver = pair.second
+    private val handle = TestDatabase.create()
+    private val db = handle.db
+    private val driver = handle.driver
 
     @AfterTest
     fun tearDown() = driver.close()

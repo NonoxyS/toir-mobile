@@ -19,9 +19,11 @@ import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 
+data class TestDatabaseHandle(val db: ToirDatabase, val driver: SqlDriver)
+
 object TestDatabase {
 
-    fun create(): Pair<ToirDatabase, SqlDriver> {
+    fun create(): TestDatabaseHandle {
         val driver = createInMemoryDriver()
         val db = ToirDatabase(
             driver = driver,
@@ -52,6 +54,6 @@ object TestDatabase {
                 statusAdapter = EnumColumnAdapter.create<LocalBatchStatus>(),
             ),
         )
-        return db to driver
+        return TestDatabaseHandle(db = db, driver = driver)
     }
 }
