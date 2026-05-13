@@ -86,4 +86,52 @@ class SyncRepositoryPushTest {
         val inspection = db.inspectionQueries.selectById(TestData.INSPECTION_ID).executeAsOne()
         assertEquals(LocalSyncStatus.SYNCED, inspection.sync_status)
     }
+
+    @Test
+    fun `pushPendingData with rejected inspection - attempt count incremented`() = runTest {
+        db.seedFullPendingScenario()
+
+        syncApi.stubPush {
+            respondJson("""
+                {
+                    "clientBatchId":"server-batch-2",
+                    "result":"accepted",
+                    "accepted":{"inspections":[],"inspectionEquipmentResults":[],"checklistItemResults":[],"actionLogs":[]},
+                    "rejected":[
+                        {
+                            "entityType":"inspection",
+                            "entityId":"${TestData.INSPECTION_ID}",
+                            "reason":"INSPECTION_NOT_FOUND"
+                        }
+                    ],
+                    "serverTime":"2026-05-13T12:00:00Z"
+                }
+            """.trimIndent())
+        }
+
+        val result = repo.pushPendingData()
+
+        assertTrue(result.isSuccess, "Push failed: $result")
+        val syncResult = result.getOrThrow()
+        assertEquals(0, syncResult.acceptedCount)
+        assertEquals(1, syncResult.rejectedCount)
+
+        val inspection = db.inspectionQueries.selectById(TestData.INSPECTION_ID).executeAsOne()
+        assertEquals(LocalSyncStatus.PENDING, inspection.sync_status)
+        assertEquals(1L, inspection.sync_attempt_count)
+        assertTrue(inspection.sync_next_attempt_at != null, "next_attempt_at should be set after reject")
+    }
+
+    @Test
+    fun `pushPendingData with no pending - succeeds without HTTP call`() = runTest {
+        // No seeding — empty database.
+
+        val result = repo.pushPendingData()
+
+        assertTrue(result.isSuccess)
+        val syncResult = result.getOrThrow()
+        assertEquals(0, syncResult.acceptedCount)
+        assertEquals(0, syncResult.rejectedCount)
+        assertEquals(0, syncApi.capturedRequests.count { it.url.encodedPath.contains("/api/v1/mobile/sync/push") })
+    }
 }
