@@ -1,0 +1,42 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  kmp-tests:
+    name: KMP Tests (iOS Simulator)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Cache Kotlin Native dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.konan/dependencies
+            ~/.konan/kotlin-native-prebuilt-macos-*
+          key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-konan-
+
+      - name: Run KMP tests on iOS Simulator
+        run: ./gradlew iosSimulatorArm64Test
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          retention-days: 7
