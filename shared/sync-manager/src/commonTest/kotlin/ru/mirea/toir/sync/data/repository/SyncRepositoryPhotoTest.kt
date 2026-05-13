@@ -82,7 +82,15 @@ class SyncRepositoryPhotoTest {
         db.seedPendingPhoto(fileUri = photoFileUri)
 
         syncApi.stubPhoto {
-            respondJson("""{"photoId":"${TestData.PHOTO_ID}","uploadedAt":"2026-05-13T12:00:00Z","storageKey":"s3://bucket/photo-1.jpg"}""")
+            respondJson(
+                """
+                    {
+                        "photoId":"${TestData.PHOTO_ID}",
+                        "uploadedAt":"2026-05-13T12:00:00Z",
+                        "storageKey":"s3://bucket/photo-1.jpg"
+                    }
+                """.trimIndent()
+            )
         }
 
         val result = repo.uploadPendingPhotos()

@@ -60,7 +60,8 @@ class SyncRepositoryPushTest {
         db.seedFullPendingScenario()
 
         syncApi.stubPush {
-            respondJson("""
+            respondJson(
+                """
                 {
                     "clientBatchId":"server-batch-1",
                     "result":"accepted",
@@ -73,7 +74,8 @@ class SyncRepositoryPushTest {
                     "rejected":[],
                     "serverTime":"2026-05-13T12:00:00Z"
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
 
         val result = repo.pushPendingData()
@@ -92,7 +94,8 @@ class SyncRepositoryPushTest {
         db.seedFullPendingScenario()
 
         syncApi.stubPush {
-            respondJson("""
+            respondJson(
+                """
                 {
                     "clientBatchId":"server-batch-2",
                     "result":"accepted",
@@ -106,7 +109,8 @@ class SyncRepositoryPushTest {
                     ],
                     "serverTime":"2026-05-13T12:00:00Z"
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
 
         val result = repo.pushPendingData()

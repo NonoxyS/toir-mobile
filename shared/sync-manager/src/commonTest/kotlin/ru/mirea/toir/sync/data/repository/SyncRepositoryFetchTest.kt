@@ -56,7 +56,8 @@ class SyncRepositoryFetchTest {
     @Test
     fun `fetchAndApplyDeltaChanges - applies one location and persists serverTime`() = runTest {
         syncApi.stubFetch {
-            respondJson("""
+            respondJson(
+                """
                 {
                     "assignments":[],"routes":[],"routePoints":[],"equipment":[],
                     "locations":[{"id":"loc-fetched","code":"L1","name":"Fetched Location","description":null,"parentLocationId":null,"updatedAt":"2026-05-13T12:00:00Z"}],
@@ -64,7 +65,8 @@ class SyncRepositoryFetchTest {
                     "deletedIds":{"assignments":[],"routes":[],"routePoints":[],"equipment":[],"locations":[],"checklists":[],"checklistItems":[]},
                     "serverTime":"2026-05-13T12:00:00Z"
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
 
         val result = repo.fetchAndApplyDeltaChanges()
