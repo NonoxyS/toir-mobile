@@ -110,6 +110,7 @@ ktor-contentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", 
 ktor-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-utils = { module = "io.ktor:ktor-utils", version.ref = "ktor" }
 ktor-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
+ktor-clientMock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 
 # Logging
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }

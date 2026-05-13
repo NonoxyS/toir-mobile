@@ -6,6 +6,7 @@
 |-----------------------|----------------------------------|----------------------------------|
 | `android-checks.yml`  | Pull Request → `main`, `develop` | Detekt + Android Lint            |
 | `ios-checks.yml`      | Pull Request → `main`, `develop` | SwiftLint + SwiftFormat          |
+| `tests.yml`           | Pull Request → `main`, `develop` | KMP tests on iOS Simulator       |
 | `android-release.yml` | Manual (`workflow_dispatch`)     | Release APK (dev or prod flavor) |
 
 ---
