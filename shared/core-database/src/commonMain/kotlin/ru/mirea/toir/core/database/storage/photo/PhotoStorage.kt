@@ -18,9 +18,18 @@ interface PhotoStorage {
         equipmentResultId: String,
     ): Flow<List<LocalPhoto>>
 
-    fun selectPending(): List<LocalPhoto>
+    fun selectPendingPhotos(now: String): List<LocalPhoto>
 
-    fun updateSyncStatus(id: String, syncStatus: LocalSyncStatus, storageKey: String?)
+    fun markPhotoSynced(id: String, storageKey: String?)
+
+    fun markPhotoRetryScheduled(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        lastError: String?,
+    )
+
+    fun observePhotoPendingCount(): Flow<Long>
 
     fun delete(id: String)
 }
@@ -32,4 +41,7 @@ data class LocalPhoto(
     val takenAt: String,
     val syncStatus: LocalSyncStatus,
     val storageKey: String?,
+    val syncAttemptCount: Long = 0L,
+    val syncNextAttemptAt: String? = null,
+    val syncLastError: String? = null,
 )

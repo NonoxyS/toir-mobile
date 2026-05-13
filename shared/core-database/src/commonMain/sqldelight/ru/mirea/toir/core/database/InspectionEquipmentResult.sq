@@ -1,5 +1,6 @@
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus;
 import ru.mirea.toir.core.database.models.LocalSyncStatus;
+import ru.mirea.toir.core.database.models.LocalRejectionReason;
 
 CREATE TABLE IF NOT EXISTS inspection_equipment_results (
     id TEXT NOT NULL PRIMARY KEY,
@@ -11,7 +12,10 @@ CREATE TABLE IF NOT EXISTS inspection_equipment_results (
     completed_at TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    sync_status TEXT AS LocalSyncStatus NOT NULL
+    sync_status TEXT AS LocalSyncStatus NOT NULL,
+    sync_attempt_count INTEGER NOT NULL DEFAULT 0,
+    sync_next_attempt_at TEXT,
+    sync_rejection_reason TEXT AS LocalRejectionReason
 );
 
 insertResult:
@@ -33,8 +37,33 @@ LIMIT 1;
 updateStatus:
 UPDATE inspection_equipment_results SET status = ?, started_at = ?, completed_at = ?, updated_at = ? WHERE id = ?;
 
-selectPending:
-SELECT * FROM inspection_equipment_results WHERE sync_status = 'pending';
+selectPendingReady:
+SELECT * FROM inspection_equipment_results
+WHERE sync_status = 'pending'
+  AND (sync_next_attempt_at IS NULL OR sync_next_attempt_at <= :now);
 
-updateSyncStatus:
-UPDATE inspection_equipment_results SET sync_status = ? WHERE id = ?;
+selectPendingCount:
+SELECT count(*) FROM inspection_equipment_results WHERE sync_status = 'pending';
+
+markRetryScheduled:
+UPDATE inspection_equipment_results
+SET sync_attempt_count = :attemptCount,
+    sync_next_attempt_at = :nextAt
+WHERE id = :id;
+
+-- Rejected record stays in sync_status='pending' intentionally.
+-- See docs/superpowers/specs/2026-05-12-sync-pending-indicator-redesign.md (Known issues).
+markRejected:
+UPDATE inspection_equipment_results
+SET sync_attempt_count = :attemptCount,
+    sync_next_attempt_at = :nextAt,
+    sync_rejection_reason = :reason
+WHERE id = :id;
+
+markSynced:
+UPDATE inspection_equipment_results
+SET sync_status = 'synced',
+    sync_attempt_count = 0,
+    sync_next_attempt_at = NULL,
+    sync_rejection_reason = NULL
+WHERE id = :id;

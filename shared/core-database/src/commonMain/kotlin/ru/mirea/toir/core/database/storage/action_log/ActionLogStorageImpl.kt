@@ -1,10 +1,17 @@
 package ru.mirea.toir.core.database.storage.action_log
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToOne
+import kotlinx.coroutines.flow.Flow
+import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.core.database.Action_logs
 import ru.mirea.toir.core.database.ToirDatabase
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 
-internal class ActionLogStorageImpl(db: ToirDatabase) : ActionLogStorage {
+internal class ActionLogStorageImpl(
+    db: ToirDatabase,
+    private val dispatchers: CoroutineDispatchers,
+) : ActionLogStorage {
 
     private val queries = db.actionLogQueries
 
@@ -30,12 +37,31 @@ internal class ActionLogStorageImpl(db: ToirDatabase) : ActionLogStorage {
     override fun selectAll(): List<LocalActionLog> =
         queries.selectAll().executeAsList().map { it.toLocal() }
 
-    override fun selectPending(): List<LocalActionLog> =
-        queries.selectPending().executeAsList().map { it.toLocal() }
+    override fun selectPending(now: String): List<LocalActionLog> =
+        queries.selectPendingReady(now).executeAsList().map { it.toLocal() }
 
-    override fun updateSyncStatus(id: String, syncStatus: LocalSyncStatus) {
-        queries.updateSyncStatus(sync_status = syncStatus, id = id)
+    override fun markSynced(id: String) {
+        queries.markSynced(id = id)
     }
+
+    override fun markRetryScheduled(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        lastError: String?,
+    ) {
+        queries.markRetryScheduled(
+            attemptCount = attemptCount,
+            nextAt = nextAttemptAt,
+            reason = lastError,
+            id = id,
+        )
+    }
+
+    override fun observePendingCount(): Flow<Long> =
+        queries.selectPendingCount()
+            .asFlow()
+            .mapToOne(dispatchers.io)
 
     private fun Action_logs.toLocal() = LocalActionLog(
         id = id,
@@ -45,5 +71,8 @@ internal class ActionLogStorageImpl(db: ToirDatabase) : ActionLogStorage {
         payloadJson = payload_json,
         actionTime = action_time,
         syncStatus = sync_status,
+        syncAttemptCount = sync_attempt_count,
+        syncNextAttemptAt = sync_next_attempt_at,
+        syncLastError = sync_last_error,
     )
 }

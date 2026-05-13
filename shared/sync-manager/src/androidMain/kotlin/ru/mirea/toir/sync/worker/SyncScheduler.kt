@@ -23,7 +23,7 @@ object SyncScheduler {
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             uniqueWorkName = SYNC_WORK_NAME,
-            existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP,
+            existingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.UPDATE,
             request = request,
         )
     }

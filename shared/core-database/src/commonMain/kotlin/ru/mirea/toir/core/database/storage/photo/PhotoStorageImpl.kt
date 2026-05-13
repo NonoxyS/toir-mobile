@@ -2,6 +2,7 @@ package ru.mirea.toir.core.database.storage.photo
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOne
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
@@ -46,23 +47,34 @@ internal class PhotoStorageImpl(
             .mapToList(dispatchers.io)
             .map { list -> list.map { it.toLocal() } }
 
-    override fun selectPending(): List<LocalPhoto> =
+    override fun selectPendingPhotos(now: String): List<LocalPhoto> =
         queries
-            .selectPending()
+            .selectPendingReady(now)
             .executeAsList()
             .map { it.toLocal() }
 
-    override fun updateSyncStatus(
+    override fun markPhotoSynced(id: String, storageKey: String?) {
+        queries.markSynced(storageKey = storageKey, id = id)
+    }
+
+    override fun markPhotoRetryScheduled(
         id: String,
-        syncStatus: LocalSyncStatus,
-        storageKey: String?
+        attemptCount: Long,
+        nextAttemptAt: String,
+        lastError: String?,
     ) {
-        queries.updateSyncStatus(
-            sync_status = syncStatus,
-            storage_key = storageKey,
-            id = id
+        queries.markRetryScheduled(
+            attemptCount = attemptCount,
+            nextAt = nextAttemptAt,
+            reason = lastError,
+            id = id,
         )
     }
+
+    override fun observePhotoPendingCount(): Flow<Long> =
+        queries.selectPendingCount()
+            .asFlow()
+            .mapToOne(dispatchers.io)
 
     override fun delete(id: String) {
         queries.deletePhoto(id)
@@ -75,5 +87,8 @@ internal class PhotoStorageImpl(
         takenAt = taken_at,
         syncStatus = sync_status,
         storageKey = storage_key,
+        syncAttemptCount = sync_attempt_count,
+        syncNextAttemptAt = sync_next_attempt_at,
+        syncLastError = sync_last_error,
     )
 }

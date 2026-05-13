@@ -125,4 +125,31 @@
     <string name="common_button_cancel">Отмена</string>
     <string name="common_button_delete">Удалить</string>
     <string name="common_button_continue_capture">Продолжить съёмку</string>
+
+    <!-- Sync status (App Bar indicator + bottom sheet) -->
+    <string name="sync_indicator_content_description">Статус синхронизации</string>
+    <string name="sync_status_title">Статус синхронизации</string>
+    <string name="sync_status_last_label">Последняя синхронизация</string>
+    <string name="sync_status_last_success_full">%1$s · Успешно</string>
+    <string name="sync_status_last_failed_full">%1$s · %2$s</string>
+    <string name="sync_status_never">Синхронизации ещё не было</string>
+    <string name="sync_status_running">Идёт синхронизация…</string>
+    <string name="sync_status_pending_list_title">Ожидают отправки</string>
+    <string name="sync_status_pending_list_empty">Все обходы синхронизированы</string>
+    <string name="sync_status_pending_in_background">Данные отправляются в фоне</string>
+    <string name="sync_status_pending_attempts">попыток: %1$d</string>
+    <string name="sync_status_pending_rejected_prefix">Обход отвергнут</string>
+    <string name="sync_rejection_invalid_assignment_id">недопустимое задание</string>
+    <string name="sync_rejection_invalid_route_id">недопустимый маршрут</string>
+    <string name="sync_rejection_route_assignment_not_found">задание не найдено или нет доступа</string>
+    <string name="sync_rejection_route_id_mismatch">несоответствие маршрута</string>
+    <string name="sync_rejection_inspection_not_found">обход не найден</string>
+    <string name="sync_rejection_route_point_not_found">точка маршрута не найдена</string>
+    <string name="sync_rejection_equipment_mismatch">несоответствие оборудования</string>
+    <string name="sync_rejection_unknown">неизвестная причина</string>
+    <string name="sync_action_manual">Синхронизировать сейчас</string>
+    <string name="sync_error_network">Нет соединения</string>
+    <string name="sync_error_auth">Сессия истекла, войдите заново</string>
+    <string name="sync_error_server">Сервер недоступен, повторите позже</string>
+    <string name="sync_error_unknown">Не удалось синхронизировать</string>
 </resources>

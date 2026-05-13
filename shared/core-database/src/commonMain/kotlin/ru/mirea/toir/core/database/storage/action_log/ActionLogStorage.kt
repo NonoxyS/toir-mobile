@@ -1,5 +1,6 @@
 package ru.mirea.toir.core.database.storage.action_log
 
+import kotlinx.coroutines.flow.Flow
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 
 interface ActionLogStorage {
@@ -16,9 +17,18 @@ interface ActionLogStorage {
 
     fun selectAll(): List<LocalActionLog>
 
-    fun selectPending(): List<LocalActionLog>
+    fun selectPending(now: String): List<LocalActionLog>
 
-    fun updateSyncStatus(id: String, syncStatus: LocalSyncStatus)
+    fun markSynced(id: String)
+
+    fun markRetryScheduled(
+        id: String,
+        attemptCount: Long,
+        nextAttemptAt: String,
+        lastError: String?,
+    )
+
+    fun observePendingCount(): Flow<Long>
 }
 
 data class LocalActionLog(
@@ -29,4 +39,7 @@ data class LocalActionLog(
     val payloadJson: String?,
     val actionTime: String,
     val syncStatus: LocalSyncStatus,
+    val syncAttemptCount: Long = 0L,
+    val syncNextAttemptAt: String? = null,
+    val syncLastError: String? = null,
 )

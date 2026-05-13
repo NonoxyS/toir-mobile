@@ -1,0 +1,12 @@
+package ru.mirea.toir.sync.domain
+
+enum class InspectionRejectionReason {
+    INVALID_ASSIGNMENT_ID,
+    INVALID_ROUTE_ID,
+    ROUTE_ASSIGNMENT_NOT_FOUND_OR_FORBIDDEN,
+    ROUTE_ID_MISMATCH,
+    INSPECTION_NOT_FOUND,
+    ROUTE_POINT_NOT_FOUND,
+    EQUIPMENT_MISMATCH,
+    UNKNOWN,
+}

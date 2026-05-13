@@ -1,6 +1,7 @@
 package ru.mirea.toir.sync.data.applier
 
 import io.github.aakira.napier.Napier
+import ru.mirea.toir.core.database.TransactionRunner
 import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.storage.checklist.ChecklistStorage
 import ru.mirea.toir.core.database.storage.equipment.EquipmentStorage
@@ -13,9 +14,10 @@ internal class ConfigChangesApplier(
     private val equipmentStorage: EquipmentStorage,
     private val locationStorage: LocationStorage,
     private val checklistStorage: ChecklistStorage,
+    private val transactionRunner: TransactionRunner,
 ) {
 
-    fun apply(response: RemoteConfigChangesResponse) {
+    fun apply(response: RemoteConfigChangesResponse) = transactionRunner.transactional {
         response.locations.forEach { loc ->
             locationStorage.upsert(
                 id = loc.id,

@@ -29,6 +29,9 @@ class RoutesListViewModel internal constructor(
     fun onContinueInspection(inspectionId: String) = store.accept(
         Intent.OnContinueInspection(inspectionId)
     )
+    fun onSyncIndicatorClicked() = store.accept(Intent.OnSyncIndicatorClicked)
+    fun onSyncSheetDismissed() = store.accept(Intent.OnSyncSheetDismissed)
+    fun onSyncNowClicked() = store.accept(Intent.OnSyncNowClicked)
 
     override fun onCleared() {
         store.dispose()

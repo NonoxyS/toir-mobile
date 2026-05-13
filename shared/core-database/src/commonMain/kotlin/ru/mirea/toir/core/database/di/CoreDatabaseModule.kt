@@ -11,10 +11,13 @@ import ru.mirea.toir.core.database.Photos
 import ru.mirea.toir.core.database.Route_assignments
 import ru.mirea.toir.core.database.Sync_batches
 import ru.mirea.toir.core.database.ToirDatabase
+import ru.mirea.toir.core.database.TransactionRunner
+import ru.mirea.toir.core.database.TransactionRunnerImpl
 import ru.mirea.toir.core.database.adapters.EnumColumnAdapter
 import ru.mirea.toir.core.database.driver.DatabaseDriverFactory
 import ru.mirea.toir.core.database.models.LocalBatchStatus
 import ru.mirea.toir.core.database.models.LocalInspectionStatus
+import ru.mirea.toir.core.database.models.LocalRejectionReason
 import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 import ru.mirea.toir.core.database.storage.action_log.ActionLogStorage
@@ -52,13 +55,16 @@ val coreDatabaseModule = module {
             inspectionsAdapter = Inspections.Adapter(
                 statusAdapter = EnumColumnAdapter.create<LocalInspectionStatus>(),
                 sync_statusAdapter = EnumColumnAdapter.create<LocalSyncStatus>(),
+                sync_rejection_reasonAdapter = EnumColumnAdapter.create<LocalRejectionReason>(),
             ),
             inspection_equipment_resultsAdapter = Inspection_equipment_results.Adapter(
                 statusAdapter = EnumColumnAdapter.create<LocalEquipmentResultStatus>(),
                 sync_statusAdapter = EnumColumnAdapter.create<LocalSyncStatus>(),
+                sync_rejection_reasonAdapter = EnumColumnAdapter.create<LocalRejectionReason>(),
             ),
             checklist_item_resultsAdapter = Checklist_item_results.Adapter(
                 sync_statusAdapter = EnumColumnAdapter.create<LocalSyncStatus>(),
+                sync_rejection_reasonAdapter = EnumColumnAdapter.create<LocalRejectionReason>(),
             ),
             photosAdapter = Photos.Adapter(
                 sync_statusAdapter = EnumColumnAdapter.create<LocalSyncStatus>(),
@@ -82,4 +88,5 @@ val coreDatabaseModule = module {
     factory<ActionLogStorage> { new(::ActionLogStorageImpl) }
     single { new(::ActionLogger) }
     factory<SyncMetaStorage> { new(::SyncMetaStorageImpl) }
+    factory<TransactionRunner> { new(::TransactionRunnerImpl) }
 }

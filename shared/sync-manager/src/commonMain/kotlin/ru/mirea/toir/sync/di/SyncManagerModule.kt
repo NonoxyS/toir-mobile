@@ -10,6 +10,8 @@ import ru.mirea.toir.sync.domain.SyncManager
 import ru.mirea.toir.sync.domain.repository.SyncRepository
 
 val syncManagerModule = module {
+    includes(platformSyncManagerModule)
+
     factory<SyncApiClient> { new(::SyncApiClientImpl) }
     factory { new(::ConfigChangesApplier) }
     factory<SyncRepository> { new(::SyncRepositoryImpl) }

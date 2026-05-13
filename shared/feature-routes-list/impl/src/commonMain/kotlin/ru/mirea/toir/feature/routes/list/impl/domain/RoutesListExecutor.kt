@@ -24,6 +24,7 @@ internal class RoutesListExecutor(
 
     override suspend fun suspendExecuteAction(action: Unit) {
         subscribeToAssignments()
+        subscribeToSync()
     }
 
     override suspend fun suspendExecuteIntent(intent: Intent) {
@@ -33,7 +34,25 @@ internal class RoutesListExecutor(
             is Intent.OnContinueInspection -> publish(
                 Label.NavigateToRoutePoints(intent.inspectionId)
             )
+            Intent.OnSyncIndicatorClicked -> dispatch(Message.SetSyncSheetVisible(true))
+            Intent.OnSyncSheetDismissed -> dispatch(Message.SetSyncSheetVisible(false))
+            Intent.OnSyncNowClicked -> repository.triggerManualSync()
         }
+    }
+
+    private fun subscribeToSync() {
+        repository.observeSyncIndicator()
+            .onEach { dispatch(Message.SetSyncIndicator(it)) }
+            .catch { Napier.e(message = "observeSyncIndicator failed", throwable = it) }
+            .launchIn(scope)
+        repository.observeLastSuccessAt()
+            .onEach { dispatch(Message.SetSyncLastSuccessAt(it)) }
+            .catch { Napier.e(message = "observeLastSuccessAt failed", throwable = it) }
+            .launchIn(scope)
+        repository.observeLastFailedAt()
+            .onEach { dispatch(Message.SetSyncLastFailedAt(it)) }
+            .catch { Napier.e(message = "observeLastFailedAt failed", throwable = it) }
+            .launchIn(scope)
     }
 
     private fun subscribeToAssignments() {

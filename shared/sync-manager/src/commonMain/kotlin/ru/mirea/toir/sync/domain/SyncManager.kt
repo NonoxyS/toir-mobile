@@ -1,73 +1,142 @@
 package ru.mirea.toir.sync.domain
 
 import io.github.aakira.napier.Napier
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.core.database.storage.action_log.ActionLogType
 import ru.mirea.toir.core.database.storage.action_log.ActionLogger
+import ru.mirea.toir.sync.domain.network.NetworkMonitor
 import ru.mirea.toir.sync.domain.repository.SyncRepository
 
+@OptIn(ExperimentalTime::class, FlowPreview::class)
 class SyncManager internal constructor(
     private val syncRepository: SyncRepository,
     private val actionLogger: ActionLogger,
+    private val networkMonitor: NetworkMonitor,
     coroutineDispatchers: CoroutineDispatchers,
 ) {
     private val scope = CoroutineScope(coroutineDispatchers.io + SupervisorJob())
     private val mutex = Mutex()
 
-    fun syncNow(): Job = scope.launch {
-        if (!mutex.tryLock()) {
-            Napier.d("SyncManager: sync already running, skipping")
-            return@launch
+    private val _status = MutableStateFlow<SyncStatus>(SyncStatus.Idle)
+    val status: StateFlow<SyncStatus> = _status.asStateFlow()
+
+    val hasPending: Flow<Boolean> = syncRepository.observeHasPending()
+    val pendingInspections: Flow<List<DomainPendingInspection>> = syncRepository.observePendingInspections()
+
+    init {
+        networkMonitor.isOnline
+            .drop(1)
+            .filter { it }
+            .debounce(CONNECTIVITY_DEBOUNCE)
+            .onEach {
+                Napier.d("SyncManager: connectivity restored, triggering sync")
+                runOnce(SyncTrigger.Connectivity)
+            }
+            .launchIn(scope)
+    }
+
+    fun syncNow(trigger: SyncTrigger): Job = scope.launch {
+        runOnce(trigger)
+    }
+
+    suspend fun runOnce(trigger: SyncTrigger): Result<Unit> {
+        if (trigger == SyncTrigger.Manual) {
+            return mutex.withLock { executeSyncCycle(trigger) }
         }
-        try {
-            Napier.d("SyncManager: starting sync")
-            actionLogger.log(actionType = ActionLogType.SYNC_STARTED)
-
-            var allOk = true
-
-            syncRepository.uploadPendingPhotos()
-                .onSuccess { count -> Napier.d("SyncManager: uploaded $count photos") }
-                .onFailure { throwable ->
-                    allOk = false
-                    Napier.e("SyncManager: photo upload failed; continuing", throwable = throwable)
-                }
-
-            syncRepository.pushPendingData()
-                .onSuccess { result ->
-                    Napier.d(
-                        "SyncManager: push success — accepted=${result.acceptedCount}, rejected=${result.rejectedCount}"
-                    )
-                    if (result.rejectedCount > 0) allOk = false
-                }
-                .onFailure { throwable ->
-                    allOk = false
-                    Napier.e("SyncManager: push failed", throwable = throwable)
-                }
-
-            syncRepository.fetchAndApplyDeltaChanges()
-                .onSuccess { Napier.d("SyncManager: delta sync done") }
-                .onFailure { throwable ->
-                    allOk = false
-                    Napier.e("SyncManager: delta sync failed", throwable = throwable)
-                }
-
-            actionLogger.log(
-                actionType = if (allOk) ActionLogType.SYNC_COMPLETED else ActionLogType.SYNC_FAILED,
-            )
+        if (!mutex.tryLock()) {
+            Napier.d("SyncManager: sync already running, skipping (trigger=$trigger)")
+            return Result.success(Unit)
+        }
+        return try {
+            executeSyncCycle(trigger)
         } finally {
             mutex.unlock()
         }
     }
 
-    suspend fun syncBlocking() = mutex.withLock {
+    private suspend fun executeSyncCycle(trigger: SyncTrigger): Result<Unit> {
+        Napier.d("SyncManager: starting sync (trigger=$trigger)")
+        actionLogger.log(actionType = ActionLogType.SYNC_STARTED)
+        _status.value = SyncStatus.Running
+
+        var pushedAccepted = 0L
+        var uploadedPhotos = 0L
+        var firstFailure: Throwable? = null
+
         syncRepository.uploadPendingPhotos()
-        syncRepository.pushPendingData()
-        syncRepository.fetchAndApplyDeltaChanges()
+            .onSuccess { count ->
+                uploadedPhotos = count
+                Napier.d("SyncManager: uploaded $count photos")
+            }
+            .onFailure { throwable ->
+                firstFailure = throwable
+                Napier.e("SyncManager: photo upload failed", throwable = throwable)
+            }
+
+        if (firstFailure == null) {
+            syncRepository.pushPendingData()
+                .onSuccess { result ->
+                    pushedAccepted = result.acceptedCount.toLong()
+                    Napier.d(
+                        "SyncManager: push accepted=${result.acceptedCount} " +
+                            "rejected=${result.rejectedCount}",
+                    )
+                }
+                .onFailure { throwable ->
+                    firstFailure = throwable
+                    Napier.e("SyncManager: push failed", throwable = throwable)
+                }
+        }
+
+        if (firstFailure == null) {
+            syncRepository.fetchAndApplyDeltaChanges()
+                .onSuccess { Napier.d("SyncManager: delta sync done") }
+                .onFailure { throwable ->
+                    firstFailure = throwable
+                    Napier.e("SyncManager: delta sync failed", throwable = throwable)
+                }
+        }
+
+        val finishedAt = Clock.System.now()
+        val failure = firstFailure
+        return if (failure == null) {
+            syncRepository.recordSuccessfulRun(finishedAt)
+            _status.value = SyncStatus.Success(
+                finishedAt = finishedAt,
+                pushedCount = pushedAccepted,
+                uploadedPhotoCount = uploadedPhotos,
+            )
+            actionLogger.log(actionType = ActionLogType.SYNC_COMPLETED)
+            Result.success(Unit)
+        } else {
+            val reason = failure.toSyncFailureReason()
+            syncRepository.recordFailedRun(finishedAt, reason)
+            _status.value = SyncStatus.Failed(finishedAt = finishedAt, reason = reason)
+            actionLogger.log(actionType = ActionLogType.SYNC_FAILED)
+            Result.failure(failure)
+        }
+    }
+
+    private companion object {
+        val CONNECTIVITY_DEBOUNCE = 1.seconds
     }
 }
