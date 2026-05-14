@@ -26,6 +26,7 @@ class RoutePointsViewModel internal constructor(
 
     fun onPointClick(routePointId: String) = store.accept(Intent.OnPointClick(routePointId))
     fun onFinishInspection() = store.accept(Intent.OnFinishInspection)
+    fun onRetry() = store.accept(Intent.OnRetry)
 
     override fun onCleared() {
         store.dispose()

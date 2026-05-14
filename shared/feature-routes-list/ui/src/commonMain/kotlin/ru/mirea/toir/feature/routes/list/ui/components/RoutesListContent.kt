@@ -19,6 +19,7 @@ internal fun RoutesListContent(
     onRefresh: () -> Unit,
     onStartInspection: (assignmentId: String) -> Unit,
     onContinueInspection: (inspectionId: String) -> Unit,
+    onSyncRequiredAction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when {
@@ -29,6 +30,7 @@ internal fun RoutesListContent(
             assignments = assignments,
             onStartInspection = onStartInspection,
             onContinueInspection = onContinueInspection,
+            onSyncRequiredAction = onSyncRequiredAction,
             modifier = modifier,
         )
     }
@@ -39,6 +41,7 @@ internal fun RoutesListItems(
     assignments: ImmutableList<UiRouteAssignment>,
     onStartInspection: (assignmentId: String) -> Unit,
     onContinueInspection: (inspectionId: String) -> Unit,
+    onSyncRequiredAction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -50,7 +53,8 @@ internal fun RoutesListItems(
             RouteAssignmentCard(
                 item = item,
                 onStartClick = { onStartInspection(item.assignmentId) },
-                onContinueClick = { onContinueInspection(item.inspectionId.orEmpty()) },
+                onContinueClick = { item.inspectionId?.let(onContinueInspection) },
+                onSyncClick = onSyncRequiredAction,
             )
         }
     }

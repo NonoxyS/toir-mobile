@@ -11,4 +11,5 @@ enum class UiRouteStatus(
     COMPLETED(stringResource = MR.strings.routes_list_status_completed),
     PARTIALLY_COMPLETED(stringResource = MR.strings.routes_list_status_partially_completed),
     CANCELLED(stringResource = MR.strings.routes_list_status_cancelled),
+    SYNC_REQUIRED(stringResource = MR.strings.routes_list_status_sync_required),
 }

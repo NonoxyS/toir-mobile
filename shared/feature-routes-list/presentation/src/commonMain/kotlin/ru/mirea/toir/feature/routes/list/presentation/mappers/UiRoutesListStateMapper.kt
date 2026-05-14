@@ -51,6 +51,7 @@ internal class UiRoutesListStateMapperImpl : UiRoutesListStateMapper {
         RouteAssignmentStatus.COMPLETED -> UiRouteStatus.COMPLETED
         RouteAssignmentStatus.PARTIALLY_COMPLETED -> UiRouteStatus.PARTIALLY_COMPLETED
         RouteAssignmentStatus.CANCELLED -> UiRouteStatus.CANCELLED
+        RouteAssignmentStatus.SYNC_REQUIRED -> UiRouteStatus.SYNC_REQUIRED
     }
 
     private fun RoutesListSyncIndicator.toUi(): UiSyncIndicator = UiSyncIndicator(
