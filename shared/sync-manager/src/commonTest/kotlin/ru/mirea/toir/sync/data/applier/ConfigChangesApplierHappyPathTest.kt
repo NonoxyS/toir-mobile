@@ -8,7 +8,9 @@ import kotlin.test.assertEquals
 import ru.mirea.toir.core.database.TransactionRunnerImpl
 import ru.mirea.toir.core.database.storage.checklist.ChecklistStorageImpl
 import ru.mirea.toir.core.database.storage.equipment.EquipmentStorageImpl
+import ru.mirea.toir.core.database.storage.inspection.InspectionStorageImpl
 import ru.mirea.toir.core.database.storage.location.LocationStorageImpl
+import ru.mirea.toir.core.database.storage.photo.PhotoStorageImpl
 import ru.mirea.toir.core.database.storage.route.RouteStorageImpl
 import ru.mirea.toir.sync.data.network.models.RemoteConfigAssignment
 import ru.mirea.toir.sync.fixtures.testDispatchers
@@ -34,6 +36,8 @@ class ConfigChangesApplierHappyPathTest {
         equipmentStorage = EquipmentStorageImpl(db, dispatchers),
         locationStorage = LocationStorageImpl(db),
         checklistStorage = ChecklistStorageImpl(db, dispatchers),
+        inspectionStorage = InspectionStorageImpl(db, dispatchers),
+        photoStorage = PhotoStorageImpl(db, dispatchers),
         transactionRunner = TransactionRunnerImpl(db),
     )
 

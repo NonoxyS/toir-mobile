@@ -12,6 +12,12 @@ internal data class RemoteConfigChangesResponse(
     @SerialName("locations") val locations: List<RemoteConfigLocation> = emptyList(),
     @SerialName("checklists") val checklists: List<RemoteConfigChecklist> = emptyList(),
     @SerialName("checklistItems") val checklistItems: List<RemoteConfigChecklistItem> = emptyList(),
+    @SerialName("inspections") val inspections: List<RemoteConfigChangesInspection> = emptyList(),
+    @SerialName("inspectionEquipmentResults")
+    val inspectionEquipmentResults: List<RemoteConfigChangesEquipmentResult> = emptyList(),
+    @SerialName("checklistItemResults")
+    val checklistItemResults: List<RemoteConfigChangesChecklistItemResult> = emptyList(),
+    @SerialName("photos") val photos: List<RemoteConfigChangesPhoto> = emptyList(),
     @SerialName("deletedIds") val deletedIds: RemoteDeletedIds = RemoteDeletedIds(),
     @SerialName("serverTime") val serverTime: String,
 )
@@ -101,4 +107,69 @@ internal data class RemoteConfigChecklistItem(
     @SerialName("numericMax") val numericMax: Double?,
     @SerialName("orderIndex") val orderIndex: Int,
     @SerialName("updatedAt") val updatedAt: String,
+)
+
+/**
+ * Восстановление незавершённого обхода через delta (кнопка «Обновить»). Mirrors backend
+ * `InspectionSyncDto` from `~/IdeaProjects/toir-backend/src/main/kotlin/ru/mirea/toir/api/dto/mobile/SyncPushRequest.kt`
+ * — те же поля, что и в `RemoteBootstrapInspection` в feature-bootstrap. Применяется
+ * правилом мёржа Waypoint 11 §1.3 (см. `InspectionStorage.applyServerInspection`).
+ * Дублирование DTO с bootstrap-модулем намеренное: оба фичевых модуля держат свои
+ * сетевые DTO, кросс-модульной зависимости избегаем.
+ */
+@Serializable
+internal data class RemoteConfigChangesInspection(
+    @SerialName("id") val id: String,
+    @SerialName("routeAssignmentId") val routeAssignmentId: String?,
+    @SerialName("routeId") val routeId: String,
+    @SerialName("status") val status: String,
+    @SerialName("startedAt") val startedAt: String?,
+    @SerialName("completedAt") val completedAt: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+/** Mirrors backend `InspectionEquipmentResultSyncDto`. */
+@Serializable
+internal data class RemoteConfigChangesEquipmentResult(
+    @SerialName("id") val id: String,
+    @SerialName("inspectionId") val inspectionId: String,
+    @SerialName("equipmentId") val equipmentId: String,
+    @SerialName("routePointId") val routePointId: String,
+    @SerialName("status") val status: String,
+    @SerialName("startedAt") val startedAt: String?,
+    @SerialName("completedAt") val completedAt: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+/** Mirrors backend `ChecklistItemResultSyncDto`. */
+@Serializable
+internal data class RemoteConfigChangesChecklistItemResult(
+    @SerialName("id") val id: String,
+    @SerialName("inspectionEquipmentResultId") val inspectionEquipmentResultId: String,
+    @SerialName("checklistItemId") val checklistItemId: String,
+    @SerialName("valueText") val valueText: String? = null,
+    @SerialName("valueNumber") val valueNumber: Double? = null,
+    @SerialName("valueBoolean") val valueBoolean: Boolean? = null,
+    @SerialName("selectedOption") val selectedOption: String? = null,
+    @SerialName("comment") val comment: String? = null,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+/**
+ * Mirrors backend `PhotoSyncDto`. Метаданные без байтов файла — бинарь скачивается
+ * отдельно фоном через `SyncRepository.downloadMissingPhotos` (Phase 5).
+ */
+@Serializable
+internal data class RemoteConfigChangesPhoto(
+    @SerialName("id") val id: String,
+    @SerialName("checklistItemResultId") val checklistItemResultId: String,
+    @SerialName("fileName") val fileName: String,
+    @SerialName("mimeType") val mimeType: String,
+    @SerialName("sizeBytes") val sizeBytes: Long,
+    @SerialName("checksum") val checksum: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("uploadedAt") val uploadedAt: String?,
 )

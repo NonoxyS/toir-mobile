@@ -2,10 +2,14 @@ package ru.mirea.toir.sync.data.applier
 
 import io.github.aakira.napier.Napier
 import ru.mirea.toir.core.database.TransactionRunner
+import ru.mirea.toir.core.database.models.LocalInspectionStatus
 import ru.mirea.toir.core.database.models.LocalRouteAssignmentStatus
 import ru.mirea.toir.core.database.storage.checklist.ChecklistStorage
 import ru.mirea.toir.core.database.storage.equipment.EquipmentStorage
+import ru.mirea.toir.core.database.storage.inspection.InspectionStorage
+import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.location.LocationStorage
+import ru.mirea.toir.core.database.storage.photo.PhotoStorage
 import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.sync.data.network.models.RemoteConfigChangesResponse
 
@@ -14,6 +18,8 @@ internal class ConfigChangesApplier(
     private val equipmentStorage: EquipmentStorage,
     private val locationStorage: LocationStorage,
     private val checklistStorage: ChecklistStorage,
+    private val inspectionStorage: InspectionStorage,
+    private val photoStorage: PhotoStorage,
     private val transactionRunner: TransactionRunner,
 ) {
 
@@ -82,7 +88,7 @@ internal class ConfigChangesApplier(
             if (checklist == null) {
                 Napier.w(
                     message = """
-                        config-changes: no checklist for equipmentId=${point.equipmentId}, 
+                        config-changes: no checklist for equipmentId=${point.equipmentId},
                         skipping route point ${point.id}
                     """.trimIndent()
                 )
@@ -109,6 +115,64 @@ internal class ConfigChangesApplier(
             )
         }
 
+        // Восстановление пользовательских данных в delta (Waypoint 11 §1.6, Phase 6).
+        // Правило мёржа §1.3 полностью реализовано в SQL (`upsertFromServer` /
+        // `insertRestoredPhoto`) — pending/retry/rejected строки не затираются.
+        // Порядок сверху вниз по FK: inspections → IER → CIR → photos.
+        response.inspections.forEach { inspection ->
+            inspectionStorage.applyServerInspection(
+                id = inspection.id,
+                assignmentId = inspection.routeAssignmentId,
+                routeId = inspection.routeId,
+                status = inspection.status.toLocalInspectionStatus(),
+                startedAt = inspection.startedAt,
+                completedAt = inspection.completedAt,
+                createdAt = inspection.createdAt,
+                updatedAt = inspection.updatedAt,
+            )
+        }
+
+        response.inspectionEquipmentResults.forEach { ier ->
+            inspectionStorage.applyServerEquipmentResult(
+                id = ier.id,
+                inspectionId = ier.inspectionId,
+                equipmentId = ier.equipmentId,
+                routePointId = ier.routePointId,
+                status = ier.status.toLocalEquipmentResultStatus(),
+                startedAt = ier.startedAt,
+                completedAt = ier.completedAt,
+                createdAt = ier.createdAt,
+                updatedAt = ier.updatedAt,
+            )
+        }
+
+        response.checklistItemResults.forEach { cir ->
+            inspectionStorage.applyServerChecklistItemResult(
+                id = cir.id,
+                inspectionEquipmentResultId = cir.inspectionEquipmentResultId,
+                checklistItemId = cir.checklistItemId,
+                valueText = cir.valueText,
+                valueNumber = cir.valueNumber,
+                valueBoolean = cir.valueBoolean?.let { if (it) 1L else 0L },
+                selectedOption = cir.selectedOption,
+                comment = cir.comment,
+                createdAt = cir.createdAt,
+                updatedAt = cir.updatedAt,
+            )
+        }
+
+        response.photos.forEach { photo ->
+            photoStorage.insertRestoredPhoto(
+                id = photo.id,
+                checklistItemResultId = photo.checklistItemResultId,
+                takenAt = photo.createdAt,
+                fileName = photo.fileName,
+                mimeType = photo.mimeType,
+                sizeBytes = photo.sizeBytes,
+                checksum = photo.checksum,
+            )
+        }
+
         response.deletedIds.assignments.forEach { routeStorage.deleteAssignmentById(it) }
         response.deletedIds.routePoints.forEach { routeStorage.deleteRoutePointById(it) }
         response.deletedIds.routes.forEach { routeStorage.deleteRouteById(it) }
@@ -123,5 +187,29 @@ internal class ConfigChangesApplier(
             ?: run {
                 Napier.w("config-changes: unknown assignment status '$raw', defaulting to ASSIGNED")
                 LocalRouteAssignmentStatus.ASSIGNED
+            }
+
+    /**
+     * Backend `InspectionSyncDto.status` приходит строкой (SyncPushRequest.kt в toir-backend).
+     * Имена совпадают с `LocalInspectionStatus.localValue`. Неизвестная строка → PLANNED
+     * с warning-логом: безопаснее «вернуть как запланирован», чем уронить delta.
+     * Дублирует одноимённый mapper в `BootstrapRepositoryImpl` намеренно (см. Waypoint 11
+     * Phase 6 §6.1): три строки на модуль — дешевле кросс-модульной зависимости.
+     */
+    private fun String.toLocalInspectionStatus(): LocalInspectionStatus =
+        LocalInspectionStatus.entries.firstOrNull { it.localValue == this }
+            ?: run {
+                Napier.w("config-changes: unknown InspectionStatus '$this', defaulting to PLANNED")
+                LocalInspectionStatus.PLANNED
+            }
+
+    /** Same convention as [toLocalInspectionStatus]. */
+    private fun String.toLocalEquipmentResultStatus(): LocalEquipmentResultStatus =
+        LocalEquipmentResultStatus.entries.firstOrNull { it.localValue == this }
+            ?: run {
+                Napier.w(
+                    "config-changes: unknown EquipmentResultStatus '$this', defaulting to NOT_STARTED"
+                )
+                LocalEquipmentResultStatus.NOT_STARTED
             }
 }

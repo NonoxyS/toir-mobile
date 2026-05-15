@@ -46,6 +46,8 @@ class SyncRepositoryFetchTest {
             equipmentStorage = EquipmentStorageImpl(db, dispatchers),
             locationStorage = LocationStorageImpl(db),
             checklistStorage = ChecklistStorageImpl(db, dispatchers),
+            inspectionStorage = InspectionStorageImpl(db, dispatchers),
+            photoStorage = PhotoStorageImpl(db, dispatchers),
             transactionRunner = TransactionRunnerImpl(db),
         ),
         photoFileWriter = TestPhotoFileWriter(),
