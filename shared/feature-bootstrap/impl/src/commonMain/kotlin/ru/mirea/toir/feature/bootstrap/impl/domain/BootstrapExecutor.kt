@@ -15,6 +15,15 @@ import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapResult
 internal class BootstrapExecutor(
     private val bootstrapRepository: BootstrapRepository,
     private val authRepository: AuthRepository,
+    /**
+     * После успешного восстановления данных в bootstrap нужно запустить фоновый цикл,
+     * чтобы Phase 5 (`SyncRepository.downloadMissingPhotos`) докачала файлы
+     * восстановленных фото (`file_uri` = NULL после `PhotoStorage.insertRestoredPhoto`).
+     * Передаётся лямбдой, а не `SyncManager`-зависимостью, чтобы избежать тестовых
+     * приседаний с `internal constructor` SyncManager-а и оставить executor тонким.
+     * DI собирает её как `{ syncManager.syncNow(SyncTrigger.Bootstrap) }`.
+     */
+    private val triggerBackgroundSync: () -> Unit,
     mainDispatcher: CoroutineDispatcher,
 ) : BaseExecutor<Intent, Unit, State, Message, Label>(
     mainContext = mainDispatcher,
@@ -39,6 +48,11 @@ internal class BootstrapExecutor(
         }
         when (bootstrapRepository.loadAndSaveBootstrap()) {
             BootstrapResult.Success -> {
+                // Bootstrap мог восстановить photo-метаданные с `file_uri = NULL`.
+                // Триггерим фоновый sync — Phase 5 (`downloadMissingPhotos`)
+                // подхватит и докачает файлы. Лямбда возвращает Job сразу,
+                // не блокирует переход на список маршрутов.
+                triggerBackgroundSync()
                 dispatch(Message.ClearLoading)
                 publish(Label.NavigateToRoutesList)
             }

@@ -17,6 +17,12 @@ internal data class RemoteBootstrapResponse(
     @SerialName("locations") val locations: List<RemoteBootstrapLocation> = emptyList(),
     @SerialName("checklists") val checklists: List<RemoteBootstrapChecklist> = emptyList(),
     @SerialName("checklistItems") val checklistItems: List<RemoteBootstrapChecklistItem> = emptyList(),
+    @SerialName("inspections") val inspections: List<RemoteBootstrapInspection> = emptyList(),
+    @SerialName("inspectionEquipmentResults")
+    val inspectionEquipmentResults: List<RemoteBootstrapEquipmentResult> = emptyList(),
+    @SerialName("checklistItemResults")
+    val checklistItemResults: List<RemoteBootstrapChecklistItemResult> = emptyList(),
+    @SerialName("photos") val photos: List<RemoteBootstrapPhoto> = emptyList(),
     @SerialName("serverTime") val serverTime: String,
 )
 
@@ -108,4 +114,66 @@ internal data class RemoteBootstrapChecklistItem(
     @SerialName("numericMax") val numericMax: Double?,
     @SerialName("orderIndex") val orderIndex: Int,
     @SerialName("updatedAt") val updatedAt: String,
+)
+
+/**
+ * Восстановление незавершённого обхода с сервера. Mirrors backend `InspectionSyncDto`
+ * from `~/IdeaProjects/toir-backend/src/main/kotlin/ru/mirea/toir/api/dto/mobile/SyncPushRequest.kt`.
+ * Применяется правилом мёржа Waypoint 11 §1.3 (см. `InspectionStorage.applyServerInspection`).
+ */
+@Serializable
+internal data class RemoteBootstrapInspection(
+    @SerialName("id") val id: String,
+    @SerialName("routeAssignmentId") val routeAssignmentId: String?,
+    @SerialName("routeId") val routeId: String,
+    @SerialName("status") val status: String,
+    @SerialName("startedAt") val startedAt: String?,
+    @SerialName("completedAt") val completedAt: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+/** Mirrors backend `InspectionEquipmentResultSyncDto`. */
+@Serializable
+internal data class RemoteBootstrapEquipmentResult(
+    @SerialName("id") val id: String,
+    @SerialName("inspectionId") val inspectionId: String,
+    @SerialName("equipmentId") val equipmentId: String,
+    @SerialName("routePointId") val routePointId: String,
+    @SerialName("status") val status: String,
+    @SerialName("startedAt") val startedAt: String?,
+    @SerialName("completedAt") val completedAt: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+/** Mirrors backend `ChecklistItemResultSyncDto`. */
+@Serializable
+internal data class RemoteBootstrapChecklistItemResult(
+    @SerialName("id") val id: String,
+    @SerialName("inspectionEquipmentResultId") val inspectionEquipmentResultId: String,
+    @SerialName("checklistItemId") val checklistItemId: String,
+    @SerialName("valueText") val valueText: String? = null,
+    @SerialName("valueNumber") val valueNumber: Double? = null,
+    @SerialName("valueBoolean") val valueBoolean: Boolean? = null,
+    @SerialName("selectedOption") val selectedOption: String? = null,
+    @SerialName("comment") val comment: String? = null,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+/**
+ * Mirrors backend `PhotoSyncDto`. Метаданные без байтов файла — бинарь скачивается
+ * отдельно фоном в Phase 5 (`SyncRepository.downloadMissingPhotos`).
+ */
+@Serializable
+internal data class RemoteBootstrapPhoto(
+    @SerialName("id") val id: String,
+    @SerialName("checklistItemResultId") val checklistItemResultId: String,
+    @SerialName("fileName") val fileName: String,
+    @SerialName("mimeType") val mimeType: String,
+    @SerialName("sizeBytes") val sizeBytes: Long,
+    @SerialName("checksum") val checksum: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("uploadedAt") val uploadedAt: String?,
 )

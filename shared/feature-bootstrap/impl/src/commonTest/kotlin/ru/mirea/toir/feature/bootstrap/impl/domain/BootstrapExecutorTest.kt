@@ -24,11 +24,13 @@ internal class BootstrapExecutorTest {
             val repository = FakeBootstrapRepository(nextResult = BootstrapResult.Unauthorized)
             val authRepository = FakeAuthRepository()
             val labels = mutableListOf<Label>()
+            var syncTriggered = 0
 
             val store = BootstrapStoreFactory(
                 storeFactory = TestStoreFactory(),
                 bootstrapRepository = repository,
                 authRepository = authRepository,
+                triggerBackgroundSync = { syncTriggered++ },
                 mainDispatcher = Dispatchers.Unconfined,
             ).create()
 
@@ -38,21 +40,24 @@ internal class BootstrapExecutorTest {
 
                 assertEquals(listOf<Label>(Label.NavigateToLogin), labels)
                 assertEquals(1, authRepository.logoutCallCount)
+                assertEquals(0, syncTriggered)
             } finally {
                 store.dispose()
             }
         }
 
     @Test
-    fun `when bootstrap returns Success — executor publishes NavigateToRoutesList`() = runTest {
+    fun `when bootstrap returns Success — publishes NavigateToRoutesList and triggers sync`() = runTest {
         val repository = FakeBootstrapRepository(nextResult = BootstrapResult.Success)
         val authRepository = FakeAuthRepository()
         val labels = mutableListOf<Label>()
+        var syncTriggered = 0
 
         val store = BootstrapStoreFactory(
             storeFactory = TestStoreFactory(),
             bootstrapRepository = repository,
             authRepository = authRepository,
+            triggerBackgroundSync = { syncTriggered++ },
             mainDispatcher = Dispatchers.Unconfined,
         ).create()
 
@@ -61,6 +66,7 @@ internal class BootstrapExecutorTest {
             store.init()
 
             assertEquals(listOf<Label>(Label.NavigateToRoutesList), labels)
+            assertEquals(1, syncTriggered)
         } finally {
             store.dispose()
         }
@@ -73,11 +79,13 @@ internal class BootstrapExecutorTest {
         )
         val authRepository = FakeAuthRepository()
         val labels = mutableListOf<Label>()
+        var syncTriggered = 0
 
         val store = BootstrapStoreFactory(
             storeFactory = TestStoreFactory(),
             bootstrapRepository = repository,
             authRepository = authRepository,
+            triggerBackgroundSync = { syncTriggered++ },
             mainDispatcher = Dispatchers.Unconfined,
         ).create()
 
@@ -88,6 +96,7 @@ internal class BootstrapExecutorTest {
             assertTrue(store.state.isError)
             assertEquals(false, store.state.isLoading)
             assertEquals(emptyList<Label>(), labels)
+            assertEquals(0, syncTriggered)
         } finally {
             store.dispose()
         }
@@ -99,11 +108,13 @@ internal class BootstrapExecutorTest {
             val repository = FakeBootstrapRepository(nextResult = BootstrapResult.Unauthorized)
             val authRepository = FakeAuthRepository(logoutShouldThrow = true)
             val labels = mutableListOf<Label>()
+            var syncTriggered = 0
 
             val store = BootstrapStoreFactory(
                 storeFactory = TestStoreFactory(),
                 bootstrapRepository = repository,
                 authRepository = authRepository,
+                triggerBackgroundSync = { syncTriggered++ },
                 mainDispatcher = Dispatchers.Unconfined,
             ).create()
 
@@ -114,6 +125,7 @@ internal class BootstrapExecutorTest {
                 assertEquals(listOf<Label>(Label.NavigateToLogin), labels)
                 assertEquals(1, authRepository.logoutCallCount)
                 assertEquals(false, store.state.isLoading)
+                assertEquals(0, syncTriggered)
             } finally {
                 store.dispose()
             }
