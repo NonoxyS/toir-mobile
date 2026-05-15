@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.core.database.Photos
-import ru.mirea.toir.core.database.SelectMissingFiles
 import ru.mirea.toir.core.database.ToirDatabase
 import ru.mirea.toir.core.database.models.LocalSyncStatus
 
@@ -85,7 +84,6 @@ internal class PhotoStorageImpl(
         id: String,
         checklistItemResultId: String,
         takenAt: String,
-        storageKey: String,
         fileName: String?,
         mimeType: String?,
         sizeBytes: Long?,
@@ -95,7 +93,6 @@ internal class PhotoStorageImpl(
             id = id,
             checklistItemResultId = checklistItemResultId,
             takenAt = takenAt,
-            storageKey = storageKey,
             fileName = fileName,
             mimeType = mimeType,
             sizeBytes = sizeBytes,
@@ -105,22 +102,6 @@ internal class PhotoStorageImpl(
 
     override fun selectMissingFiles(): List<LocalPhoto> =
         queries.selectMissingFiles().executeAsList().map { it.toLocal() }
-
-    private fun SelectMissingFiles.toLocal() = LocalPhoto(
-        id = id,
-        checklistItemResultId = checklist_item_result_id,
-        fileUri = file_uri,
-        takenAt = taken_at,
-        syncStatus = sync_status,
-        storageKey = storage_key,
-        fileName = file_name,
-        mimeType = mime_type,
-        sizeBytes = size_bytes,
-        checksum = checksum,
-        syncAttemptCount = sync_attempt_count,
-        syncNextAttemptAt = sync_next_attempt_at,
-        syncLastError = sync_last_error,
-    )
 
     override fun setFileUri(id: String, fileUri: String) {
         queries.setFileUri(fileUri = fileUri, id = id)
