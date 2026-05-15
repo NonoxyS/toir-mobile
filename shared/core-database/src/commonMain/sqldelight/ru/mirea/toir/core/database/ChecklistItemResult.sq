@@ -25,6 +25,35 @@ INSERT OR REPLACE INTO checklist_item_results (
     created_at, updated_at, sync_status
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+-- See Inspection.sq#upsertFromServer for the merge-rule rationale (§1.3).
+upsertFromServer:
+INSERT INTO checklist_item_results (
+    id, inspection_equipment_result_id, checklist_item_id,
+    value_boolean, value_number, value_text, selected_option, comment,
+    created_at, updated_at, sync_status,
+    sync_attempt_count, sync_next_attempt_at, sync_rejection_reason
+) VALUES (
+    :id, :equipmentResultId, :checklistItemId,
+    :valueBoolean, :valueNumber, :valueText, :selectedOption, :comment,
+    :createdAt, :updatedAt, 'synced',
+    0, NULL, NULL
+)
+ON CONFLICT(id) DO UPDATE SET
+    inspection_equipment_result_id = excluded.inspection_equipment_result_id,
+    checklist_item_id = excluded.checklist_item_id,
+    value_boolean = excluded.value_boolean,
+    value_number = excluded.value_number,
+    value_text = excluded.value_text,
+    selected_option = excluded.selected_option,
+    comment = excluded.comment,
+    created_at = excluded.created_at,
+    updated_at = excluded.updated_at,
+    sync_status = 'synced',
+    sync_attempt_count = 0,
+    sync_next_attempt_at = NULL,
+    sync_rejection_reason = NULL
+WHERE checklist_item_results.sync_status = 'synced';
+
 selectByEquipmentResultId:
 SELECT * FROM checklist_item_results WHERE inspection_equipment_result_id = ?;
 

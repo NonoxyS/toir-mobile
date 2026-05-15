@@ -32,15 +32,43 @@ interface PhotoStorage {
     fun observePhotoPendingCount(): Flow<Long>
 
     fun delete(id: String)
+
+    /**
+     * Insert metadata for a server-restored photo. `file_uri` stays `null` until the file
+     * is downloaded; the row is marked `synced` immediately. On conflict with an existing
+     * row, the merge rule (Waypoint 11 §1.3) applies — pending/retry/rejected rows are
+     * preserved untouched.
+     */
+    @Suppress("LongParameterList")
+    fun insertRestoredPhoto(
+        id: String,
+        checklistItemResultId: String,
+        takenAt: String,
+        storageKey: String,
+        fileName: String?,
+        mimeType: String?,
+        sizeBytes: Long?,
+        checksum: String?,
+    )
+
+    /** Restored photos whose file has not been downloaded yet. */
+    fun selectMissingFiles(): List<LocalPhoto>
+
+    /** Called after a restored photo's file is finally written to local storage. */
+    fun setFileUri(id: String, fileUri: String)
 }
 
 data class LocalPhoto(
     val id: String,
     val checklistItemResultId: String,
-    val fileUri: String,
+    val fileUri: String?,
     val takenAt: String,
     val syncStatus: LocalSyncStatus,
     val storageKey: String?,
+    val fileName: String? = null,
+    val mimeType: String? = null,
+    val sizeBytes: Long? = null,
+    val checksum: String? = null,
     val syncAttemptCount: Long = 0L,
     val syncNextAttemptAt: String? = null,
     val syncLastError: String? = null,

@@ -160,7 +160,14 @@ internal class SyncRepositoryImpl(
                     val pending = photoStorage.selectPendingPhotos(now.toString())
                     var uploaded = 0L
                     pending.forEach { photo ->
-                        val bytes = readFileBytes(photo.fileUri)
+                        // A pending photo must have a local file_uri set by the capture flow.
+                        // Restored photos are inserted with file_uri = null but sync_status = 'synced',
+                        // so they never appear here. Defensive null-skip keeps the type system honest.
+                        val fileUri = photo.fileUri ?: run {
+                            Napier.w(message = "Pending photo without fileUri skipped: id=${photo.id}")
+                            return@forEach
+                        }
+                        val bytes = readFileBytes(fileUri)
                         syncApiClient.uploadPhoto(
                             photoId = photo.id,
                             checklistItemResultId = photo.checklistItemResultId,

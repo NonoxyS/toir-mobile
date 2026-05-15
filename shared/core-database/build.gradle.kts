@@ -18,6 +18,7 @@ sqldelight {
         create("ToirDatabase") {
             packageName.set("ru.mirea.toir.core.database")
             generateAsync = false
+            dialect(libs.sqldelight.sqliteDialect)
         }
     }
 }

@@ -23,6 +23,32 @@ INSERT INTO inspection_equipment_results (
     id, inspection_id, route_point_id, equipment_id, status, started_at, completed_at, created_at, updated_at, sync_status
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+-- See Inspection.sq#upsertFromServer for the merge-rule rationale (§1.3).
+upsertFromServer:
+INSERT INTO inspection_equipment_results (
+    id, inspection_id, route_point_id, equipment_id, status,
+    started_at, completed_at, created_at, updated_at, sync_status,
+    sync_attempt_count, sync_next_attempt_at, sync_rejection_reason
+) VALUES (
+    :id, :inspectionId, :routePointId, :equipmentId, :status,
+    :startedAt, :completedAt, :createdAt, :updatedAt, 'synced',
+    0, NULL, NULL
+)
+ON CONFLICT(id) DO UPDATE SET
+    inspection_id = excluded.inspection_id,
+    route_point_id = excluded.route_point_id,
+    equipment_id = excluded.equipment_id,
+    status = excluded.status,
+    started_at = excluded.started_at,
+    completed_at = excluded.completed_at,
+    created_at = excluded.created_at,
+    updated_at = excluded.updated_at,
+    sync_status = 'synced',
+    sync_attempt_count = 0,
+    sync_next_attempt_at = NULL,
+    sync_rejection_reason = NULL
+WHERE inspection_equipment_results.sync_status = 'synced';
+
 selectByInspectionId:
 SELECT * FROM inspection_equipment_results WHERE inspection_id = ?;
 

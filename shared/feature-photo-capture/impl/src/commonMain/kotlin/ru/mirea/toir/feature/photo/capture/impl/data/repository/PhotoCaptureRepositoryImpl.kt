@@ -56,7 +56,7 @@ internal class PhotoCaptureRepositoryImpl(
             coRunCatching(
                 tryBlock = {
                     photoStorage.selectByChecklistItemResultId(checklistItemResultId)
-                        .map { it.fileUri }
+                        .mapNotNull { it.fileUri }
                         .wrapResultSuccess()
                 },
                 catchBlock = { throwable ->
