@@ -25,6 +25,14 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        // JitPack hosts io.requery:sqlite-android (group com.github.requery on JitPack).
+        // Scoped to just that group so other deps still resolve via Maven Central.
+        maven {
+            url = uri("https://jitpack.io")
+            mavenContent {
+                includeGroup("com.github.requery")
+            }
+        }
     }
 }
 

@@ -181,6 +181,22 @@ internal class BootstrapRepositoryImplMergeTest {
             syncStatus = LocalSyncStatus.PENDING,
         )
 
+        // Snapshot the seeded pending rows BEFORE the merge to assert byte-for-byte
+        // identity after — catches any partial UPDATE that leaks fields not covered
+        // by the explicit per-field assertions below (e.g. assignmentId / routeId /
+        // createdAt / updatedAt / startedAt / sync_attempt_count). The SQL guard
+        // `WHERE sync_status = 'synced'` is binary in theory, but a future bug in
+        // an UPDATE SET clause can't slip past a full-row equality check.
+        val inspectionBefore = inspectionStorage.selectInspectionById(TestData.INSPECTION_ID)
+        val ierBefore = inspectionStorage.selectEquipmentResultById(TestData.EQUIPMENT_RESULT_ID)
+        val cirBefore = inspectionStorage.selectChecklistItemResult(
+            checklistItemId = TestData.CHECKLIST_ITEM_ID,
+            equipmentResultId = TestData.EQUIPMENT_RESULT_ID,
+        )
+        assertNotNull(inspectionBefore)
+        assertNotNull(ierBefore)
+        assertNotNull(cirBefore)
+
         // Server claims the inspection is COMPLETED (stale view, e.g. previous
         // sync attempt) with a different completedAt timestamp. Should NOT win.
         val response = RemoteBootstrapResponse(
@@ -247,6 +263,16 @@ internal class BootstrapRepositoryImplMergeTest {
         assertEquals(LocalSyncStatus.PENDING, cir.syncStatus)
         assertEquals(1L, cir.valueBoolean)
         assertEquals("user comment", cir.comment)
+
+        // Full-row structural equality — every field on the row must be byte-for-byte
+        // unchanged. `LocalInspection`, `LocalEquipmentResult`, `LocalChecklistItemResult`
+        // are data classes, so this covers fields the explicit asserts above don't
+        // mention: assignmentId, routeId, startedAt, createdAt, updatedAt,
+        // syncAttemptCount, syncNextAttemptAt, syncRejectionReason — and analogous
+        // for IER/CIR.
+        assertEquals(inspectionBefore, inspection)
+        assertEquals(ierBefore, ier)
+        assertEquals(cirBefore, cir)
     }
 
     /**

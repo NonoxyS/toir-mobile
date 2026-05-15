@@ -59,6 +59,9 @@ mvikotlin = "4.3.0"
 # SQLDelight
 sqldelight = "2.3.2"
 
+# SQLite (bundled — needed for UPSERT on Android API 26-29 where system SQLite < 3.24)
+sqlite-android = "3.49.0"
+
 # Logging
 napier = "2.7.1"
 coil = "3.0.4"
@@ -154,6 +157,10 @@ sqldelight-native = { module = "app.cash.sqldelight:native-driver", version.ref 
 sqldelight-primitiveAdapters = { module = "app.cash.sqldelight:primitive-adapters", version.ref = "sqldelight" }
 sqldelight-sqliteDialect = { module = "app.cash.sqldelight:sqlite-3-24-dialect", version.ref = "sqldelight" }
 gradleplugin-sqldelight = { module = "app.cash.sqldelight:gradle-plugin", version.ref = "sqldelight" }
+
+# Bundled SQLite — io.requery:sqlite-android is published via JitPack as
+# com.github.requery:sqlite-android. Used on Android only; iOS keeps its native driver.
+requery-sqlite-android = { module = "com.github.requery:sqlite-android", version.ref = "sqlite-android" }
 
 # Detekt
 detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
