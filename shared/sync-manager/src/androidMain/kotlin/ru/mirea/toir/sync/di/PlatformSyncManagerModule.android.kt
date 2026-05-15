@@ -2,6 +2,8 @@ package ru.mirea.toir.sync.di
 
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import ru.mirea.toir.sync.data.AndroidPhotoFileWriter
+import ru.mirea.toir.sync.data.PhotoFileWriter
 import ru.mirea.toir.sync.data.network.AndroidNetworkMonitor
 import ru.mirea.toir.sync.domain.network.NetworkMonitor
 
@@ -12,4 +14,5 @@ internal actual val platformSyncManagerModule = module {
             coroutineDispatchers = get(),
         )
     }
+    single<PhotoFileWriter> { AndroidPhotoFileWriter(context = androidContext()) }
 }

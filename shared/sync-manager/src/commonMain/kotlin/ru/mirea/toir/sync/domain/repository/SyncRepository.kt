@@ -11,6 +11,15 @@ import ru.mirea.toir.sync.domain.models.SyncResult
 internal interface SyncRepository {
     suspend fun pushPendingData(): Result<SyncResult>
     suspend fun uploadPendingPhotos(): Result<Long>
+
+    /**
+     * Downloads any photos whose metadata is restored locally but whose file is not yet on
+     * disk (`file_uri IS NULL`). Returns the count of photos successfully downloaded.
+     * Per-photo failures are logged and skipped — the row stays in `selectMissingFiles` and
+     * is retried on the next sync cycle. Returns `Result.failure` only on a fatal error
+     * that prevents any download attempt at all.
+     */
+    suspend fun downloadMissingPhotos(): Result<Long>
     suspend fun fetchAndApplyDeltaChanges(): Result<Unit>
 
     fun observeHasPending(): Flow<Boolean>

@@ -33,8 +33,8 @@ internal class PhotoCaptureStoreFactory(
 
     internal sealed interface Message {
         data class SetLoading(val value: Boolean) : Message
-        data class SetPhotos(val photos: List<String>) : Message
-        data class AddPhoto(val uri: String) : Message
+        data class SetPhotos(val photos: List<PhotoCaptureStore.PhotoEntry>) : Message
+        data class AddPhoto(val entry: PhotoCaptureStore.PhotoEntry) : Message
         data class PhotoRemoved(val uri: String) : Message
     }
 }

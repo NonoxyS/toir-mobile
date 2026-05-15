@@ -22,6 +22,7 @@ import ru.mirea.toir.sync.data.applier.ConfigChangesApplier
 import ru.mirea.toir.sync.domain.SyncFailureReason
 import ru.mirea.toir.sync.domain.repository.SyncRepository
 import ru.mirea.toir.sync.fixtures.TestDatabase
+import ru.mirea.toir.sync.fixtures.TestPhotoFileWriter
 import ru.mirea.toir.sync.fixtures.TestSyncApi
 import ru.mirea.toir.sync.fixtures.TestTokenStorage
 import ru.mirea.toir.sync.fixtures.testDispatchers
@@ -49,6 +50,7 @@ class SyncRepositoryMetaTest {
             checklistStorage = ChecklistStorageImpl(db, dispatchers),
             transactionRunner = TransactionRunnerImpl(db),
         ),
+        photoFileWriter = TestPhotoFileWriter(),
         transactionRunner = TransactionRunnerImpl(db),
         coroutineDispatchers = dispatchers,
     )
