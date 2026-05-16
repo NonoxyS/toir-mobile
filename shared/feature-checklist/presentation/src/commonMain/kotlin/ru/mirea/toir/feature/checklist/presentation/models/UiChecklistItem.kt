@@ -30,4 +30,5 @@ data class UiChecklistItem(
     val numericMin: String?,
     val numericMax: String?,
     val showValidationError: Boolean,
+    val isNumberOutOfRange: Boolean = false,
 )

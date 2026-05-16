@@ -15,7 +15,12 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
 
     override fun map(item: ChecklistStore.State): UiChecklistState = UiChecklistState(
         items = item.items
-            .map { it.toUi(showValidationErrors = item.isValidationError) }
+            .map {
+                it.toUi(
+                    showValidationErrors = item.isValidationError,
+                    numberDraft = item.numberDrafts[it.id],
+                )
+            }
             .toImmutableList(),
         isLoading = item.isLoading,
         isError = item.isError,
@@ -24,8 +29,18 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
         isCompleted = item.isCompleted,
     )
 
-    private fun DomainChecklistItem.toUi(showValidationErrors: Boolean): UiChecklistItem {
+    private fun DomainChecklistItem.toUi(
+        showValidationErrors: Boolean,
+        numberDraft: String?,
+    ): UiChecklistItem {
         val showValidationError = showValidationErrors && isRequired && !isAnswered()
+        val effectiveNumberText = numberDraft ?: valueNumber?.formatNumber().orEmpty()
+        val parsedNumber = effectiveNumberText.replace(',', '.').toDoubleOrNull()
+        val min = numericMin
+        val max = numericMax
+        val isNumberOutOfRange = answerType is DomainAnswerType.Number && parsedNumber != null && (
+            (min != null && parsedNumber < min) || (max != null && parsedNumber > max)
+            )
         return UiChecklistItem(
             id = id,
             title = title,
@@ -35,7 +50,7 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
             requiresPhoto = requiresPhoto,
             resultId = resultId,
             valueBoolean = valueBoolean,
-            valueNumber = valueNumber?.formatNumber().orEmpty(),
+            valueNumber = effectiveNumberText,
             valueText = valueText.orEmpty(),
             valueSelect = valueSelect,
             isConfirmed = isConfirmed,
@@ -43,6 +58,7 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
             numericMin = numericMin?.formatNumber(),
             numericMax = numericMax?.formatNumber(),
             showValidationError = showValidationError,
+            isNumberOutOfRange = isNumberOutOfRange,
         )
     }
 

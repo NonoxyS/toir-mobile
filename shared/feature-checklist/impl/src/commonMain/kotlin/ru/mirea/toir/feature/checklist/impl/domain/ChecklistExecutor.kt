@@ -39,7 +39,9 @@ internal class ChecklistExecutor(
             }
 
             is Intent.OnNumberAnswer -> {
-                val number = intent.value.replace(',', '.').toDoubleOrNull() ?: return
+                val filtered = intent.value.filterNot { it.isWhitespace() }
+                dispatch(Message.SetNumberDraft(intent.itemId, filtered))
+                val number = filtered.replace(',', '.').toDoubleOrNull() ?: return
                 val item = state().items.firstOrNull { it.id == intent.itemId } ?: return
                 val min = item.numericMin
                 val max = item.numericMax

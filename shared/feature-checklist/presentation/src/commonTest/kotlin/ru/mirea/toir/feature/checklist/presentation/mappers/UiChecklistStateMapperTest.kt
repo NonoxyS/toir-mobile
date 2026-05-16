@@ -1,6 +1,7 @@
 package ru.mirea.toir.feature.checklist.presentation.mappers
 
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore
@@ -22,6 +23,8 @@ class UiChecklistStateMapperTest {
         valueText: String? = null,
         valueSelect: String? = null,
         isConfirmed: Boolean = false,
+        numericMin: Double? = null,
+        numericMax: Double? = null,
     ) = DomainChecklistItem(
         id = id,
         title = "Q",
@@ -36,8 +39,8 @@ class UiChecklistStateMapperTest {
         valueSelect = valueSelect,
         isConfirmed = isConfirmed,
         photoCount = 0,
-        numericMin = null,
-        numericMax = null,
+        numericMin = numericMin,
+        numericMax = numericMax,
     )
 
     @Test
@@ -139,6 +142,61 @@ class UiChecklistStateMapperTest {
         )
         val ui = mapper.map(state)
         assertFalse(ui.items[0].showValidationError)
+    }
+
+    @Test
+    fun `isNumberOutOfRange is false when valueNumber is within range`() {
+        val state = ChecklistStore.State(
+            items = persistentListOf(
+                item(type = DomainAnswerType.Number, valueNumber = 50.0, numericMin = 0.0, numericMax = 100.0),
+            ),
+        )
+        val ui = mapper.map(state)
+        assertFalse(ui.items[0].isNumberOutOfRange)
+    }
+
+    @Test
+    fun `isNumberOutOfRange is true when valueNumber exceeds max`() {
+        val state = ChecklistStore.State(
+            items = persistentListOf(
+                item(type = DomainAnswerType.Number, valueNumber = 150.0, numericMax = 100.0),
+            ),
+        )
+        val ui = mapper.map(state)
+        assertTrue(ui.items[0].isNumberOutOfRange)
+    }
+
+    @Test
+    fun `isNumberOutOfRange is true when valueNumber below min`() {
+        val state = ChecklistStore.State(
+            items = persistentListOf(
+                item(type = DomainAnswerType.Number, valueNumber = -1.0, numericMin = 0.0),
+            ),
+        )
+        val ui = mapper.map(state)
+        assertTrue(ui.items[0].isNumberOutOfRange)
+    }
+
+    @Test
+    fun `isNumberOutOfRange uses numberDraft when present`() {
+        val state = ChecklistStore.State(
+            items = persistentListOf(
+                item(type = DomainAnswerType.Number, valueNumber = 50.0, numericMax = 100.0),
+            ),
+            numberDrafts = persistentMapOf("i1" to "9999"),
+        )
+        val ui = mapper.map(state)
+        assertEquals("9999", ui.items[0].valueNumber)
+        assertTrue(ui.items[0].isNumberOutOfRange)
+    }
+
+    @Test
+    fun `isNumberOutOfRange is false for non-Number answer types`() {
+        val state = ChecklistStore.State(
+            items = persistentListOf(item(type = DomainAnswerType.Text, valueText = "999")),
+        )
+        val ui = mapper.map(state)
+        assertFalse(ui.items[0].isNumberOutOfRange)
     }
 
     @Test

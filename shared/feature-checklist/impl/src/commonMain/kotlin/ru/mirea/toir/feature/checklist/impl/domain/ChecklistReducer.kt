@@ -2,6 +2,7 @@ package ru.mirea.toir.feature.checklist.impl.domain
 
 import com.arkivanov.mvikotlin.core.store.Reducer
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentMap
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.State
 import ru.mirea.toir.feature.checklist.impl.domain.ChecklistStoreFactory.Message
 
@@ -30,6 +31,10 @@ internal class ChecklistReducer : Reducer<State, Message> {
             items = items
                 .map { item -> if (item.id == msg.item.id) msg.item else item }
                 .toImmutableList(),
+        )
+
+        is Message.SetNumberDraft -> copy(
+            numberDrafts = (numberDrafts + (msg.itemId to msg.raw)).toPersistentMap(),
         )
 
         Message.SetValidationRequiredError -> copy(

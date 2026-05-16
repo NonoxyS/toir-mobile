@@ -38,6 +38,7 @@ internal class ChecklistStoreFactory(
         data object SetError : Message
         data class SetItems(val items: ImmutableList<DomainChecklistItem>) : Message
         data class UpdateItem(val item: DomainChecklistItem) : Message
+        data class SetNumberDraft(val itemId: String, val raw: String) : Message
         data object SetValidationRequiredError : Message
         data object SetValidationPhotoError : Message
         data object ClearValidationError : Message
