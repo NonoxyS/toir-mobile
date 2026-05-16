@@ -109,14 +109,7 @@ internal data class RemoteConfigChecklistItem(
     @SerialName("updatedAt") val updatedAt: String,
 )
 
-/**
- * Восстановление незавершённого обхода через delta (кнопка «Обновить»). Mirrors backend
- * `InspectionSyncDto` from `~/IdeaProjects/toir-backend/src/main/kotlin/ru/mirea/toir/api/dto/mobile/SyncPushRequest.kt`
- * — те же поля, что и в `RemoteBootstrapInspection` в feature-bootstrap. Применяется
- * правилом мёржа Waypoint 11 §1.3 (см. `InspectionStorage.applyServerInspection`).
- * Дублирование DTO с bootstrap-модулем намеренное: оба фичевых модуля держат свои
- * сетевые DTO, кросс-модульной зависимости избегаем.
- */
+/** Дублирует `RemoteBootstrapInspection` намеренно: модули держат свои DTO. */
 @Serializable
 internal data class RemoteConfigChangesInspection(
     @SerialName("id") val id: String,
@@ -129,7 +122,6 @@ internal data class RemoteConfigChangesInspection(
     @SerialName("updatedAt") val updatedAt: String,
 )
 
-/** Mirrors backend `InspectionEquipmentResultSyncDto`. */
 @Serializable
 internal data class RemoteConfigChangesEquipmentResult(
     @SerialName("id") val id: String,
@@ -143,7 +135,6 @@ internal data class RemoteConfigChangesEquipmentResult(
     @SerialName("updatedAt") val updatedAt: String,
 )
 
-/** Mirrors backend `ChecklistItemResultSyncDto`. */
 @Serializable
 internal data class RemoteConfigChangesChecklistItemResult(
     @SerialName("id") val id: String,
@@ -158,10 +149,7 @@ internal data class RemoteConfigChangesChecklistItemResult(
     @SerialName("updatedAt") val updatedAt: String,
 )
 
-/**
- * Mirrors backend `PhotoSyncDto`. Метаданные без байтов файла — бинарь скачивается
- * отдельно фоном через `SyncRepository.downloadMissingPhotos` (Phase 5).
- */
+/** Метаданные фото без байтов — файл докачивается через [SyncRepository.downloadMissingPhotos]. */
 @Serializable
 internal data class RemoteConfigChangesPhoto(
     @SerialName("id") val id: String,

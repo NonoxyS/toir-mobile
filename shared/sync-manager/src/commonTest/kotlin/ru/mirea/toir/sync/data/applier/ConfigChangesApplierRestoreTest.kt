@@ -37,12 +37,7 @@ import ru.mirea.toir.sync.fixtures.TestDatabase
 import ru.mirea.toir.sync.fixtures.testDispatchers
 
 /**
- * Waypoint 11 §1.6 + Phase 6 Task 6.4 — delta restore path end-to-end through the applier.
- *
- * Сценарий «кнопка Обновить»: сервер отдаёт незавершённый обход в `ConfigChangesResponse`,
- * applier применяет тем же правилом мёржа §1.3, что и bootstrap.
- *
- * Конкретно проверяем:
+ * Delta restore через applier:
  *  1. Пустая локальная БД → восстановленное дерево записывается с sync_status = synced.
  *  2. Локальный pending CIR с правкой пользователя → серверная копия НЕ затирает.
  */
@@ -103,7 +98,7 @@ internal class ConfigChangesApplierRestoreTest {
         assertEquals(TestData.PHOTO_ID, photos[0].id)
         assertEquals("server-photo.jpg", photos[0].file_name)
         assertEquals(LocalSyncStatus.SYNCED, photos[0].sync_status)
-        // file_uri = null — фото ещё нужно докачать (Phase 5 downloadMissingPhotos).
+        // file_uri = null — фото докачивается асинхронно через downloadMissingPhotos.
         assertEquals(null, photos[0].file_uri)
     }
 

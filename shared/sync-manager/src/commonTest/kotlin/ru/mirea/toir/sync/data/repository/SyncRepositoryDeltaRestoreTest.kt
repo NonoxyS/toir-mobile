@@ -43,15 +43,12 @@ import ru.mirea.toir.sync.fixtures.TestTokenStorage
 import ru.mirea.toir.sync.fixtures.testDispatchers
 
 /**
- * Waypoint 11 Phase 6 Task 6.4 — end-to-end интеграционный сценарий «кнопка Обновить»:
- *  HTTP-ответ delta → applier → photo download. Покрывает закрытие цикла offline-first.
+ * Сценарий «кнопка Обновить» end-to-end: HTTP-ответ delta → applier → photo download.
  *
- *  Сценарий 1: «Локальная БД пустая → delta-ответ с восстановлением → downloadMissingPhotos».
- *    Проверяет: после `fetchAndApplyDeltaChanges()` локально есть inspection/IER/CIR/photo
- *    (sync_status = synced, file_uri = null), затем `downloadMissingPhotos()` дописывает
- *    file_uri через `TestPhotoFileWriter` с правильными байтами (`photo-bytes-for-{id}`).
+ *  Сценарий 1: пустая локальная БД → delta с restore-деревом → downloadMissingPhotos
+ *    дописывает file_uri через `TestPhotoFileWriter` с байтами `photo-bytes-for-{id}`.
  *
- *  Сценарий 2: «Локальный pending CIR + delta-ответ → локальное не затёрто».
+ *  Сценарий 2: локальный pending CIR + delta → локальное не затёрто.
  *    Проверяет: даже после `fetchAndApplyDeltaChanges()` локальный комментарий юзера
  *    сохраняется (правило мёржа §1.3 в `upsertFromServer` SQL).
  */
@@ -173,7 +170,7 @@ class SyncRepositoryDeltaRestoreTest {
         assertEquals(
             "user comment",
             cir.comment,
-            "delta must not overwrite pending local row (Waypoint 11 §1.3)",
+            "delta must not overwrite pending local row",
         )
         assertEquals(LocalSyncStatus.PENDING, cir.syncStatus)
     }
@@ -189,8 +186,8 @@ class SyncRepositoryDeltaRestoreTest {
     }
 
     /**
-     * JSON-копия `restoredTreeResponse` из applier-теста, но через wire-формат — чтобы убедиться,
-     * что `RemoteConfigChangesResponse` (Task 6.1) реально десериализуется и проходит до applier.
+     * Wire-формат поверх `restoredTreeResponse` — подтверждает, что `RemoteConfigChangesResponse`
+     * реально десериализуется и проходит до applier.
      */
     private fun restoredTreeDeltaJson(): String = """
         {

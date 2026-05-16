@@ -21,10 +21,6 @@ insertInspection:
 INSERT INTO inspections (id, assignment_id, route_id, status, started_at, completed_at, created_at, updated_at, sync_status)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
--- Applies a server copy of an inspection following the merge rule (§1.3 of
--- Waypoint 11): INSERT a new row as 'synced', or UPDATE an existing row only
--- if it is already 'synced'. Rows with pending/retry/rejected sync_status are
--- left untouched (their unsynced local edits must not be clobbered).
 upsertFromServer:
 INSERT INTO inspections (
     id, assignment_id, route_id, status, started_at, completed_at,

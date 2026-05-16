@@ -34,12 +34,9 @@ interface PhotoStorage {
     fun delete(id: String)
 
     /**
-     * Insert metadata for a server-restored photo. `file_uri` stays `null` until the file
-     * is downloaded; the row is marked `synced` immediately. `storage_key` is not provided:
-     * the download endpoint takes `photoId`, and on conflict any real `storage_key` already
-     * stored locally for a previously-uploaded row is preserved. On conflict with an existing
-     * row, the merge rule (Waypoint 11 §1.3) applies — pending/retry/rejected rows are
-     * preserved untouched.
+     * Metadata-only insert; `file_uri` stays null until the file is downloaded.
+     * `storage_key` is omitted: on conflict a real local `storage_key` from a prior upload
+     * is preserved. Same merge predicate as [applyServerInspection].
      */
     @Suppress("LongParameterList")
     fun insertRestoredPhoto(

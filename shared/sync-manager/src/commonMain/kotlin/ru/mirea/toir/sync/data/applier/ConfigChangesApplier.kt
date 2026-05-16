@@ -115,10 +115,7 @@ internal class ConfigChangesApplier(
             )
         }
 
-        // Восстановление пользовательских данных в delta (Waypoint 11 §1.6, Phase 6).
-        // Правило мёржа §1.3 полностью реализовано в SQL (`upsertFromServer` /
-        // `insertRestoredPhoto`) — pending/retry/rejected строки не затираются.
-        // Порядок сверху вниз по FK: inspections → IER → CIR → photos.
+        // Порядок применения сверху вниз по FK: inspections → IER → CIR → photos.
         response.inspections.forEach { inspection ->
             inspectionStorage.applyServerInspection(
                 id = inspection.id,
@@ -190,11 +187,9 @@ internal class ConfigChangesApplier(
             }
 
     /**
-     * Backend `InspectionSyncDto.status` приходит строкой (SyncPushRequest.kt в toir-backend).
-     * Имена совпадают с `LocalInspectionStatus.localValue`. Неизвестная строка → PLANNED
-     * с warning-логом: безопаснее «вернуть как запланирован», чем уронить delta.
-     * Дублирует одноимённый mapper в `BootstrapRepositoryImpl` намеренно (см. Waypoint 11
-     * Phase 6 §6.1): три строки на модуль — дешевле кросс-модульной зависимости.
+     * Неизвестная строка статуса → PLANNED с warning-логом: безопаснее вернуть как запланирован,
+     * чем уронить delta. Дублирует mapper в `BootstrapRepositoryImpl` — три строки на модуль
+     * дешевле кросс-модульной зависимости.
      */
     private fun String.toLocalInspectionStatus(): LocalInspectionStatus =
         LocalInspectionStatus.entries.firstOrNull { it.localValue == this }

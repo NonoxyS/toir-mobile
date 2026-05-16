@@ -8,12 +8,9 @@ import ru.mirea.toir.core.database.ToirDatabase
 
 internal actual class DatabaseDriverFactory(private val context: Context) {
     /**
-     * Использует requery's bundled SQLite (~3.49) вместо системного. На Android API 26-29
-     * (Android 8/9/10) системный SQLite — 3.19/3.22, в нём нет поддержки `INSERT ... ON
-     * CONFLICT DO UPDATE` (UPSERT, доступен с 3.24). Эти запросы есть в `Inspection.sq`,
-     * `InspectionEquipmentResult.sq`, `ChecklistItemResult.sq`, `Photo.sq` — мёрж-правило
-     * Waypoint 11 §1.3. Без bundle падало бы в рантайме на старых устройствах.
-     * APK тяжелее на ~1.5 МБ; iOS не затронут — там нативный SQLite ≥ 3.40.
+     * Bundled SQLite ~3.49 через requery: системный на Android API 26-29 — 3.19/3.22, без
+     * поддержки `INSERT ... ON CONFLICT DO UPDATE` (нужен с 3.24, используется в .sq merge-запросах).
+     * iOS не затронут — нативный SQLite ≥ 3.40. APK +~1.5 МБ.
      */
     actual fun create(): SqlDriver =
         AndroidSqliteDriver(

@@ -156,9 +156,8 @@ interface InspectionStorage {
     ): Flow<List<LocalChecklistItemResult>>
 
     /**
-     * Apply a server copy of an inspection following the merge rule (Waypoint 11 §1.3):
-     * insert when absent or update only if the local row is already `synced`;
-     * pending/retry/rejected rows are preserved untouched.
+     * Insert when absent, update only if the local row is `synced`. Rows in pending/retry/rejected
+     * stay untouched — local unsynced edits must not be clobbered.
      */
     @Suppress("LongParameterList")
     fun applyServerInspection(

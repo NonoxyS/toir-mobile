@@ -45,10 +45,8 @@ internal class BootstrapRepositoryImpl(
                 tryBlock = {
                     val response = apiClient.fetchBootstrap().getOrThrow()
 
-                    // Один SQLDelight-транзакция оборачивает конфиг + восстановление,
-                    // чтобы параллельный push из SyncManager (Connectivity/Periodic)
-                    // не сменил sync_status между чтением и записью (Waypoint 11 §1.4).
-                    // Порядок: конфиг → inspections → IER → CIR → photos (сверху вниз по FK).
+                    // Одна транзакция на конфиг + restore: параллельный push из SyncManager
+                    // не должен сменить sync_status между чтением и записью.
                     transactionRunner.transactional {
                         response.user?.let { remoteUser ->
                             userStorage.upsert(
@@ -153,12 +151,6 @@ internal class BootstrapRepositoryImpl(
                             value = response.serverTime,
                         )
 
-                        // Восстановление пользовательских данных. Правило мёржа Waypoint 11 §1.3
-                        // полностью реализовано в SQL (`upsertFromServer` в Inspection.sq /
-                        // InspectionEquipmentResult.sq / ChecklistItemResult.sq и
-                        // `insertRestoredPhoto` в Photo.sq): на конфликте UPDATE срабатывает
-                        // только для строки со `sync_status = 'synced'`. Локальные pending/retry/
-                        // rejected не затираются — никакой проверки в Kotlin тут не нужно.
                         response.inspections.forEach { inspection ->
                             inspectionStorage.applyServerInspection(
                                 id = inspection.id,

@@ -16,12 +16,9 @@ internal class BootstrapExecutor(
     private val bootstrapRepository: BootstrapRepository,
     private val authRepository: AuthRepository,
     /**
-     * После успешного восстановления данных в bootstrap нужно запустить фоновый цикл,
-     * чтобы Phase 5 (`SyncRepository.downloadMissingPhotos`) докачала файлы
-     * восстановленных фото (`file_uri` = NULL после `PhotoStorage.insertRestoredPhoto`).
-     * Передаётся лямбдой, а не `SyncManager`-зависимостью, чтобы избежать тестовых
-     * приседаний с `internal constructor` SyncManager-а и оставить executor тонким.
-     * DI собирает её как `{ syncManager.syncNow(SyncTrigger.Bootstrap) }`.
+     * Лямбда, чтобы не тащить `SyncManager` (у него `internal constructor`) в executor.
+     * DI собирает как `{ syncManager.syncNow(SyncTrigger.Bootstrap) }` — фоном дочитывает
+     * файлы восстановленных фото.
      */
     private val triggerBackgroundSync: () -> Unit,
     mainDispatcher: CoroutineDispatcher,
@@ -48,10 +45,7 @@ internal class BootstrapExecutor(
         }
         when (bootstrapRepository.loadAndSaveBootstrap()) {
             BootstrapResult.Success -> {
-                // Bootstrap мог восстановить photo-метаданные с `file_uri = NULL`.
-                // Триггерим фоновый sync — Phase 5 (`downloadMissingPhotos`)
-                // подхватит и докачает файлы. Лямбда возвращает Job сразу,
-                // не блокирует переход на список маршрутов.
+                // Фоновая докачка файлов восстановленных фото; не блокирует переход.
                 triggerBackgroundSync()
                 dispatch(Message.ClearLoading)
                 publish(Label.NavigateToRoutesList)

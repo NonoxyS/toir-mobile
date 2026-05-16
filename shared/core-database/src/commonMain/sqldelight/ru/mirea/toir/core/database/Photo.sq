@@ -20,13 +20,8 @@ insertPhoto:
 INSERT INTO photos (id, checklist_item_result_id, file_uri, taken_at, sync_status, storage_key)
 VALUES (?, ?, ?, ?, ?, ?);
 
--- Inserts metadata for a server-restored photo. file_uri stays NULL until the
--- file is downloaded (see selectMissingFiles / setFileUri). storage_key is not
--- included here: the download endpoint takes photoId, and on conflict we must
--- preserve any real storage_key that a previously-uploaded local row already
--- carries. On conflict with an existing row, applies the merge rule (§1.3 of
--- Waypoint 11): UPDATE only if the local row is already 'synced';
--- pending/retry/rejected rows are preserved.
+-- storage_key omitted: on conflict, a real local storage_key from a prior upload must
+-- survive (download endpoint takes photoId anyway).
 insertRestoredPhoto:
 INSERT INTO photos (
     id, checklist_item_result_id, file_uri, taken_at, sync_status,

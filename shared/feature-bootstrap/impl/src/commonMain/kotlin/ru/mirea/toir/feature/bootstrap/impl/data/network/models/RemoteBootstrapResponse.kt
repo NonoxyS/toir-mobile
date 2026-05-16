@@ -116,11 +116,6 @@ internal data class RemoteBootstrapChecklistItem(
     @SerialName("updatedAt") val updatedAt: String,
 )
 
-/**
- * Восстановление незавершённого обхода с сервера. Mirrors backend `InspectionSyncDto`
- * from `~/IdeaProjects/toir-backend/src/main/kotlin/ru/mirea/toir/api/dto/mobile/SyncPushRequest.kt`.
- * Применяется правилом мёржа Waypoint 11 §1.3 (см. `InspectionStorage.applyServerInspection`).
- */
 @Serializable
 internal data class RemoteBootstrapInspection(
     @SerialName("id") val id: String,
@@ -133,7 +128,6 @@ internal data class RemoteBootstrapInspection(
     @SerialName("updatedAt") val updatedAt: String,
 )
 
-/** Mirrors backend `InspectionEquipmentResultSyncDto`. */
 @Serializable
 internal data class RemoteBootstrapEquipmentResult(
     @SerialName("id") val id: String,
@@ -147,7 +141,6 @@ internal data class RemoteBootstrapEquipmentResult(
     @SerialName("updatedAt") val updatedAt: String,
 )
 
-/** Mirrors backend `ChecklistItemResultSyncDto`. */
 @Serializable
 internal data class RemoteBootstrapChecklistItemResult(
     @SerialName("id") val id: String,
@@ -162,10 +155,7 @@ internal data class RemoteBootstrapChecklistItemResult(
     @SerialName("updatedAt") val updatedAt: String,
 )
 
-/**
- * Mirrors backend `PhotoSyncDto`. Метаданные без байтов файла — бинарь скачивается
- * отдельно фоном в Phase 5 (`SyncRepository.downloadMissingPhotos`).
- */
+/** Метаданные фото без байтов — файл докачивается через [SyncRepository.downloadMissingPhotos]. */
 @Serializable
 internal data class RemoteBootstrapPhoto(
     @SerialName("id") val id: String,

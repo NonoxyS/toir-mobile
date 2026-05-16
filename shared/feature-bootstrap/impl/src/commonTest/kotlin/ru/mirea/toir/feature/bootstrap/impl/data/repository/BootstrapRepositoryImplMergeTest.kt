@@ -36,16 +36,8 @@ import ru.mirea.toir.feature.bootstrap.impl.data.repository.fixtures.testDispatc
 import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapResult
 
 /**
- * Verifies Waypoint 11 §1.3 merge rule end-to-end through `BootstrapRepositoryImpl`:
- *  - INSERT when missing
- *  - UPDATE when local is `synced`
- *  - SKIP (preserve local) when local is `pending`/`retry_scheduled`/`rejected`
- *
- * The merge logic itself lives in SQL (`upsertFromServer` in Inspection.sq /
- * InspectionEquipmentResult.sq / ChecklistItemResult.sq and `insertRestoredPhoto`
- * in Photo.sq). These tests prove the repository wires up those SQL calls correctly
- * AND wraps them in a transaction, so the contract holds at the layer that the
- * rest of the app sees.
+ * End-to-end merge contract through `BootstrapRepositoryImpl`: INSERT when missing,
+ * UPDATE when local is `synced`, SKIP (preserve local) on pending/retry_scheduled/rejected.
  */
 internal class BootstrapRepositoryImplMergeTest {
 
@@ -112,7 +104,7 @@ internal class BootstrapRepositoryImplMergeTest {
         assertEquals(1, photos.size)
         val photo = photos.single()
         assertEquals(LocalSyncStatus.SYNCED, photo.syncStatus)
-        assertEquals(null, photo.fileUri) // file is downloaded later in Phase 5
+        assertEquals(null, photo.fileUri) // file is downloaded asynchronously
         assertEquals("photo.jpg", photo.fileName)
         assertEquals(1024L, photo.sizeBytes)
     }
@@ -381,11 +373,8 @@ internal class BootstrapRepositoryImplMergeTest {
     }
 
     /**
-     * Bonus check: photo merge follows the same rule. Local `pending` photo
-     * (uploaded-locally, not yet pushed) must NOT be touched by
-     * `insertRestoredPhoto` even when the server returns a same-id photo. This
-     * is the Phase 3 followup behaviour wired through bootstrap; included here so
-     * a regression that drops the photo branch surfaces immediately.
+     * Local `pending` photo (uploaded-locally, not yet pushed) must NOT be touched by
+     * `insertRestoredPhoto` even when the server returns a same-id photo.
      */
     @Test
     fun `pending photo — server metadata does not overwrite pending row`() = runTest {
