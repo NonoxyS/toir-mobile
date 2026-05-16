@@ -1,82 +1,73 @@
 package ru.mirea.toir.feature.routes.list.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.stringResource
+import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.feature.routes.list.presentation.models.UiPendingInspection
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRejectionReason
 import ru.mirea.toir.feature.routes.list.presentation.models.UiSyncIndicator
 import ru.mirea.toir.res.MR
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 @Composable
 internal fun PendingInspectionsSection(
     indicator: UiSyncIndicator,
     modifier: Modifier = Modifier,
 ) {
+    val colors = ToirTheme.colors
+    if (indicator.pendingInspections.isEmpty()) {
+        Text(
+            text = stringResource(MR.strings.sync_status_pending_in_background),
+            style = ToirTheme.typography.bodyMedium,
+            color = colors.textSecondary,
+            modifier = modifier,
+        )
+        return
+    }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = stringResource(MR.strings.sync_status_pending_list_title),
-            style = MaterialTheme.typography.titleMedium,
+            style = ToirTheme.typography.bodyLarge,
+            color = colors.textPrimary,
         )
-        when {
-            indicator.pendingInspections.isEmpty() && !indicator.hasPending ->
-                Text(stringResource(MR.strings.sync_status_pending_list_empty))
-
-            indicator.pendingInspections.isEmpty() && indicator.hasPending ->
-                Text(stringResource(MR.strings.sync_status_pending_in_background))
-
-            else -> indicator.pendingInspections.forEach { item ->
-                PendingInspectionCard(item)
-            }
+        indicator.pendingInspections.forEach { item ->
+            PendingInspectionCard(item)
         }
     }
 }
 
-@OptIn(ExperimentalTime::class)
 @Composable
 private fun PendingInspectionCard(item: UiPendingInspection) {
-    ElevatedCard {
-        Column(
-            modifier = Modifier.padding(PaddingValues(12.dp)),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
+    val colors = ToirTheme.colors
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(ToirTheme.shapes.md)
+            .background(colors.surface2)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = item.routeName ?: item.inspectionId,
+            style = ToirTheme.typography.bodyLarge,
+            color = colors.textPrimary,
+        )
+        item.rejectionReason?.let { reason ->
+            val reasonText = stringResource(reason.toMessageRes())
+            val prefix = stringResource(MR.strings.sync_status_pending_rejected_prefix)
             Text(
-                text = item.routeName ?: item.inspectionId,
-                style = MaterialTheme.typography.bodyLarge,
+                text = "$prefix: $reasonText",
+                color = colors.error,
+                style = ToirTheme.typography.caption,
             )
-            item.completedAt?.let { completedAt ->
-                Text(
-                    text = completedAt.toString(),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            val rejectionReason = item.rejectionReason
-            when {
-                rejectionReason != null -> {
-                    val reasonText = stringResource(rejectionReason.toMessageRes())
-                    val prefix = stringResource(MR.strings.sync_status_pending_rejected_prefix)
-                    Text(
-                        text = "$prefix: $reasonText",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-
-                item.attemptCount > 0 -> Text(
-                    text = stringResource(MR.strings.sync_status_pending_attempts, item.attemptCount),
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
         }
     }
 }

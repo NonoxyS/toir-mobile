@@ -141,9 +141,7 @@
     <string name="sync_status_never">Синхронизации ещё не было</string>
     <string name="sync_status_running">Идёт синхронизация…</string>
     <string name="sync_status_pending_list_title">Ожидают отправки</string>
-    <string name="sync_status_pending_list_empty">Все обходы синхронизированы</string>
     <string name="sync_status_pending_in_background">Данные отправляются в фоне</string>
-    <string name="sync_status_pending_attempts">попыток: %1$d</string>
     <string name="sync_status_pending_rejected_prefix">Обход отвергнут</string>
     <string name="sync_rejection_invalid_assignment_id">недопустимое задание</string>
     <string name="sync_rejection_invalid_route_id">недопустимый маршрут</string>
