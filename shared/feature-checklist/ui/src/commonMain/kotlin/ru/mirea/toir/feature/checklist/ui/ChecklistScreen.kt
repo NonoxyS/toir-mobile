@@ -126,6 +126,7 @@ private fun ChecklistScreenContent(
                     isValidationError = state.isValidationError,
                     isPhotoValidationError = state.isPhotoValidationError,
                     onFinishChecklist = onFinishChecklist,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
         },

@@ -25,10 +25,11 @@ internal fun PhotoCaptureFooter(
     isLimitReached: Boolean,
     onTakePhoto: () -> Unit,
     onConfirm: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val colors = ToirTheme.colors
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(colors.background)
             .padding(horizontal = 16.dp, vertical = 16.dp),

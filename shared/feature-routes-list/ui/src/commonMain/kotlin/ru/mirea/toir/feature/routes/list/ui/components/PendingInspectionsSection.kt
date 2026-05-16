@@ -11,11 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.stringResource
-import kotlin.time.ExperimentalTime
-import ru.mirea.toir.res.MR
 import ru.mirea.toir.feature.routes.list.presentation.models.UiPendingInspection
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRejectionReason
 import ru.mirea.toir.feature.routes.list.presentation.models.UiSyncIndicator
+import ru.mirea.toir.res.MR
+import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -31,8 +31,10 @@ internal fun PendingInspectionsSection(
         when {
             indicator.pendingInspections.isEmpty() && !indicator.hasPending ->
                 Text(stringResource(MR.strings.sync_status_pending_list_empty))
+
             indicator.pendingInspections.isEmpty() && indicator.hasPending ->
                 Text(stringResource(MR.strings.sync_status_pending_in_background))
+
             else -> indicator.pendingInspections.forEach { item ->
                 PendingInspectionCard(item)
             }
@@ -69,6 +71,7 @@ private fun PendingInspectionCard(item: UiPendingInspection) {
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
+
                 item.attemptCount > 0 -> Text(
                     text = stringResource(MR.strings.sync_status_pending_attempts, item.attemptCount),
                     style = MaterialTheme.typography.bodySmall,
@@ -83,6 +86,7 @@ private fun UiRejectionReason.toMessageRes() = when (this) {
     UiRejectionReason.INVALID_ROUTE_ID -> MR.strings.sync_rejection_invalid_route_id
     UiRejectionReason.ROUTE_ASSIGNMENT_NOT_FOUND_OR_FORBIDDEN ->
         MR.strings.sync_rejection_route_assignment_not_found
+
     UiRejectionReason.ROUTE_ID_MISMATCH -> MR.strings.sync_rejection_route_id_mismatch
     UiRejectionReason.INSPECTION_NOT_FOUND -> MR.strings.sync_rejection_inspection_not_found
     UiRejectionReason.ROUTE_POINT_NOT_FOUND -> MR.strings.sync_rejection_route_point_not_found

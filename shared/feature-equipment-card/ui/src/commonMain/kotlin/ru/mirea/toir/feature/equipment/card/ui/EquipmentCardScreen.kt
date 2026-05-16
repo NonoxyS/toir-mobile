@@ -84,7 +84,10 @@ internal fun EquipmentCardScreen(
         },
         bottomBar = {
             if (!state.isLoading && state.equipmentResultId != null) {
-                EquipmentCardOpenChecklistButton(onClick = viewModel::onOpenChecklist)
+                EquipmentCardOpenChecklistButton(
+                    onClick = viewModel::onOpenChecklist,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
             }
         },
     ) { paddingValues ->

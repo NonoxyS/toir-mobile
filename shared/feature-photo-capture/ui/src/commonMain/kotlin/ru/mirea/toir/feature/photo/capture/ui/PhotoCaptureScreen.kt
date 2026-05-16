@@ -132,6 +132,7 @@ internal fun PhotoCaptureScreen(
                             isLimitReached = isLimitReached,
                             onTakePhoto = cameraLauncher,
                             onConfirm = viewModel::onConfirm,
+                            modifier = Modifier.padding(bottom = 16.dp)
                         )
                     },
                 ) { paddingValues ->
