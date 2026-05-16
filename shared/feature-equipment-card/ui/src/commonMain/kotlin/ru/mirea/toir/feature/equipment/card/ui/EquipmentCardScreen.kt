@@ -163,7 +163,6 @@ private fun PreviewEquipmentCardScreenContent() {
                     state = UiEquipmentCardState(
                         code = "EQ-001",
                         name = "Насос циркуляционный",
-                        type = "Насос",
                         locationName = "Котельная, 2 этаж",
                         status = UiEquipmentResultStatus.IN_PROGRESS,
                         equipmentResultId = "res-001",

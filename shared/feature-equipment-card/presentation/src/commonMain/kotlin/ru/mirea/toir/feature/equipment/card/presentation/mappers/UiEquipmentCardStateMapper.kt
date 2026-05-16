@@ -14,7 +14,6 @@ internal class UiEquipmentCardStateMapperImpl : UiEquipmentCardStateMapper {
         return UiEquipmentCardState(
             code = card?.code.orEmpty(),
             name = card?.name.orEmpty(),
-            type = card?.type.orEmpty(),
             locationName = card?.locationName.orEmpty(),
             status = card?.inspectionStatus?.toUi() ?: UiEquipmentResultStatus.NOT_STARTED,
             equipmentResultId = card?.equipmentResultId,

@@ -62,7 +62,6 @@
     <!-- equipment_card -->
     <string name="equipment_card_code">Код</string>
     <string name="equipment_card_name">Наименование</string>
-    <string name="equipment_card_type">Тип</string>
     <string name="equipment_card_location">Локация</string>
     <string name="equipment_card_status">Статус</string>
     <string name="equipment_card_button_open_checklist">Открыть чек-лист</string>
