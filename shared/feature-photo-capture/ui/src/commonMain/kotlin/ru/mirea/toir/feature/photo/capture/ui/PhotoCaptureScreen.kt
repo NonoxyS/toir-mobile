@@ -147,7 +147,11 @@ internal fun PhotoCaptureScreen(
                     )
                 }
             } else {
-                val index = state.photos.indexOf(currentPreview).takeIf { it >= 0 } ?: 0
+                // Preview is only opened for tiles with a non-null fileUri (placeholder tiles
+                // ignore taps), so we look up by matching fileUri to compute the index.
+                val index = state.photos
+                    .indexOfFirst { it.fileUri == currentPreview }
+                    .takeIf { it >= 0 } ?: 0
                 PhotoPreviewScreen(
                     photoUri = currentPreview,
                     photoIndex = index + 1,

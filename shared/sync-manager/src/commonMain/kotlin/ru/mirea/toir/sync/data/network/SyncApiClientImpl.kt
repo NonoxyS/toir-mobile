@@ -4,14 +4,17 @@ import io.github.aakira.napier.Napier
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
 import ru.mirea.toir.common.extensions.wrapResultSuccess
 import ru.mirea.toir.core.network.ktor.KtorClient
+import ru.mirea.toir.sync.data.network.models.DownloadedPhoto
 import ru.mirea.toir.sync.data.network.models.RemoteConfigChangesResponse
 import ru.mirea.toir.sync.data.network.models.RemotePhotoUploadResponse
 import ru.mirea.toir.sync.data.network.models.RemoteSyncPushRequest
@@ -73,4 +76,22 @@ internal class SyncApiClientImpl(
             success = { it.wrapResultSuccess() },
             loggingErrorMessage = "fetchConfigChanges failed",
         )
+
+    override suspend fun downloadPhoto(photoId: String): Result<DownloadedPhoto> = coRunCatching(
+        tryBlock = {
+            // GET /api/v1/mobile/photos/{photoId} returns raw bytes. Auth (JWT bearer) is
+            // wired in the shared Ktor client config — mirrors uploadPhoto exactly.
+            val response = ktorClient.get("/api/v1/mobile/photos/$photoId")
+            if (!response.status.isSuccess()) {
+                error("downloadPhoto failed: status=${response.status}")
+            }
+            val bytes = response.bodyAsBytes()
+            val mime = response.headers[HttpHeaders.ContentType]
+            DownloadedPhoto(bytes = bytes, mimeType = mime).wrapResultSuccess()
+        },
+        catchBlock = { throwable ->
+            Napier.e(message = "downloadPhoto failed for id=$photoId", throwable = throwable)
+            throwable.wrapResultFailure()
+        },
+    )
 }

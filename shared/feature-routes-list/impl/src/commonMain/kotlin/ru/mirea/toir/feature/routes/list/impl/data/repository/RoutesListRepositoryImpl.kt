@@ -161,6 +161,13 @@ internal class RoutesListRepositoryImpl(
             }
         }
         inspectionStatus == LocalInspectionStatus.PARTIALLY_COMPLETED -> RouteAssignmentStatus.PARTIALLY_COMPLETED
+        // Сервер говорит, что инспекция идёт, но локальной записи нет — например, её начали
+        // на другом устройстве, а pull-делта пока не пришла. Создавать новую запись здесь
+        // означало бы породить дубликат. Сигнализируем UI явным состоянием, чтобы юзер
+        // мог дёрнуть синхронизацию вместо «Продолжить» с несуществующим inspectionId.
+        assignmentStatus == LocalRouteAssignmentStatus.IN_PROGRESS ||
+            assignmentStatus == LocalRouteAssignmentStatus.PARTIALLY_COMPLETED ->
+            RouteAssignmentStatus.SYNC_REQUIRED
         else -> assignmentStatus.toDomain()
     }
 

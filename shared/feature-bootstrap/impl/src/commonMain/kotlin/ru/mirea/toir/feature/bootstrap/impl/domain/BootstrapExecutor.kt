@@ -15,6 +15,12 @@ import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapResult
 internal class BootstrapExecutor(
     private val bootstrapRepository: BootstrapRepository,
     private val authRepository: AuthRepository,
+    /**
+     * Лямбда, чтобы не тащить `SyncManager` (у него `internal constructor`) в executor.
+     * DI собирает как `{ syncManager.syncNow(SyncTrigger.Bootstrap) }` — фоном дочитывает
+     * файлы восстановленных фото.
+     */
+    private val triggerBackgroundSync: () -> Unit,
     mainDispatcher: CoroutineDispatcher,
 ) : BaseExecutor<Intent, Unit, State, Message, Label>(
     mainContext = mainDispatcher,
@@ -39,6 +45,8 @@ internal class BootstrapExecutor(
         }
         when (bootstrapRepository.loadAndSaveBootstrap()) {
             BootstrapResult.Success -> {
+                // Фоновая докачка файлов восстановленных фото; не блокирует переход.
+                triggerBackgroundSync()
                 dispatch(Message.ClearLoading)
                 publish(Label.NavigateToRoutesList)
             }

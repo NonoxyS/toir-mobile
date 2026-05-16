@@ -58,6 +58,7 @@ internal fun RoutesListScreen(
             onRefresh = viewModel::onRefresh,
             onStartInspection = viewModel::onStartInspection,
             onContinueInspection = viewModel::onContinueInspection,
+            onSyncRequiredAction = viewModel::onSyncNowClicked,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
@@ -123,6 +124,7 @@ private fun PreviewRoutesListScreenLoading() {
                 onRefresh = {},
                 onStartInspection = {},
                 onContinueInspection = {},
+                onSyncRequiredAction = {},
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
@@ -186,6 +188,7 @@ private fun PreviewRoutesListScreenContent() {
                 onRefresh = {},
                 onStartInspection = {},
                 onContinueInspection = {},
+                onSyncRequiredAction = {},
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
@@ -210,6 +213,7 @@ private fun PreviewRoutesListScreenError() {
                 onRefresh = {},
                 onStartInspection = {},
                 onContinueInspection = {},
+                onSyncRequiredAction = {},
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),

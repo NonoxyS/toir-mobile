@@ -38,6 +38,7 @@ internal fun RouteAssignmentCard(
     item: UiRouteAssignment,
     onStartClick: () -> Unit,
     onContinueClick: () -> Unit,
+    onSyncClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = ToirTheme.colors
@@ -69,16 +70,25 @@ internal fun RouteAssignmentCard(
             RouteCardHeader(item = item)
             Spacer4()
             RouteCardSubtitle(routeNumber = item.routeNumber)
-            Spacer10()
-            RouteCardProgress(item = item)
-            Spacer4()
-            RouteCardProgressText(completedPoints = item.completedPoints, totalPoints = item.totalPoints)
-            Spacer10()
-            RouteCardMetadata(item = item)
+            if (item.status == UiRouteStatus.SYNC_REQUIRED) {
+                Spacer10()
+                RouteCardSyncRequiredHint()
+            } else {
+                Spacer10()
+                RouteCardProgress(item = item)
+                Spacer4()
+                RouteCardProgressText(
+                    completedPoints = item.completedPoints,
+                    totalPoints = item.totalPoints,
+                )
+                Spacer10()
+                RouteCardMetadata(item = item)
+            }
             RouteCardAction(
                 status = item.status,
                 onStartClick = onStartClick,
                 onContinueClick = onContinueClick,
+                onSyncClick = onSyncClick,
             )
         }
     }
@@ -130,6 +140,7 @@ private fun RouteCardProgress(
         UiRouteStatus.IN_PROGRESS -> colors.warning
         UiRouteStatus.ASSIGNED -> colors.border
         UiRouteStatus.CANCELLED -> colors.border
+        UiRouteStatus.SYNC_REQUIRED -> colors.sync
     }
 
     LinearProgressIndicator(
@@ -199,6 +210,7 @@ private fun ColumnScope.RouteCardAction(
     status: UiRouteStatus,
     onStartClick: () -> Unit,
     onContinueClick: () -> Unit,
+    onSyncClick: () -> Unit,
 ) {
     when (status) {
         UiRouteStatus.ASSIGNED -> {
@@ -220,8 +232,43 @@ private fun ColumnScope.RouteCardAction(
             )
         }
 
+        UiRouteStatus.SYNC_REQUIRED -> {
+            Spacer12()
+            ToirSecondaryButton(
+                onClick = onSyncClick,
+                text = stringResource(MR.strings.routes_list_button_sync),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
         UiRouteStatus.COMPLETED,
         UiRouteStatus.CANCELLED -> Unit
+    }
+}
+
+@Composable
+private fun RouteCardSyncRequiredHint(modifier: Modifier = Modifier) {
+    val colors = ToirTheme.colors
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(ToirTheme.shapes.sm)
+            .background(colors.syncSubtle)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            painter = painterResource(MR.images.ic_sync_alt),
+            contentDescription = null,
+            modifier = Modifier.size(18.dp),
+            tint = colors.sync,
+        )
+        Text(
+            text = stringResource(MR.strings.routes_list_sync_required_hint),
+            style = ToirTheme.typography.caption,
+            color = colors.sync,
+        )
     }
 }
 
@@ -256,6 +303,12 @@ private fun RouteStatusBadge(
         status == UiRouteStatus.COMPLETED -> Triple(
             colors.successSubtle,
             colors.success,
+            stringResource(status.stringResource)
+        )
+
+        status == UiRouteStatus.SYNC_REQUIRED -> Triple(
+            colors.syncSubtle,
+            colors.sync,
             stringResource(status.stringResource)
         )
 

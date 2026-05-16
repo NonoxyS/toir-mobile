@@ -34,6 +34,7 @@ import ru.mirea.toir.sync.data.network.models.RemoteSyncInspection
 import ru.mirea.toir.sync.data.network.models.RemoteSyncPushRequest
 import ru.mirea.toir.sync.data.network.models.RemoteSyncRejected
 import ru.mirea.toir.sync.data.network.models.RemoteSyncRejectedEntityType
+import ru.mirea.toir.sync.data.PhotoFileWriter
 import ru.mirea.toir.sync.data.readFileBytes
 import ru.mirea.toir.sync.domain.DomainPendingInspection
 import ru.mirea.toir.sync.domain.SyncFailureReason
@@ -58,6 +59,7 @@ internal class SyncRepositoryImpl(
     private val syncMetaStorage: SyncMetaStorage,
     private val tokenStorage: TokenStorage,
     private val configChangesApplier: ConfigChangesApplier,
+    private val photoFileWriter: PhotoFileWriter,
     private val transactionRunner: TransactionRunner,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : SyncRepository {
@@ -160,7 +162,14 @@ internal class SyncRepositoryImpl(
                     val pending = photoStorage.selectPendingPhotos(now.toString())
                     var uploaded = 0L
                     pending.forEach { photo ->
-                        val bytes = readFileBytes(photo.fileUri)
+                        // A pending photo must have a local file_uri set by the capture flow.
+                        // Restored photos are inserted with file_uri = null but sync_status = 'synced',
+                        // so they never appear here. Defensive null-skip keeps the type system honest.
+                        val fileUri = photo.fileUri ?: run {
+                            Napier.w(message = "Pending photo without fileUri skipped: id=${photo.id}")
+                            return@forEach
+                        }
+                        val bytes = readFileBytes(fileUri)
                         syncApiClient.uploadPhoto(
                             photoId = photo.id,
                             checklistItemResultId = photo.checklistItemResultId,
@@ -189,6 +198,42 @@ internal class SyncRepositoryImpl(
                 },
                 catchBlock = { throwable ->
                     Napier.e(message = "uploadPendingPhotos failed", throwable = throwable)
+                    throwable.wrapResultFailure()
+                },
+            )
+        }
+
+    override suspend fun downloadMissingPhotos(): Result<Long> =
+        withContext(coroutineDispatchers.io) {
+            coRunCatching(
+                tryBlock = {
+                    val missing = photoStorage.selectMissingFiles()
+                    var downloaded = 0L
+                    missing.forEach { photo ->
+                        // Per-photo isolation: any failure (HTTP / disk / parse) is logged and we
+                        // continue with the next photo. The row stays in selectMissingFiles until
+                        // file_uri is set, so the next sync cycle retries it automatically.
+                        syncApiClient.downloadPhoto(photo.id)
+                            .mapCatching { remote ->
+                                val localUri = photoFileWriter.write(
+                                    photoId = photo.id,
+                                    bytes = remote.bytes,
+                                    mimeType = remote.mimeType,
+                                )
+                                photoStorage.setFileUri(id = photo.id, fileUri = localUri)
+                                downloaded++
+                            }
+                            .onFailure { throwable ->
+                                Napier.e(
+                                    message = "downloadPhoto/write failed for id=${photo.id}",
+                                    throwable = throwable,
+                                )
+                            }
+                    }
+                    downloaded.wrapResultSuccess()
+                },
+                catchBlock = { throwable ->
+                    Napier.e(message = "downloadMissingPhotos failed", throwable = throwable)
                     throwable.wrapResultFailure()
                 },
             )

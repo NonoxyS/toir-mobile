@@ -11,11 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import ru.mirea.toir.feature.photo.capture.presentation.models.UiPhotoEntry
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun PhotoCaptureContent(
-    photos: ImmutableList<String>,
+    photos: ImmutableList<UiPhotoEntry>,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     onPhotoTap: (uri: String) -> Unit,

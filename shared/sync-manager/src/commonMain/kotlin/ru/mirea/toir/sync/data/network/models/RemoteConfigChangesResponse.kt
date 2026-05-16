@@ -12,6 +12,12 @@ internal data class RemoteConfigChangesResponse(
     @SerialName("locations") val locations: List<RemoteConfigLocation> = emptyList(),
     @SerialName("checklists") val checklists: List<RemoteConfigChecklist> = emptyList(),
     @SerialName("checklistItems") val checklistItems: List<RemoteConfigChecklistItem> = emptyList(),
+    @SerialName("inspections") val inspections: List<RemoteConfigChangesInspection> = emptyList(),
+    @SerialName("inspectionEquipmentResults")
+    val inspectionEquipmentResults: List<RemoteConfigChangesEquipmentResult> = emptyList(),
+    @SerialName("checklistItemResults")
+    val checklistItemResults: List<RemoteConfigChangesChecklistItemResult> = emptyList(),
+    @SerialName("photos") val photos: List<RemoteConfigChangesPhoto> = emptyList(),
     @SerialName("deletedIds") val deletedIds: RemoteDeletedIds = RemoteDeletedIds(),
     @SerialName("serverTime") val serverTime: String,
 )
@@ -101,4 +107,57 @@ internal data class RemoteConfigChecklistItem(
     @SerialName("numericMax") val numericMax: Double?,
     @SerialName("orderIndex") val orderIndex: Int,
     @SerialName("updatedAt") val updatedAt: String,
+)
+
+/** Дублирует `RemoteBootstrapInspection` намеренно: модули держат свои DTO. */
+@Serializable
+internal data class RemoteConfigChangesInspection(
+    @SerialName("id") val id: String,
+    @SerialName("routeAssignmentId") val routeAssignmentId: String?,
+    @SerialName("routeId") val routeId: String,
+    @SerialName("status") val status: String,
+    @SerialName("startedAt") val startedAt: String?,
+    @SerialName("completedAt") val completedAt: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+@Serializable
+internal data class RemoteConfigChangesEquipmentResult(
+    @SerialName("id") val id: String,
+    @SerialName("inspectionId") val inspectionId: String,
+    @SerialName("equipmentId") val equipmentId: String,
+    @SerialName("routePointId") val routePointId: String,
+    @SerialName("status") val status: String,
+    @SerialName("startedAt") val startedAt: String?,
+    @SerialName("completedAt") val completedAt: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+@Serializable
+internal data class RemoteConfigChangesChecklistItemResult(
+    @SerialName("id") val id: String,
+    @SerialName("inspectionEquipmentResultId") val inspectionEquipmentResultId: String,
+    @SerialName("checklistItemId") val checklistItemId: String,
+    @SerialName("valueText") val valueText: String? = null,
+    @SerialName("valueNumber") val valueNumber: Double? = null,
+    @SerialName("valueBoolean") val valueBoolean: Boolean? = null,
+    @SerialName("selectedOption") val selectedOption: String? = null,
+    @SerialName("comment") val comment: String? = null,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+/** Метаданные фото без байтов — файл докачивается через [SyncRepository.downloadMissingPhotos]. */
+@Serializable
+internal data class RemoteConfigChangesPhoto(
+    @SerialName("id") val id: String,
+    @SerialName("checklistItemResultId") val checklistItemResultId: String,
+    @SerialName("fileName") val fileName: String,
+    @SerialName("mimeType") val mimeType: String,
+    @SerialName("sizeBytes") val sizeBytes: Long,
+    @SerialName("checksum") val checksum: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("uploadedAt") val uploadedAt: String?,
 )

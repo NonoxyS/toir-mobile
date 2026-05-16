@@ -35,10 +35,14 @@ import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import androidx.compose.ui.text.style.TextAlign
 import ru.mirea.toir.common.ui.compose.components.shared.button.ToirPrimaryButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
+import ru.mirea.toir.common.ui.compose.utils.Spacer16
+import ru.mirea.toir.common.ui.compose.utils.Spacer24
 import ru.mirea.toir.common.ui.compose.utils.Spacer4
+import ru.mirea.toir.common.ui.compose.utils.Spacer8
 import ru.mirea.toir.feature.route.points.presentation.RoutePointsViewModel
 import ru.mirea.toir.feature.route.points.presentation.models.UiEquipmentResultStatus
 import ru.mirea.toir.feature.route.points.presentation.models.UiRoutePoint
@@ -71,7 +75,7 @@ internal fun RoutePointsScreen(
         containerColor = ToirTheme.colors.background,
         topBar = { RoutePointsTopBar(state = state, onNavigateBack = onNavigateBack) },
         bottomBar = {
-            if (state.canFinish) {
+            if (state.canFinish && !state.isError) {
                 RoutePointsFinishButton(onClick = viewModel::onFinishInspection)
             }
         },
@@ -87,11 +91,7 @@ internal fun RoutePointsScreen(
                     color = ToirTheme.colors.textSecondary,
                 )
 
-                state.isError -> Text(
-                    text = stringResource(MR.strings.error_generic),
-                    style = ToirTheme.typography.bodyMedium,
-                    color = ToirTheme.colors.error,
-                )
+                state.isError -> RoutePointsError(onRetry = viewModel::onRetry)
 
                 else -> RoutePointsContent(
                     state = state,
@@ -134,7 +134,9 @@ private fun RoutePointsTopBar(
                 containerColor = colors.background,
             ),
         )
-        RoutePointsProgressHeader(state = state)
+        if (!state.isLoading && !state.isError && state.points.isNotEmpty()) {
+            RoutePointsProgressHeader(state = state)
+        }
     }
 }
 
@@ -185,6 +187,52 @@ internal fun RoutePointsContent(
                 onClick = { onPointClick(point.routePointId) },
             )
         }
+    }
+}
+
+@Composable
+private fun RoutePointsError(onRetry: () -> Unit) {
+    val colors = ToirTheme.colors
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(72.dp)
+                .clip(ToirTheme.shapes.pill)
+                .background(colors.errorSubtle),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(MR.images.ic_error_outline),
+                contentDescription = null,
+                modifier = Modifier.size(36.dp),
+                colorFilter = ColorFilter.tint(colors.error),
+            )
+        }
+        Spacer16()
+        Text(
+            text = stringResource(MR.strings.route_points_error_title),
+            style = ToirTheme.typography.headline,
+            color = colors.textPrimary,
+            textAlign = TextAlign.Center,
+        )
+        Spacer8()
+        Text(
+            text = stringResource(MR.strings.route_points_error_subtitle),
+            style = ToirTheme.typography.bodyMedium,
+            color = colors.textSecondary,
+            textAlign = TextAlign.Center,
+        )
+        Spacer24()
+        ToirPrimaryButton(
+            onClick = onRetry,
+            text = stringResource(MR.strings.route_points_button_retry),
+        )
     }
 }
 

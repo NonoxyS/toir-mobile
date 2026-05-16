@@ -80,6 +80,33 @@ internal class PhotoStorageImpl(
         queries.deletePhoto(id)
     }
 
+    override fun insertRestoredPhoto(
+        id: String,
+        checklistItemResultId: String,
+        takenAt: String,
+        fileName: String?,
+        mimeType: String?,
+        sizeBytes: Long?,
+        checksum: String?,
+    ) {
+        queries.insertRestoredPhoto(
+            id = id,
+            checklistItemResultId = checklistItemResultId,
+            takenAt = takenAt,
+            fileName = fileName,
+            mimeType = mimeType,
+            sizeBytes = sizeBytes,
+            checksum = checksum,
+        )
+    }
+
+    override fun selectMissingFiles(): List<LocalPhoto> =
+        queries.selectMissingFiles().executeAsList().map { it.toLocal() }
+
+    override fun setFileUri(id: String, fileUri: String) {
+        queries.setFileUri(fileUri = fileUri, id = id)
+    }
+
     private fun Photos.toLocal() = LocalPhoto(
         id = id,
         checklistItemResultId = checklist_item_result_id,
@@ -87,6 +114,10 @@ internal class PhotoStorageImpl(
         takenAt = taken_at,
         syncStatus = sync_status,
         storageKey = storage_key,
+        fileName = file_name,
+        mimeType = mime_type,
+        sizeBytes = size_bytes,
+        checksum = checksum,
         syncAttemptCount = sync_attempt_count,
         syncNextAttemptAt = sync_next_attempt_at,
         syncLastError = sync_last_error,

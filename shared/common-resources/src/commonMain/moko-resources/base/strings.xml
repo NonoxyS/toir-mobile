@@ -37,6 +37,9 @@
     <string name="routes_list_status_completed">Завершён</string>
     <string name="routes_list_status_partially_completed">Частично завершён</string>
     <string name="routes_list_status_cancelled">Отменён</string>
+    <string name="routes_list_status_sync_required">Нужна синхронизация</string>
+    <string name="routes_list_sync_required_hint">Маршрут начат на другом устройстве — обновите данные, чтобы продолжить</string>
+    <string name="routes_list_button_sync">Обновить</string>
     <string name="routes_list_progress">%1$d / %2$d точек</string>
     <string name="routes_list_route_number">Маршрут #%1$s</string>
 
@@ -52,6 +55,9 @@
     <string name="equipment_result_status_skipped">Пропущено</string>
     <string name="error_generic">Произошла ошибка. Попробуйте ещё раз.</string>
     <string name="route_points_progress">Точка %1$d из %2$d</string>
+    <string name="route_points_error_title">Не удалось загрузить маршрут</string>
+    <string name="route_points_error_subtitle">Проверьте подключение и повторите попытку</string>
+    <string name="route_points_button_retry">Повторить</string>
 
     <!-- equipment_card -->
     <string name="equipment_card_code">Код</string>
@@ -112,6 +118,7 @@
     <string name="photo_capture_confirm_disabled_hint">Снимите хотя бы одно фото</string>
     <string name="photo_capture_preview_title">Фото %1$d из %2$d</string>
     <string name="photo_capture_preview_close_content_description">Закрыть</string>
+    <string name="photo_capture_not_downloaded_content_description">Фото ещё не скачано</string>
     <string name="photo_capture_permission_denied">Включите доступ к камере, чтобы сделать фото</string>
     <string name="photo_capture_permission_permanently_denied">Разрешите доступ к камере в настройках устройства</string>
 

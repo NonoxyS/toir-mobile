@@ -17,6 +17,12 @@ internal data class RemoteBootstrapResponse(
     @SerialName("locations") val locations: List<RemoteBootstrapLocation> = emptyList(),
     @SerialName("checklists") val checklists: List<RemoteBootstrapChecklist> = emptyList(),
     @SerialName("checklistItems") val checklistItems: List<RemoteBootstrapChecklistItem> = emptyList(),
+    @SerialName("inspections") val inspections: List<RemoteBootstrapInspection> = emptyList(),
+    @SerialName("inspectionEquipmentResults")
+    val inspectionEquipmentResults: List<RemoteBootstrapEquipmentResult> = emptyList(),
+    @SerialName("checklistItemResults")
+    val checklistItemResults: List<RemoteBootstrapChecklistItemResult> = emptyList(),
+    @SerialName("photos") val photos: List<RemoteBootstrapPhoto> = emptyList(),
     @SerialName("serverTime") val serverTime: String,
 )
 
@@ -108,4 +114,56 @@ internal data class RemoteBootstrapChecklistItem(
     @SerialName("numericMax") val numericMax: Double?,
     @SerialName("orderIndex") val orderIndex: Int,
     @SerialName("updatedAt") val updatedAt: String,
+)
+
+@Serializable
+internal data class RemoteBootstrapInspection(
+    @SerialName("id") val id: String,
+    @SerialName("routeAssignmentId") val routeAssignmentId: String?,
+    @SerialName("routeId") val routeId: String,
+    @SerialName("status") val status: String,
+    @SerialName("startedAt") val startedAt: String?,
+    @SerialName("completedAt") val completedAt: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+@Serializable
+internal data class RemoteBootstrapEquipmentResult(
+    @SerialName("id") val id: String,
+    @SerialName("inspectionId") val inspectionId: String,
+    @SerialName("equipmentId") val equipmentId: String,
+    @SerialName("routePointId") val routePointId: String,
+    @SerialName("status") val status: String,
+    @SerialName("startedAt") val startedAt: String?,
+    @SerialName("completedAt") val completedAt: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+@Serializable
+internal data class RemoteBootstrapChecklistItemResult(
+    @SerialName("id") val id: String,
+    @SerialName("inspectionEquipmentResultId") val inspectionEquipmentResultId: String,
+    @SerialName("checklistItemId") val checklistItemId: String,
+    @SerialName("valueText") val valueText: String? = null,
+    @SerialName("valueNumber") val valueNumber: Double? = null,
+    @SerialName("valueBoolean") val valueBoolean: Boolean? = null,
+    @SerialName("selectedOption") val selectedOption: String? = null,
+    @SerialName("comment") val comment: String? = null,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("updatedAt") val updatedAt: String,
+)
+
+/** Метаданные фото без байтов — файл докачивается через [SyncRepository.downloadMissingPhotos]. */
+@Serializable
+internal data class RemoteBootstrapPhoto(
+    @SerialName("id") val id: String,
+    @SerialName("checklistItemResultId") val checklistItemResultId: String,
+    @SerialName("fileName") val fileName: String,
+    @SerialName("mimeType") val mimeType: String,
+    @SerialName("sizeBytes") val sizeBytes: Long,
+    @SerialName("checksum") val checksum: String?,
+    @SerialName("createdAt") val createdAt: String,
+    @SerialName("uploadedAt") val uploadedAt: String?,
 )

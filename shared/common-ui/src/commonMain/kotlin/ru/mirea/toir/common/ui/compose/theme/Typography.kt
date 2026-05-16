@@ -41,7 +41,7 @@ internal fun defaultTypography(): ToirTypography {
         headline = TextStyle(
             fontFamily = fontInter,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 17.sp,
+            fontSize = 18.sp,
             lineHeight = 24.sp,
         ),
         bodyLarge = TextStyle(
@@ -53,20 +53,23 @@ internal fun defaultTypography(): ToirTypography {
         bodyMedium = TextStyle(
             fontFamily = fontInter,
             fontWeight = FontWeight.Normal,
-            fontSize = 14.sp,
-            lineHeight = 21.sp,
+            fontSize = 15.sp,
+            lineHeight = 22.sp,
         ),
+        // Стиль кнопок и аналогичных управляющих элементов. Используется в полевых условиях
+        // (перчатки, яркий свет), поэтому шрифт укрупнён до 15sp SemiBold — выше М3 baseline.
         label = TextStyle(
+            fontFamily = fontInter,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 15.sp,
+            lineHeight = 20.sp,
+        ),
+        // Метаданные, бейджи, статусы. 13sp Medium вместо 12sp Normal — заметнее на смене.
+        caption = TextStyle(
             fontFamily = fontInter,
             fontWeight = FontWeight.Medium,
             fontSize = 13.sp,
-            lineHeight = 17.sp,
-        ),
-        caption = TextStyle(
-            fontFamily = fontInter,
-            fontWeight = FontWeight.Normal,
-            fontSize = 12.sp,
-            lineHeight = 16.sp,
+            lineHeight = 18.sp,
         ),
     )
 }

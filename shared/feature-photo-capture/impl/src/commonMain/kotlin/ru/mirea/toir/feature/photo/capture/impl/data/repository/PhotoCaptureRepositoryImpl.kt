@@ -12,6 +12,7 @@ import ru.mirea.toir.core.database.storage.action_log.ActionLogEntityType
 import ru.mirea.toir.core.database.storage.action_log.ActionLogType
 import ru.mirea.toir.core.database.storage.action_log.ActionLogger
 import ru.mirea.toir.core.database.storage.photo.PhotoStorage
+import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore
 import ru.mirea.toir.feature.photo.capture.impl.data.files.PhotoFileDeleter
 import ru.mirea.toir.feature.photo.capture.impl.domain.repository.PhotoCaptureRepository
 import kotlin.uuid.ExperimentalUuidApi
@@ -51,12 +52,17 @@ internal class PhotoCaptureRepositoryImpl(
             )
         }
 
-    override suspend fun getPhotos(checklistItemResultId: String): Result<List<String>> =
+    override suspend fun getPhotos(
+        checklistItemResultId: String,
+    ): Result<List<PhotoCaptureStore.PhotoEntry>> =
         withContext(coroutineDispatchers.io) {
             coRunCatching(
                 tryBlock = {
+                    // Include rows with file_uri == null: those are server-restored photos
+                    // whose file is being fetched by the sync manager. The UI renders them
+                    // as placeholders (see PhotoCaptureStore.PhotoEntry).
                     photoStorage.selectByChecklistItemResultId(checklistItemResultId)
-                        .map { it.fileUri }
+                        .map { PhotoCaptureStore.PhotoEntry(id = it.id, fileUri = it.fileUri) }
                         .wrapResultSuccess()
                 },
                 catchBlock = { throwable ->

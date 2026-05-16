@@ -20,6 +20,7 @@ import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorageImpl
 import ru.mirea.toir.sync.data.applier.ConfigChangesApplier
 import ru.mirea.toir.sync.domain.repository.SyncRepository
 import ru.mirea.toir.sync.fixtures.TestDatabase
+import ru.mirea.toir.sync.fixtures.TestPhotoFileWriter
 import ru.mirea.toir.sync.fixtures.TestSyncApi
 import ru.mirea.toir.sync.fixtures.TestSyncApi.Companion.respondJson
 import ru.mirea.toir.sync.fixtures.TestTokenStorage
@@ -45,8 +46,11 @@ class SyncRepositoryFetchTest {
             equipmentStorage = EquipmentStorageImpl(db, dispatchers),
             locationStorage = LocationStorageImpl(db),
             checklistStorage = ChecklistStorageImpl(db, dispatchers),
+            inspectionStorage = InspectionStorageImpl(db, dispatchers),
+            photoStorage = PhotoStorageImpl(db, dispatchers),
             transactionRunner = TransactionRunnerImpl(db),
         ),
+        photoFileWriter = TestPhotoFileWriter(),
         transactionRunner = TransactionRunnerImpl(db),
         coroutineDispatchers = dispatchers,
     )

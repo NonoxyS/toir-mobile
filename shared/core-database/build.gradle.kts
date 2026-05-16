@@ -18,6 +18,7 @@ sqldelight {
         create("ToirDatabase") {
             packageName.set("ru.mirea.toir.core.database")
             generateAsync = false
+            dialect(libs.sqldelight.sqliteDialect)
         }
     }
 }
@@ -32,7 +33,12 @@ commonMainDependencies {
 }
 
 androidMainDependencies {
-    implementations(libs.sqldelight.android)
+    implementations(
+        libs.sqldelight.android,
+        // Bundles SQLite ~3.49 into the APK so UPSERT (INSERT ... ON CONFLICT DO UPDATE,
+        // requires SQLite >= 3.24) works on Android 8/9/10 — system SQLite there is 3.19/3.22.
+        libs.requery.sqlite.android,
+    )
 }
 
 iosMainDependencies {

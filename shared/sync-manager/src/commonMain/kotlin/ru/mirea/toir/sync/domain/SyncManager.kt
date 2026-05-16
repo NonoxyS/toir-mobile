@@ -116,6 +116,17 @@ class SyncManager internal constructor(
                 }
         }
 
+        if (firstFailure == null) {
+            syncRepository.downloadMissingPhotos()
+                .onSuccess { count ->
+                    Napier.d("SyncManager: downloaded $count missing photos")
+                }
+                .onFailure { throwable ->
+                    firstFailure = throwable
+                    Napier.e("SyncManager: photo download failed", throwable = throwable)
+                }
+        }
+
         val finishedAt = Clock.System.now()
         val failure = firstFailure
         return if (failure == null) {

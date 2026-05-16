@@ -154,4 +154,49 @@ interface InspectionStorage {
     fun observeChecklistItemResultsByEquipmentResult(
         equipmentResultId: String,
     ): Flow<List<LocalChecklistItemResult>>
+
+    /**
+     * Insert when absent, update only if the local row is `synced`. Rows in pending/retry/rejected
+     * stay untouched — local unsynced edits must not be clobbered.
+     */
+    @Suppress("LongParameterList")
+    fun applyServerInspection(
+        id: String,
+        assignmentId: String?,
+        routeId: String,
+        status: LocalInspectionStatus,
+        startedAt: String?,
+        completedAt: String?,
+        createdAt: String,
+        updatedAt: String,
+    )
+
+    /** Same merge semantics as [applyServerInspection]. */
+    @Suppress("LongParameterList")
+    fun applyServerEquipmentResult(
+        id: String,
+        inspectionId: String,
+        equipmentId: String,
+        routePointId: String,
+        status: LocalEquipmentResultStatus,
+        startedAt: String?,
+        completedAt: String?,
+        createdAt: String,
+        updatedAt: String,
+    )
+
+    /** Same merge semantics as [applyServerInspection]. */
+    @Suppress("LongParameterList")
+    fun applyServerChecklistItemResult(
+        id: String,
+        inspectionEquipmentResultId: String,
+        checklistItemId: String,
+        valueText: String?,
+        valueNumber: Double?,
+        valueBoolean: Long?,
+        selectedOption: String?,
+        comment: String?,
+        createdAt: String,
+        updatedAt: String,
+    )
 }

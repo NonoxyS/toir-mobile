@@ -322,6 +322,78 @@ internal class InspectionStorageImpl(
             .mapToList(dispatchers.io)
             .map { list -> list.map { it.toLocal() } }
 
+    override fun applyServerInspection(
+        id: String,
+        assignmentId: String?,
+        routeId: String,
+        status: LocalInspectionStatus,
+        startedAt: String?,
+        completedAt: String?,
+        createdAt: String,
+        updatedAt: String,
+    ) {
+        inspectionQueries.upsertFromServer(
+            id = id,
+            assignmentId = assignmentId,
+            routeId = routeId,
+            status = status,
+            startedAt = startedAt,
+            completedAt = completedAt,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
+    }
+
+    override fun applyServerEquipmentResult(
+        id: String,
+        inspectionId: String,
+        equipmentId: String,
+        routePointId: String,
+        status: LocalEquipmentResultStatus,
+        startedAt: String?,
+        completedAt: String?,
+        createdAt: String,
+        updatedAt: String,
+    ) {
+        equipmentResultQueries.upsertFromServer(
+            id = id,
+            inspectionId = inspectionId,
+            routePointId = routePointId,
+            equipmentId = equipmentId,
+            status = status,
+            startedAt = startedAt,
+            completedAt = completedAt,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
+    }
+
+    override fun applyServerChecklistItemResult(
+        id: String,
+        inspectionEquipmentResultId: String,
+        checklistItemId: String,
+        valueText: String?,
+        valueNumber: Double?,
+        valueBoolean: Long?,
+        selectedOption: String?,
+        comment: String?,
+        createdAt: String,
+        updatedAt: String,
+    ) {
+        checklistItemResultQueries.upsertFromServer(
+            id = id,
+            equipmentResultId = inspectionEquipmentResultId,
+            checklistItemId = checklistItemId,
+            valueBoolean = valueBoolean,
+            valueNumber = valueNumber,
+            valueText = valueText,
+            selectedOption = selectedOption,
+            comment = comment,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
+    }
+
     private fun Inspections.toLocal() = LocalInspection(
         id = id,
         assignmentId = assignment_id,

@@ -15,6 +15,7 @@ internal class BootstrapStoreFactory(
     private val storeFactory: StoreFactory,
     private val bootstrapRepository: BootstrapRepository,
     private val authRepository: AuthRepository,
+    private val triggerBackgroundSync: () -> Unit,
     private val mainDispatcher: CoroutineDispatcher,
 ) {
     fun create(): BootstrapStore =
@@ -25,7 +26,12 @@ internal class BootstrapStoreFactory(
                 initialState = State(),
                 bootstrapper = SimpleBootstrapper(Unit),
                 executorFactory = {
-                    BootstrapExecutor(bootstrapRepository, authRepository, mainDispatcher)
+                    BootstrapExecutor(
+                        bootstrapRepository = bootstrapRepository,
+                        authRepository = authRepository,
+                        triggerBackgroundSync = triggerBackgroundSync,
+                        mainDispatcher = mainDispatcher,
+                    )
                 },
                 reducer = BootstrapReducer(),
             ) {}

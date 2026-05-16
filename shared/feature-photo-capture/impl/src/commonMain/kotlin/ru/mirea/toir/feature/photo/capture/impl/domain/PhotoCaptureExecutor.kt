@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
 import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.Intent
 import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.Label
+import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.PhotoEntry
 import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.State
 import ru.mirea.toir.feature.photo.capture.impl.domain.PhotoCaptureStoreFactory.Action
 import ru.mirea.toir.feature.photo.capture.impl.domain.PhotoCaptureStoreFactory.Message
@@ -32,7 +33,7 @@ internal class PhotoCaptureExecutor(
     private suspend fun loadPhotos() {
         val checklistItemResultId = state().checklistItemResultId
         repository.getPhotos(checklistItemResultId).fold(
-            onSuccess = { uris -> dispatch(Message.SetPhotos(uris)) },
+            onSuccess = { entries -> dispatch(Message.SetPhotos(entries)) },
             onFailure = { /* silent */ },
         )
     }
@@ -42,7 +43,11 @@ internal class PhotoCaptureExecutor(
         dispatch(Message.SetLoading(true))
         repository.savePhoto(resultId, fileUri).fold(
             onSuccess = {
-                dispatch(Message.AddPhoto(fileUri))
+                // Freshly captured photo: id is unknown to the executor (the repository
+                // generates it). For UI rendering we only need a stable key — we use the
+                // fileUri itself as the id, since it's unique per shot (UUID-based) and
+                // pending photos never have null fileUri.
+                dispatch(Message.AddPhoto(PhotoEntry(id = fileUri, fileUri = fileUri)))
                 dispatch(Message.SetLoading(false))
             },
             onFailure = { dispatch(Message.SetLoading(false)) },

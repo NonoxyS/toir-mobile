@@ -35,6 +35,7 @@ internal class RoutePointsExecutor(
                 Label.NavigateToEquipmentCard(state().inspectionId, intent.routePointId)
             )
             Intent.OnFinishInspection -> finishInspection()
+            Intent.OnRetry -> subscribeToRoutePoints(state().inspectionId)
         }
     }
 

@@ -21,6 +21,30 @@ insertInspection:
 INSERT INTO inspections (id, assignment_id, route_id, status, started_at, completed_at, created_at, updated_at, sync_status)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+upsertFromServer:
+INSERT INTO inspections (
+    id, assignment_id, route_id, status, started_at, completed_at,
+    created_at, updated_at, sync_status,
+    sync_attempt_count, sync_next_attempt_at, sync_rejection_reason
+) VALUES (
+    :id, :assignmentId, :routeId, :status, :startedAt, :completedAt,
+    :createdAt, :updatedAt, 'synced',
+    0, NULL, NULL
+)
+ON CONFLICT(id) DO UPDATE SET
+    assignment_id = excluded.assignment_id,
+    route_id = excluded.route_id,
+    status = excluded.status,
+    started_at = excluded.started_at,
+    completed_at = excluded.completed_at,
+    created_at = excluded.created_at,
+    updated_at = excluded.updated_at,
+    sync_status = 'synced',
+    sync_attempt_count = 0,
+    sync_next_attempt_at = NULL,
+    sync_rejection_reason = NULL
+WHERE inspections.sync_status = 'synced';
+
 selectByAssignmentId:
 SELECT * FROM inspections WHERE assignment_id = ?;
 

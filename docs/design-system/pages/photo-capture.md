@@ -58,6 +58,9 @@ URI после «Подтвердить».
 - `AsyncImage` (Coil3 / `coil-compose`), `ContentScale.Crop`.
 - Placeholder при загрузке: фон `color.surface2` + `CircularProgressIndicator` 20dp в центре.
 - Error state (битая ссылка): фон `color.surface2` + иконка `broken_image` 24dp `color.textDisabled`.
+- **Не докачано** (`fileUri == null` после восстановления): фон `color.surface2` + иконка
+  `cloud_off` 24dp `color.textDisabled`, **без** анимации и **без** подписи внутри тайла.
+  Тайл **не интерактивен** (tap/long-press игнорируются), preview не открывается.
 - Border: 1dp `color.borderSubtle` (тонкий, чтобы тайл не сливался с background при
   тёмном фото).
 
@@ -199,6 +202,12 @@ URI после «Подтвердить».
   параметров навигации: `maxPhotos`, начальный список фото).
 - **Error state** на уровне экрана — нет (ошибки handled на уровне отдельных
   операций через SnackBar).
+- **«Не докачано»** (`fileUri == null`): возникает после восстановления обхода с
+  сервера, когда метаданные фото пришли, а сам файл ещё качается фоном (Waypoint 11,
+  Phase 5). UI отражает это через placeholder тайла (иконка `cloud_off`, см.
+  «Тайл фото»), кнопка «Снять фото» работает как обычно. Когда `downloadMissingPhotos`
+  завершится для конкретного фото, при следующем открытии экрана файл подгрузится
+  нормально (поток `getPhotos` не реактивен — обновление приходит при ре-навигации).
 
 ## Доступность
 

@@ -8,7 +8,7 @@ internal class PhotoCaptureReducer : Reducer<State, Message> {
     override fun State.reduce(msg: Message): State = when (msg) {
         is Message.SetLoading -> copy(isLoading = msg.value)
         is Message.SetPhotos -> copy(photos = msg.photos)
-        is Message.AddPhoto -> copy(photos = photos + msg.uri)
-        is Message.PhotoRemoved -> copy(photos = photos - msg.uri)
+        is Message.AddPhoto -> copy(photos = photos + msg.entry)
+        is Message.PhotoRemoved -> copy(photos = photos.filterNot { it.fileUri == msg.uri })
     }
 }
