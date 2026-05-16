@@ -123,13 +123,10 @@ internal fun PhotoCaptureScreen(
                     },
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
                     bottomBar = {
-                        val isLimitReached = state.maxPhotos
-                            ?.let { state.photos.size >= it }
-                            ?: false
                         PhotoCaptureFooter(
-                            canTake = !state.isLoading && !isLimitReached,
+                            canTake = state.canTakePhoto,
                             canConfirm = state.photos.isNotEmpty(),
-                            isLimitReached = isLimitReached,
+                            isLimitReached = state.isLimitReached,
                             onTakePhoto = cameraLauncher,
                             onConfirm = viewModel::onConfirm,
                             modifier = Modifier.padding(bottom = 16.dp)
