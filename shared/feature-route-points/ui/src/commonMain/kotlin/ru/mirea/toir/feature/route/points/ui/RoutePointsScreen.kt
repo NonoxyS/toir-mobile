@@ -170,6 +170,7 @@ private fun RoutePointsProgressHeader(state: UiRoutePointsState) {
                 .clip(ToirTheme.shapes.pill),
             color = colors.success,
             trackColor = colors.border,
+            drawStopIndicator = {},
         )
     }
 }
