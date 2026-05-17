@@ -3,10 +3,10 @@ package ru.mirea.toir.feature.routes.list.impl.domain
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import ru.mirea.toir.common.extensions.safeCatch
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore.Intent
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore.Label
@@ -43,15 +43,15 @@ internal class RoutesListExecutor(
     private fun subscribeToSync() {
         repository.observeSyncIndicator()
             .onEach { dispatch(Message.SetSyncIndicator(it)) }
-            .catch { Napier.e(message = "observeSyncIndicator failed", throwable = it) }
+            .safeCatch { Napier.e(message = "observeSyncIndicator failed", throwable = it) }
             .launchIn(scope)
         repository.observeLastSuccessAt()
             .onEach { dispatch(Message.SetSyncLastSuccessAt(it)) }
-            .catch { Napier.e(message = "observeLastSuccessAt failed", throwable = it) }
+            .safeCatch { Napier.e(message = "observeLastSuccessAt failed", throwable = it) }
             .launchIn(scope)
         repository.observeLastFailedAt()
             .onEach { dispatch(Message.SetSyncLastFailedAt(it)) }
-            .catch { Napier.e(message = "observeLastFailedAt failed", throwable = it) }
+            .safeCatch { Napier.e(message = "observeLastFailedAt failed", throwable = it) }
             .launchIn(scope)
     }
 
@@ -60,7 +60,7 @@ internal class RoutesListExecutor(
         subscriptionJob = repository.observeAssignments()
             .onStart { dispatch(Message.SetLoading) }
             .onEach { dispatch(Message.SetAssignments(it)) }
-            .catch { throwable ->
+            .safeCatch { throwable ->
                 Napier.e(message = "observeAssignments failed", throwable = throwable)
                 dispatch(Message.SetError)
             }

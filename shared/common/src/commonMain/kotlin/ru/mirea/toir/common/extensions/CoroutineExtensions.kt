@@ -1,6 +1,9 @@
 package ru.mirea.toir.common.extensions
 
 import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 
 // https://detekt.dev/docs/rules/coroutines/#suspendfunswallowedcancellation
 inline fun <T, R> T.coRunCatching(

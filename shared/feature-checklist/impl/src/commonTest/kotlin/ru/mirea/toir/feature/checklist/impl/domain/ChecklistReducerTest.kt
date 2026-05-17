@@ -1,7 +1,5 @@
 package ru.mirea.toir.feature.checklist.impl.domain
 
-import kotlinx.collections.immutable.persistentListOf
-import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.State
 import kotlin.test.Test
@@ -42,23 +40,18 @@ class ChecklistReducerTest {
 
     @Test
     fun `SetItems replaces items list and stops loading`() {
-        val items = persistentListOf(
-            DomainChecklistItem(
+        val items = listOf(
+            DomainChecklistItem.Number(
                 id = "i1",
                 title = "Pump pressure",
                 description = null,
-                answerType = DomainAnswerType.Number,
                 isRequired = true,
                 requiresPhoto = false,
                 resultId = null,
-                valueBoolean = null,
-                valueNumber = null,
-                valueText = null,
-                valueSelect = null,
-                isConfirmed = false,
                 photoCount = 0,
-                numericMin = null,
-                numericMax = null,
+                value = null,
+                min = null,
+                max = null,
             ),
         )
 

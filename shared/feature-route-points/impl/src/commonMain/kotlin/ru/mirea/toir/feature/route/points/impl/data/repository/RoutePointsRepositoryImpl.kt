@@ -27,7 +27,7 @@ import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResul
 import ru.mirea.toir.core.database.storage.location.LocationStorage
 import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.feature.route.points.api.models.DomainRoutePoint
-import ru.mirea.toir.feature.route.points.api.models.EquipmentResultStatus
+import ru.mirea.toir.core.domain.models.EquipmentResultStatus
 import ru.mirea.toir.feature.route.points.impl.domain.repository.RoutePointsRepository
 import ru.mirea.toir.sync.domain.SyncManager
 import ru.mirea.toir.sync.domain.SyncTrigger
@@ -73,9 +73,7 @@ internal class RoutePointsRepositoryImpl(
                         equipmentName = equipment?.name.orEmpty(),
                         locationName = locationName,
                         equipmentResultId = result?.id,
-                        status = EquipmentResultStatus.fromString(
-                            result?.status?.name ?: LocalEquipmentResultStatus.NOT_STARTED.name
-                        ),
+                        status = result?.status?.toDomain() ?: EquipmentResultStatus.NOT_STARTED,
                         hasIssues = result?.status == LocalEquipmentResultStatus.SKIPPED,
                     )
                 }
@@ -130,3 +128,11 @@ internal class RoutePointsRepositoryImpl(
         }
     }
 }
+
+private fun LocalEquipmentResultStatus.toDomain(): EquipmentResultStatus = when (this) {
+    LocalEquipmentResultStatus.NOT_STARTED -> EquipmentResultStatus.NOT_STARTED
+    LocalEquipmentResultStatus.IN_PROGRESS -> EquipmentResultStatus.IN_PROGRESS
+    LocalEquipmentResultStatus.COMPLETED -> EquipmentResultStatus.COMPLETED
+    LocalEquipmentResultStatus.SKIPPED -> EquipmentResultStatus.SKIPPED
+}
+

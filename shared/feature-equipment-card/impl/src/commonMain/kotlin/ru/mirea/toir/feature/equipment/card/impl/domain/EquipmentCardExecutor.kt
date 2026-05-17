@@ -3,10 +3,10 @@ package ru.mirea.toir.feature.equipment.card.impl.domain
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import ru.mirea.toir.common.extensions.safeCatch
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
 import ru.mirea.toir.feature.equipment.card.api.store.EquipmentCardStore.Intent
 import ru.mirea.toir.feature.equipment.card.api.store.EquipmentCardStore.Label
@@ -56,7 +56,7 @@ internal class EquipmentCardExecutor(
         subscriptionJob = repository.observeEquipmentCard(inspectionId, routePointId)
             .onStart { dispatch(Message.SetLoading) }
             .onEach { card -> dispatch(Message.SetCard(card)) }
-            .catch { throwable ->
+            .safeCatch { throwable ->
                 Napier.e(message = "observeEquipmentCard failed", throwable = throwable)
                 dispatch(Message.SetError)
             }

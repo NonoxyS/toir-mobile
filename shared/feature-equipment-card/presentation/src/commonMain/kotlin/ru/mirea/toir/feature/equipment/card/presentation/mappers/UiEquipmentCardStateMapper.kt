@@ -1,7 +1,7 @@
 package ru.mirea.toir.feature.equipment.card.presentation.mappers
 
 import ru.mirea.toir.common.mappers.Mapper
-import ru.mirea.toir.feature.equipment.card.api.models.EquipmentResultStatus
+import ru.mirea.toir.core.domain.models.EquipmentResultStatus
 import ru.mirea.toir.feature.equipment.card.api.store.EquipmentCardStore
 import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentCardState
 import ru.mirea.toir.feature.equipment.card.presentation.models.UiEquipmentResultStatus

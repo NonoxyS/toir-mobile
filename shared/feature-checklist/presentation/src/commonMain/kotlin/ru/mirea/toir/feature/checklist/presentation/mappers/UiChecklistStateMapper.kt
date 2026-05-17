@@ -4,7 +4,6 @@ import dev.icerock.moko.resources.desc.ResourceFormatted
 import dev.icerock.moko.resources.desc.StringDesc
 import kotlinx.collections.immutable.toImmutableList
 import ru.mirea.toir.common.mappers.Mapper
-import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
@@ -28,9 +27,9 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
     )
 
     private fun DomainChecklistItem.toUi(showValidationErrors: Boolean): UiChecklistItem {
-        val showValidationError = showValidationErrors && isRequired && !isAnswered()
-        return when (val type = answerType) {
-            DomainAnswerType.Boolean -> UiChecklistItem.Boolean(
+        val showValidationError = showValidationErrors && isRequired && !isAnswered
+        return when (this) {
+            is DomainChecklistItem.Boolean -> UiChecklistItem.Boolean(
                 id = id,
                 title = title,
                 description = description,
@@ -38,29 +37,25 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                 requiresPhoto = requiresPhoto,
                 photoCount = photoCount,
                 showValidationError = showValidationError,
-                value = valueBoolean,
+                value = value,
             )
 
-            DomainAnswerType.Number -> {
-                val min = numericMin
-                val max = numericMax
-                val value = valueNumber
-                val isOutOfRange = value != null && (
-                    (min != null && value < min) || (max != null && value > max)
-                    )
+            is DomainChecklistItem.Number -> {
+                val minValue = min
+                val maxValue = max
                 val rangeHint: StringDesc? = when {
-                    min != null && max != null -> StringDesc.ResourceFormatted(
+                    minValue != null && maxValue != null -> StringDesc.ResourceFormatted(
                         MR.strings.checklist_number_hint_range,
-                        min.formatNumber(),
-                        max.formatNumber(),
+                        minValue.formatNumber(),
+                        maxValue.formatNumber(),
                     )
-                    min != null -> StringDesc.ResourceFormatted(
+                    minValue != null -> StringDesc.ResourceFormatted(
                         MR.strings.checklist_number_hint_min,
-                        min.formatNumber(),
+                        minValue.formatNumber(),
                     )
-                    max != null -> StringDesc.ResourceFormatted(
+                    maxValue != null -> StringDesc.ResourceFormatted(
                         MR.strings.checklist_number_hint_max,
-                        max.formatNumber(),
+                        maxValue.formatNumber(),
                     )
                     else -> null
                 }
@@ -78,7 +73,7 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                 )
             }
 
-            DomainAnswerType.Text -> UiChecklistItem.Text(
+            is DomainChecklistItem.Text -> UiChecklistItem.Text(
                 id = id,
                 title = title,
                 description = description,
@@ -86,10 +81,10 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                 requiresPhoto = requiresPhoto,
                 photoCount = photoCount,
                 showValidationError = showValidationError,
-                value = valueText.orEmpty(),
+                value = value.orEmpty(),
             )
 
-            is DomainAnswerType.Select -> UiChecklistItem.Select(
+            is DomainChecklistItem.Select -> UiChecklistItem.Select(
                 id = id,
                 title = title,
                 description = description,
@@ -97,11 +92,11 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                 requiresPhoto = requiresPhoto,
                 photoCount = photoCount,
                 showValidationError = showValidationError,
-                value = valueSelect,
-                options = type.options.toImmutableList(),
+                value = value,
+                options = options.toImmutableList(),
             )
 
-            DomainAnswerType.Confirm -> UiChecklistItem.Confirm(
+            is DomainChecklistItem.Confirm -> UiChecklistItem.Confirm(
                 id = id,
                 title = title,
                 description = description,
@@ -112,14 +107,6 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                 value = isConfirmed,
             )
         }
-    }
-
-    private fun DomainChecklistItem.isAnswered(): Boolean = when (answerType) {
-        DomainAnswerType.Boolean -> valueBoolean != null
-        DomainAnswerType.Number -> valueNumber != null
-        DomainAnswerType.Text -> !valueText.isNullOrBlank()
-        is DomainAnswerType.Select -> !valueSelect.isNullOrBlank()
-        DomainAnswerType.Confirm -> isConfirmed
     }
 
     private fun Double.formatNumber(): String =

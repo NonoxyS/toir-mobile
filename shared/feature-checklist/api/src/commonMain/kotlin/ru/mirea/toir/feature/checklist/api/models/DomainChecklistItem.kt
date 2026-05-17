@@ -1,32 +1,84 @@
 package ru.mirea.toir.feature.checklist.api.models
 
-import androidx.compose.runtime.Immutable
-import kotlinx.collections.immutable.ImmutableList
+private typealias KBoolean = Boolean
 
-@Immutable
-sealed interface DomainAnswerType {
-    data object Boolean : DomainAnswerType
-    data object Number : DomainAnswerType
-    data object Text : DomainAnswerType
-    data class Select(val options: ImmutableList<String>) : DomainAnswerType
-    data object Confirm : DomainAnswerType
+sealed interface DomainChecklistItem {
+    val id: String
+    val title: String
+    val description: String?
+    val isRequired: KBoolean
+    val requiresPhoto: KBoolean
+    val resultId: String?
+    val photoCount: Int
+    val isAnswered: KBoolean
+
+    data class Boolean(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val isRequired: KBoolean,
+        override val requiresPhoto: KBoolean,
+        override val resultId: String?,
+        override val photoCount: Int,
+        val value: KBoolean?,
+    ) : DomainChecklistItem {
+        override val isAnswered: KBoolean get() = value != null
+    }
+
+    data class Number(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val isRequired: KBoolean,
+        override val requiresPhoto: KBoolean,
+        override val resultId: String?,
+        override val photoCount: Int,
+        val value: Double?,
+        val min: Double?,
+        val max: Double?,
+    ) : DomainChecklistItem {
+        override val isAnswered: KBoolean get() = value != null
+        val isOutOfRange: KBoolean get() =
+            value != null && ((min != null && value < min) || (max != null && value > max))
+    }
+
+    data class Text(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val isRequired: KBoolean,
+        override val requiresPhoto: KBoolean,
+        override val resultId: String?,
+        override val photoCount: Int,
+        val value: String?,
+    ) : DomainChecklistItem {
+        override val isAnswered: KBoolean get() = !value.isNullOrBlank()
+    }
+
+    data class Select(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val isRequired: KBoolean,
+        override val requiresPhoto: KBoolean,
+        override val resultId: String?,
+        override val photoCount: Int,
+        val value: String?,
+        val options: List<String>,
+    ) : DomainChecklistItem {
+        override val isAnswered: KBoolean get() = !value.isNullOrBlank()
+    }
+
+    data class Confirm(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val isRequired: KBoolean,
+        override val requiresPhoto: KBoolean,
+        override val resultId: String?,
+        override val photoCount: Int,
+        val isConfirmed: KBoolean,
+    ) : DomainChecklistItem {
+        override val isAnswered: KBoolean get() = isConfirmed
+    }
 }
-
-@Immutable
-data class DomainChecklistItem(
-    val id: String,
-    val title: String,
-    val description: String?,
-    val answerType: DomainAnswerType,
-    val isRequired: Boolean,
-    val requiresPhoto: Boolean,
-    val resultId: String?,
-    val valueBoolean: Boolean?,
-    val valueNumber: Double?,
-    val valueText: String?,
-    val valueSelect: String?,
-    val isConfirmed: Boolean,
-    val photoCount: Int,
-    val numericMin: Double?,
-    val numericMax: Double?,
-)

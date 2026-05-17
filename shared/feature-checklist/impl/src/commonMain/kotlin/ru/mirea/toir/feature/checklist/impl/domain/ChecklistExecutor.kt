@@ -1,15 +1,13 @@
 package ru.mirea.toir.feature.checklist.impl.domain
 
 import io.github.aakira.napier.Napier
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import ru.mirea.toir.common.extensions.safeCatch
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
-import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.Intent
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.Label
@@ -69,8 +67,8 @@ internal class ChecklistExecutor(
         subscriptionJob?.cancel()
         subscriptionJob = repository.observeChecklistItems(equipmentResultId)
             .onStart { dispatch(Message.SetLoading) }
-            .onEach { items -> dispatch(Message.SetItems(items.toImmutableList())) }
-            .catch { throwable ->
+            .onEach { items -> dispatch(Message.SetItems(items)) }
+            .safeCatch { throwable ->
                 Napier.e(message = "observeChecklistItems failed", throwable = throwable)
                 dispatch(Message.SetError)
             }
@@ -80,24 +78,20 @@ internal class ChecklistExecutor(
     private suspend fun finishChecklist() {
         val currentState = state()
         val items = currentState.items
-        val missingRequired = items.any { item -> item.isRequired && !item.isAnswered() }
+        val missingRequired = items.any { item -> item.isRequired && !item.isAnswered }
         if (missingRequired) {
             dispatch(Message.SetValidationRequiredError)
             return
         }
         val hasOutOfRange = items.any { item ->
-            if (item.answerType !is DomainAnswerType.Number) return@any false
-            val value = item.valueNumber ?: return@any false
-            val min = item.numericMin
-            val max = item.numericMax
-            (min != null && value < min) || (max != null && value > max)
+            item is DomainChecklistItem.Number && item.isOutOfRange
         }
         if (hasOutOfRange) {
             dispatch(Message.SetValidationOutOfRangeError)
             return
         }
         val missingPhoto = items.any { item ->
-            item.requiresPhoto && item.photoCount == 0 && item.isAnswered()
+            item.requiresPhoto && item.photoCount == 0 && item.isAnswered
         }
         if (missingPhoto) {
             dispatch(Message.SetValidationPhotoError)
@@ -113,13 +107,5 @@ internal class ChecklistExecutor(
                 dispatch(Message.SetError)
             },
         )
-    }
-
-    private fun DomainChecklistItem.isAnswered(): Boolean = when (answerType) {
-        DomainAnswerType.Boolean -> valueBoolean != null
-        DomainAnswerType.Number -> valueNumber != null
-        DomainAnswerType.Text -> !valueText.isNullOrBlank()
-        is DomainAnswerType.Select -> !valueSelect.isNullOrBlank()
-        DomainAnswerType.Confirm -> isConfirmed
     }
 }
