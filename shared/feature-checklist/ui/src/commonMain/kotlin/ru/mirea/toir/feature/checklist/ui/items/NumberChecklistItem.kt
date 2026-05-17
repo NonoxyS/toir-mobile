@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import dev.icerock.moko.resources.compose.stringResource
+import dev.icerock.moko.resources.desc.ResourceFormattedStringDesc
 import ru.mirea.toir.common.ui.compose.components.shared.textfield.ToirOutlinedTextField
 import ru.mirea.toir.common.ui.compose.components.shared.textfield.filters.NumberInputFilter
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
@@ -17,11 +18,13 @@ internal fun NumberChecklistItem(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val rangeHint = rangeHint(item.numericMin, item.numericMax)
     val supportingText = when {
         item.isOutOfRange -> stringResource(MR.strings.checklist_number_error_out_of_range)
         item.showValidationError -> stringResource(MR.strings.checklist_validation_error_required)
-        else -> rangeHint
+        else -> when (val hint = item.rangeHint) {
+            is ResourceFormattedStringDesc -> stringResource(hint.stringRes, *hint.args.toTypedArray())
+            else -> null
+        }
     }
     val isError = item.isOutOfRange || item.showValidationError
 
@@ -39,10 +42,3 @@ internal fun NumberChecklistItem(
     )
 }
 
-@Composable
-private fun rangeHint(min: String?, max: String?): String? = when {
-    min != null && max != null -> stringResource(MR.strings.checklist_number_hint_range, min, max)
-    min != null -> stringResource(MR.strings.checklist_number_hint_min, min)
-    max != null -> stringResource(MR.strings.checklist_number_hint_max, max)
-    else -> null
-}

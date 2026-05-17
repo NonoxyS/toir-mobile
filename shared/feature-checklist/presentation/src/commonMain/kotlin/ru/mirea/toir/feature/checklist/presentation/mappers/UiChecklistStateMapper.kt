@@ -1,5 +1,7 @@
 package ru.mirea.toir.feature.checklist.presentation.mappers
 
+import dev.icerock.moko.resources.desc.ResourceFormatted
+import dev.icerock.moko.resources.desc.StringDesc
 import kotlinx.collections.immutable.toImmutableList
 import ru.mirea.toir.common.mappers.Mapper
 import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
@@ -7,6 +9,7 @@ import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistState
+import ru.mirea.toir.res.MR
 
 interface UiChecklistStateMapper : Mapper<ChecklistStore.State, UiChecklistState>
 
@@ -44,7 +47,23 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                 val value = valueNumber
                 val isOutOfRange = value != null && (
                     (min != null && value < min) || (max != null && value > max)
-                )
+                    )
+                val rangeHint: StringDesc? = when {
+                    min != null && max != null -> StringDesc.ResourceFormatted(
+                        MR.strings.checklist_number_hint_range,
+                        min.formatNumber(),
+                        max.formatNumber(),
+                    )
+                    min != null -> StringDesc.ResourceFormatted(
+                        MR.strings.checklist_number_hint_min,
+                        min.formatNumber(),
+                    )
+                    max != null -> StringDesc.ResourceFormatted(
+                        MR.strings.checklist_number_hint_max,
+                        max.formatNumber(),
+                    )
+                    else -> null
+                }
                 UiChecklistItem.Number(
                     id = id,
                     title = title,
@@ -53,9 +72,8 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                     requiresPhoto = requiresPhoto,
                     photoCount = photoCount,
                     showValidationError = showValidationError,
-                    value = valueNumber?.formatNumber().orEmpty(),
-                    numericMin = min?.formatNumber(),
-                    numericMax = max?.formatNumber(),
+                    value = value?.formatNumber().orEmpty(),
+                    rangeHint = rangeHint,
                     isOutOfRange = isOutOfRange,
                 )
             }

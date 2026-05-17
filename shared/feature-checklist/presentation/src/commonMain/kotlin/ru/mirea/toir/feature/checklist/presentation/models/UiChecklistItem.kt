@@ -1,5 +1,6 @@
 package ru.mirea.toir.feature.checklist.presentation.models
 
+import dev.icerock.moko.resources.desc.StringDesc
 import kotlinx.collections.immutable.ImmutableList
 
 private typealias KBoolean = Boolean
@@ -33,8 +34,7 @@ sealed interface UiChecklistItem {
         override val photoCount: Int,
         override val showValidationError: KBoolean,
         val value: String,
-        val numericMin: String?,
-        val numericMax: String?,
+        val rangeHint: StringDesc?,
         val isOutOfRange: KBoolean,
     ) : UiChecklistItem
 
