@@ -1,14 +1,17 @@
 package ru.mirea.toir.feature.checklist.presentation.mappers
 
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
 import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore
+import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
+
 
 class UiChecklistStateMapperTest {
 
@@ -145,58 +148,103 @@ class UiChecklistStateMapperTest {
     }
 
     @Test
-    fun `isNumberOutOfRange is false when valueNumber is within range`() {
+    fun `isOutOfRange is false when valueNumber is within range`() {
         val state = ChecklistStore.State(
             items = persistentListOf(
                 item(type = DomainAnswerType.Number, valueNumber = 50.0, numericMin = 0.0, numericMax = 100.0),
             ),
         )
         val ui = mapper.map(state)
-        assertFalse(ui.items[0].isNumberOutOfRange)
+        val number = ui.items[0] as UiChecklistItem.Number
+        assertFalse(number.isOutOfRange)
     }
 
     @Test
-    fun `isNumberOutOfRange is true when valueNumber exceeds max`() {
+    fun `isOutOfRange is true when valueNumber exceeds max`() {
         val state = ChecklistStore.State(
             items = persistentListOf(
                 item(type = DomainAnswerType.Number, valueNumber = 150.0, numericMax = 100.0),
             ),
         )
         val ui = mapper.map(state)
-        assertTrue(ui.items[0].isNumberOutOfRange)
+        val number = ui.items[0] as UiChecklistItem.Number
+        assertTrue(number.isOutOfRange)
     }
 
     @Test
-    fun `isNumberOutOfRange is true when valueNumber below min`() {
+    fun `isOutOfRange is true when valueNumber below min`() {
         val state = ChecklistStore.State(
             items = persistentListOf(
                 item(type = DomainAnswerType.Number, valueNumber = -1.0, numericMin = 0.0),
             ),
         )
         val ui = mapper.map(state)
-        assertTrue(ui.items[0].isNumberOutOfRange)
+        val number = ui.items[0] as UiChecklistItem.Number
+        assertTrue(number.isOutOfRange)
     }
 
     @Test
-    fun `isNumberOutOfRange uses numberDraft when present`() {
+    fun `isOutOfRange is false when valueNumber is null`() {
         val state = ChecklistStore.State(
             items = persistentListOf(
-                item(type = DomainAnswerType.Number, valueNumber = 50.0, numericMax = 100.0),
+                item(type = DomainAnswerType.Number, valueNumber = null, numericMin = 0.0, numericMax = 100.0),
             ),
-            numberDrafts = persistentMapOf("i1" to "9999"),
         )
         val ui = mapper.map(state)
-        assertEquals("9999", ui.items[0].valueNumber)
-        assertTrue(ui.items[0].isNumberOutOfRange)
+        val number = ui.items[0] as UiChecklistItem.Number
+        assertFalse(number.isOutOfRange)
     }
 
     @Test
-    fun `isNumberOutOfRange is false for non-Number answer types`() {
+    fun `numericMin and numericMax are formatted when set`() {
         val state = ChecklistStore.State(
-            items = persistentListOf(item(type = DomainAnswerType.Text, valueText = "999")),
+            items = persistentListOf(
+                item(type = DomainAnswerType.Number, numericMin = 0.0, numericMax = 10.0),
+            ),
         )
         val ui = mapper.map(state)
-        assertFalse(ui.items[0].isNumberOutOfRange)
+        val number = ui.items[0] as UiChecklistItem.Number
+        assertNotNull(number.numericMin)
+        assertNotNull(number.numericMax)
+    }
+
+    @Test
+    fun `numericMin and numericMax are null when not set`() {
+        val state = ChecklistStore.State(
+            items = persistentListOf(
+                item(type = DomainAnswerType.Number, numericMin = null, numericMax = null),
+            ),
+        )
+        val ui = mapper.map(state)
+        val number = ui.items[0] as UiChecklistItem.Number
+        assertNull(number.numericMin)
+        assertNull(number.numericMax)
+    }
+
+    @Test
+    fun `numericMin is formatted correctly for whole numbers`() {
+        val state = ChecklistStore.State(
+            items = persistentListOf(
+                item(type = DomainAnswerType.Number, numericMin = 5.0, numericMax = null),
+            ),
+        )
+        val ui = mapper.map(state)
+        val number = ui.items[0] as UiChecklistItem.Number
+        assertEquals("5", number.numericMin)
+        assertNull(number.numericMax)
+    }
+
+    @Test
+    fun `numericMax is formatted correctly for fractional numbers`() {
+        val state = ChecklistStore.State(
+            items = persistentListOf(
+                item(type = DomainAnswerType.Number, numericMin = null, numericMax = 100.5),
+            ),
+        )
+        val ui = mapper.map(state)
+        val number = ui.items[0] as UiChecklistItem.Number
+        assertNull(number.numericMin)
+        assertEquals("100.5", number.numericMax)
     }
 
     @Test
@@ -207,5 +255,24 @@ class UiChecklistStateMapperTest {
         )
         val ui = mapper.map(state)
         assertEquals(2, ui.items.size)
+    }
+
+    @Test
+    fun `items are mapped to correct sealed subtypes`() {
+        val state = ChecklistStore.State(
+            items = persistentListOf(
+                item(id = "b", type = DomainAnswerType.Boolean),
+                item(id = "n", type = DomainAnswerType.Number),
+                item(id = "t", type = DomainAnswerType.Text),
+                item(id = "s", type = DomainAnswerType.Select(persistentListOf("a"))),
+                item(id = "c", type = DomainAnswerType.Confirm),
+            ),
+        )
+        val ui = mapper.map(state)
+        assertTrue(ui.items[0] is UiChecklistItem.Boolean)
+        assertTrue(ui.items[1] is UiChecklistItem.Number)
+        assertTrue(ui.items[2] is UiChecklistItem.Text)
+        assertTrue(ui.items[3] is UiChecklistItem.Select)
+        assertTrue(ui.items[4] is UiChecklistItem.Confirm)
     }
 }

@@ -7,34 +7,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import dev.icerock.moko.resources.compose.stringResource
 import ru.mirea.toir.common.ui.compose.components.shared.textfield.ToirOutlinedTextField
+import ru.mirea.toir.common.ui.compose.components.shared.textfield.filters.NumberInputFilter
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 import ru.mirea.toir.res.MR
 
 @Composable
 internal fun NumberChecklistItem(
-    item: UiChecklistItem,
+    item: UiChecklistItem.Number,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val rangeHint = rangeHint(item.numericMin, item.numericMax)
     val supportingText = when {
-        item.isNumberOutOfRange -> stringResource(MR.strings.checklist_number_error_out_of_range)
+        item.isOutOfRange -> stringResource(MR.strings.checklist_number_error_out_of_range)
         item.showValidationError -> stringResource(MR.strings.checklist_validation_error_required)
         else -> rangeHint
     }
-    val isError = item.isNumberOutOfRange || item.showValidationError
+    val isError = item.isOutOfRange || item.showValidationError
 
     ToirOutlinedTextField(
-        value = item.valueNumber,
-        onValueChange = { newValue ->
-            onValueChange(newValue.filterNot { it.isWhitespace() })
-        },
+        value = item.value,
+        onValueChange = onValueChange,
         modifier = modifier.fillMaxWidth(),
         label = item.title,
         isRequired = item.isRequired,
         isError = isError,
         supportingText = supportingText,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        inputFilter = NumberInputFilter,
         singleLine = true,
     )
 }

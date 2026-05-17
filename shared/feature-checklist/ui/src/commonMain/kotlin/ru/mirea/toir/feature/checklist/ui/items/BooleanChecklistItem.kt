@@ -17,8 +17,8 @@ import ru.mirea.toir.res.MR
 
 @Composable
 internal fun BooleanChecklistItem(
-    item: UiChecklistItem,
-    onValueChange: (Boolean?) -> Unit,
+    item: UiChecklistItem.Boolean,
+    onValueChange: (kotlin.Boolean?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val options = remember { persistentListOf(true, false) }
@@ -33,7 +33,7 @@ internal fun BooleanChecklistItem(
         )
         ToirSegmentedControl(
             options = options,
-            selected = item.valueBoolean,
+            selected = item.value,
             onSelectedChange = onValueChange,
             isError = item.showValidationError,
             optionLabel = { value ->

@@ -1,34 +1,74 @@
 package ru.mirea.toir.feature.checklist.presentation.models
 
-import androidx.compose.runtime.Immutable
 import kotlinx.collections.immutable.ImmutableList
 
-@Immutable
-sealed interface UiAnswerType {
-    data object Boolean : UiAnswerType
-    data object Number : UiAnswerType
-    data object Text : UiAnswerType
-    data class Select(val options: ImmutableList<String>) : UiAnswerType
-    data object Confirm : UiAnswerType
-}
+private typealias KBoolean = Boolean
 
-@Immutable
-data class UiChecklistItem(
-    val id: String,
-    val title: String,
-    val description: String?,
-    val answerType: UiAnswerType,
-    val isRequired: Boolean,
-    val requiresPhoto: Boolean,
-    val resultId: String?,
-    val valueBoolean: Boolean?,
-    val valueNumber: String,
-    val valueText: String,
-    val valueSelect: String?,
-    val isConfirmed: Boolean,
-    val photoCount: Int,
-    val numericMin: String?,
-    val numericMax: String?,
-    val showValidationError: Boolean,
-    val isNumberOutOfRange: Boolean = false,
-)
+sealed interface UiChecklistItem {
+    val id: String
+    val title: String
+    val description: String?
+    val isRequired: KBoolean
+    val requiresPhoto: KBoolean
+    val photoCount: Int
+    val showValidationError: KBoolean
+
+    data class Boolean(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val isRequired: KBoolean,
+        override val requiresPhoto: KBoolean,
+        override val photoCount: Int,
+        override val showValidationError: KBoolean,
+        val value: KBoolean?,
+    ) : UiChecklistItem
+
+    data class Number(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val isRequired: KBoolean,
+        override val requiresPhoto: KBoolean,
+        override val photoCount: Int,
+        override val showValidationError: KBoolean,
+        val value: String,
+        val numericMin: String?,
+        val numericMax: String?,
+        val isOutOfRange: KBoolean,
+    ) : UiChecklistItem
+
+    data class Text(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val isRequired: KBoolean,
+        override val requiresPhoto: KBoolean,
+        override val photoCount: Int,
+        override val showValidationError: KBoolean,
+        val value: String,
+    ) : UiChecklistItem
+
+    data class Select(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val isRequired: KBoolean,
+        override val requiresPhoto: KBoolean,
+        override val photoCount: Int,
+        override val showValidationError: KBoolean,
+        val value: String?,
+        val options: ImmutableList<String>,
+    ) : UiChecklistItem
+
+    data class Confirm(
+        override val id: String,
+        override val title: String,
+        override val description: String?,
+        override val isRequired: KBoolean,
+        override val requiresPhoto: KBoolean,
+        override val photoCount: Int,
+        override val showValidationError: KBoolean,
+        val value: KBoolean,
+    ) : UiChecklistItem
+}
