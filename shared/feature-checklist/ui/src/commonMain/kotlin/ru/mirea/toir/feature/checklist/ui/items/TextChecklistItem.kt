@@ -18,7 +18,10 @@ internal fun TextChecklistItem(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var input by remember(item.id, item.value) { mutableStateOf(item.value) }
+    // Локальный input — источник истины. Ключ только по item.id, чтобы эхо
+    // из store (saveTextAnswer → observe → новый State) не перезаписывало текст,
+    // который пользователь ещё печатает (race при быстром вводе/удалении).
+    var input by remember(item.id) { mutableStateOf(item.value) }
 
     ToirOutlinedTextField(
         value = input,
