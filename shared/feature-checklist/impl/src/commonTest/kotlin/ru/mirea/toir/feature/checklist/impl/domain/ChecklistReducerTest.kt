@@ -91,10 +91,24 @@ class ChecklistReducerTest {
     }
 
     @Test
-    fun `ClearValidationError clears both validation flags`() {
+    fun `SetValidationOutOfRangeError sets isOutOfRangeError and clears others`() {
+        val withErrors = initial.copy(isValidationError = true, isPhotoValidationError = true)
+
+        val result = with(reducer) {
+            withErrors.reduce(ChecklistStoreFactory.Message.SetValidationOutOfRangeError)
+        }
+
+        assertTrue(result.isOutOfRangeError)
+        assertFalse(result.isValidationError)
+        assertFalse(result.isPhotoValidationError)
+    }
+
+    @Test
+    fun `ClearValidationError clears all validation flags including isOutOfRangeError`() {
         val withErrors = initial.copy(
             isValidationError = true,
             isPhotoValidationError = true,
+            isOutOfRangeError = true,
         )
 
         val result = with(reducer) {
@@ -103,6 +117,7 @@ class ChecklistReducerTest {
 
         assertFalse(result.isValidationError)
         assertFalse(result.isPhotoValidationError)
+        assertFalse(result.isOutOfRangeError)
     }
 
     @Test

@@ -2,7 +2,6 @@ package ru.mirea.toir.feature.checklist.impl.domain
 
 import com.arkivanov.mvikotlin.core.store.Reducer
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toPersistentMap
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.State
 import ru.mirea.toir.feature.checklist.impl.domain.ChecklistStoreFactory.Message
 
@@ -33,29 +32,35 @@ internal class ChecklistReducer : Reducer<State, Message> {
                 .toImmutableList(),
         )
 
-        is Message.SetNumberDraft -> copy(
-            numberDrafts = (numberDrafts + (msg.itemId to msg.raw)).toPersistentMap(),
-        )
-
         Message.SetValidationRequiredError -> copy(
             isValidationError = true,
             isPhotoValidationError = false,
+            isOutOfRangeError = false,
         )
 
         Message.SetValidationPhotoError -> copy(
             isValidationError = false,
             isPhotoValidationError = true,
+            isOutOfRangeError = false,
+        )
+
+        Message.SetValidationOutOfRangeError -> copy(
+            isValidationError = false,
+            isPhotoValidationError = false,
+            isOutOfRangeError = true,
         )
 
         Message.ClearValidationError -> copy(
             isValidationError = false,
             isPhotoValidationError = false,
+            isOutOfRangeError = false,
         )
 
         Message.SetCompleted -> copy(
             isCompleted = true,
             isValidationError = false,
             isPhotoValidationError = false,
+            isOutOfRangeError = false,
         )
     }
 }

@@ -39,13 +39,7 @@ internal class ChecklistExecutor(
             }
 
             is Intent.OnNumberAnswer -> {
-                val filtered = intent.value.filterNot { it.isWhitespace() }
-                dispatch(Message.SetNumberDraft(intent.itemId, filtered))
-                val number = filtered.replace(',', '.').toDoubleOrNull() ?: return
-                val item = state().items.firstOrNull { it.id == intent.itemId } ?: return
-                val min = item.numericMin
-                val max = item.numericMax
-                if ((min != null && number < min) || (max != null && number > max)) return
+                val number = intent.value.replace(',', '.').toDoubleOrNull() ?: return
                 repository.saveNumberAnswer(state().equipmentResultId, intent.itemId, number)
             }
 
@@ -89,6 +83,17 @@ internal class ChecklistExecutor(
         val missingRequired = items.any { item -> item.isRequired && !item.isAnswered() }
         if (missingRequired) {
             dispatch(Message.SetValidationRequiredError)
+            return
+        }
+        val hasOutOfRange = items.any { item ->
+            if (item.answerType !is DomainAnswerType.Number) return@any false
+            val value = item.valueNumber ?: return@any false
+            val min = item.numericMin
+            val max = item.numericMax
+            (min != null && value < min) || (max != null && value > max)
+        }
+        if (hasOutOfRange) {
+            dispatch(Message.SetValidationOutOfRangeError)
             return
         }
         val missingPhoto = items.any { item ->
