@@ -13,17 +13,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
-import ru.mirea.toir.feature.checklist.presentation.models.UiAnswerType
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 
 @Composable
 internal fun SelectChecklistItem(
-    item: UiChecklistItem,
+    item: UiChecklistItem.SelectItem,
     onSelectOption: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val selectType = item.answerType as? UiAnswerType.Select ?: return
-
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(space = 4.dp),
@@ -37,8 +34,8 @@ internal fun SelectChecklistItem(
                 ToirTheme.colors.textPrimary
             },
         )
-        selectType.options.forEach { option ->
-            val selected = item.valueSelect == option
+        item.options.forEach { option ->
+            val selected = item.value == option
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier

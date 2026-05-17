@@ -15,7 +15,7 @@ import ru.mirea.toir.res.MR
 
 @Composable
 internal fun ConfirmChecklistItem(
-    item: UiChecklistItem,
+    item: UiChecklistItem.ConfirmItem,
     onConfirmChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -29,7 +29,7 @@ internal fun ConfirmChecklistItem(
             color = if (item.showValidationError) ToirTheme.colors.error else ToirTheme.colors.textPrimary,
         )
         ToirToggleChip(
-            selected = item.isConfirmed,
+            selected = item.value,
             onSelectedChange = onConfirmChange,
             text = stringResource(MR.strings.checklist_button_done),
             isError = item.showValidationError,

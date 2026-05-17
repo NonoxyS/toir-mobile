@@ -1,5 +1,7 @@
 package ru.mirea.toir.common.ui.compose.components.shared.textfield
 
+import ru.mirea.toir.common.ui.compose.components.shared.textfield.filters.InputFilter
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +55,7 @@ fun ToirOutlinedTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     trailingIcon: @Composable (() -> Unit)? = null,
+    inputFilter: InputFilter? = null,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (label != null) {
@@ -73,7 +76,10 @@ fun ToirOutlinedTextField(
         }
         OutlinedTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { newValue ->
+                val processed = inputFilter?.apply(newValue) ?: newValue
+                onValueChange(processed)
+            },
             modifier = modifier,
             enabled = enabled,
             textStyle = ToirTheme.typography.bodyLarge,

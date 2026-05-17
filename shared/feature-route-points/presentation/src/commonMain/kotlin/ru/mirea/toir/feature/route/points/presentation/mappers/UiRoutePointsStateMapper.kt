@@ -3,7 +3,7 @@ package ru.mirea.toir.feature.route.points.presentation.mappers
 import kotlinx.collections.immutable.toImmutableList
 import ru.mirea.toir.common.mappers.Mapper
 import ru.mirea.toir.feature.route.points.api.models.DomainRoutePoint
-import ru.mirea.toir.feature.route.points.api.models.EquipmentResultStatus
+import ru.mirea.toir.core.domain.models.EquipmentResultStatus
 import ru.mirea.toir.feature.route.points.api.store.RoutePointsStore
 import ru.mirea.toir.feature.route.points.presentation.models.UiEquipmentResultStatus
 import ru.mirea.toir.feature.route.points.presentation.models.UiRoutePoint

@@ -14,11 +14,12 @@ import ru.mirea.toir.res.MR
 
 @Composable
 internal fun TextChecklistItem(
-    item: UiChecklistItem,
+    item: UiChecklistItem.TextItem,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var input by remember(item.id, item.valueText) { mutableStateOf(item.valueText) }
+    var input by remember(item.id, item.value) { mutableStateOf(item.value) }
+
     ToirOutlinedTextField(
         value = input,
         onValueChange = { newValue ->

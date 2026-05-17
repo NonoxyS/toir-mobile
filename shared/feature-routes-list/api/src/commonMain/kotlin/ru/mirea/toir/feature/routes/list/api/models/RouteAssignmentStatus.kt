@@ -11,10 +11,4 @@ enum class RouteAssignmentStatus {
     // но локально соответствующей Inspection нет. Не фолбэк к ASSIGNED: создавать новую
     // запись запрещено — пользователю нужно потянуть актуальные данные синхронизацией.
     SYNC_REQUIRED,
-    ;
-
-    companion object {
-        fun fromString(value: String): RouteAssignmentStatus =
-            entries.firstOrNull { it.name == value } ?: ASSIGNED
-    }
 }

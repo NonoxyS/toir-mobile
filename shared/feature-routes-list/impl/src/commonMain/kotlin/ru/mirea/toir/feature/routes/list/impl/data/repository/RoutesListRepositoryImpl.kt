@@ -31,7 +31,6 @@ import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorage
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.RouteAssignmentStatus
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspection
-import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspectionStatus
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListRejectionReason
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncFailure
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncIndicator
@@ -39,7 +38,6 @@ import ru.mirea.toir.feature.routes.list.impl.data.mappers.RouteAssignmentMapper
 import ru.mirea.toir.feature.routes.list.impl.domain.repository.RoutesListRepository
 import ru.mirea.toir.sync.domain.DomainPendingInspection
 import ru.mirea.toir.sync.domain.InspectionRejectionReason
-import ru.mirea.toir.sync.domain.PendingInspectionStatus
 import ru.mirea.toir.sync.domain.SyncFailureReason
 import ru.mirea.toir.sync.domain.SyncManager
 import ru.mirea.toir.sync.domain.SyncStatus
@@ -239,17 +237,8 @@ internal class RoutesListRepositoryImpl(
         return RoutesListPendingInspection(
             inspectionId = inspectionId,
             routeName = routeName,
-            completedAt = completedAt,
-            status = status.toApi(),
-            attemptCount = attemptCount,
             rejectionReason = rejectionReason?.toApi(),
         )
-    }
-
-    private fun PendingInspectionStatus.toApi(): RoutesListPendingInspectionStatus = when (this) {
-        PendingInspectionStatus.COMPLETED -> RoutesListPendingInspectionStatus.COMPLETED
-        PendingInspectionStatus.PARTIALLY_COMPLETED -> RoutesListPendingInspectionStatus.PARTIALLY_COMPLETED
-        PendingInspectionStatus.CANCELLED -> RoutesListPendingInspectionStatus.CANCELLED
     }
 
     private fun InspectionRejectionReason.toApi(): RoutesListRejectionReason = when (this) {

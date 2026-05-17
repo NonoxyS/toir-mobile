@@ -36,7 +36,6 @@ import ru.mirea.toir.common.ui.compose.components.shared.button.ToirSecondaryBut
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.feature.checklist.presentation.ChecklistViewModel
-import ru.mirea.toir.feature.checklist.presentation.models.UiAnswerType
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistLabel
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistState
@@ -125,6 +124,7 @@ private fun ChecklistScreenContent(
                 ChecklistFinishBar(
                     isValidationError = state.isValidationError,
                     isPhotoValidationError = state.isPhotoValidationError,
+                    isOutOfRangeError = state.isOutOfRangeError,
                     onFinishChecklist = onFinishChecklist,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -157,6 +157,7 @@ private fun ChecklistScreenContent(
 private fun ChecklistFinishBar(
     isValidationError: Boolean,
     isPhotoValidationError: Boolean,
+    isOutOfRangeError: Boolean,
     onFinishChecklist: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -180,6 +181,13 @@ private fun ChecklistFinishBar(
             if (isPhotoValidationError) {
                 Text(
                     text = stringResource(MR.strings.checklist_validation_error_photo),
+                    style = ToirTheme.typography.bodyMedium,
+                    color = ToirTheme.colors.error,
+                )
+            }
+            if (isOutOfRangeError) {
+                Text(
+                    text = stringResource(MR.strings.checklist_validation_error_out_of_range),
                     style = ToirTheme.typography.bodyMedium,
                     color = ToirTheme.colors.error,
                 )
@@ -260,28 +268,28 @@ private fun ChecklistItemRow(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(space = 8.dp),
     ) {
-        when (item.answerType) {
-            is UiAnswerType.Boolean -> BooleanChecklistItem(
+        when (item) {
+            is UiChecklistItem.BooleanItem -> BooleanChecklistItem(
                 item = item,
                 onValueChange = { value -> onBooleanAnswer(item.id, value) },
             )
 
-            is UiAnswerType.Number -> NumberChecklistItem(
+            is UiChecklistItem.NumberItem -> NumberChecklistItem(
                 item = item,
                 onValueChange = { value -> onNumberAnswer(item.id, value) },
             )
 
-            is UiAnswerType.Text -> TextChecklistItem(
+            is UiChecklistItem.TextItem -> TextChecklistItem(
                 item = item,
                 onValueChange = { value -> onTextAnswer(item.id, value) },
             )
 
-            is UiAnswerType.Select -> SelectChecklistItem(
+            is UiChecklistItem.SelectItem -> SelectChecklistItem(
                 item = item,
                 onSelectOption = { value -> onSelectAnswer(item.id, value) },
             )
 
-            is UiAnswerType.Confirm -> ConfirmChecklistItem(
+            is UiChecklistItem.ConfirmItem -> ConfirmChecklistItem(
                 item = item,
                 onConfirmChange = { value -> onConfirm(item.id, value) },
             )
@@ -308,7 +316,6 @@ private fun ChecklistPhotoSection(
         ToirSecondaryButton(
             onClick = { onAddPhoto(item.id) },
             text = stringResource(MR.strings.checklist_button_add_photo),
-            enabled = item.resultId != null,
             modifier = Modifier.fillMaxWidth(),
         )
         if (item.photoCount > 0) {

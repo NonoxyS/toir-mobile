@@ -1,7 +1,5 @@
 package ru.mirea.toir.feature.checklist.impl.domain
 
-import kotlinx.collections.immutable.persistentListOf
-import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.State
 import kotlin.test.Test
@@ -42,23 +40,18 @@ class ChecklistReducerTest {
 
     @Test
     fun `SetItems replaces items list and stops loading`() {
-        val items = persistentListOf(
-            DomainChecklistItem(
+        val items = listOf(
+            DomainChecklistItem.NumberItem(
                 id = "i1",
                 title = "Pump pressure",
                 description = null,
-                answerType = DomainAnswerType.Number,
                 isRequired = true,
                 requiresPhoto = false,
                 resultId = null,
-                valueBoolean = null,
-                valueNumber = null,
-                valueText = null,
-                valueSelect = null,
-                isConfirmed = false,
                 photoCount = 0,
-                numericMin = null,
-                numericMax = null,
+                value = null,
+                min = null,
+                max = null,
             ),
         )
 
@@ -91,10 +84,24 @@ class ChecklistReducerTest {
     }
 
     @Test
-    fun `ClearValidationError clears both validation flags`() {
+    fun `SetValidationOutOfRangeError sets isOutOfRangeError and clears others`() {
+        val withErrors = initial.copy(isValidationError = true, isPhotoValidationError = true)
+
+        val result = with(reducer) {
+            withErrors.reduce(ChecklistStoreFactory.Message.SetValidationOutOfRangeError)
+        }
+
+        assertTrue(result.isOutOfRangeError)
+        assertFalse(result.isValidationError)
+        assertFalse(result.isPhotoValidationError)
+    }
+
+    @Test
+    fun `ClearValidationError clears all validation flags including isOutOfRangeError`() {
         val withErrors = initial.copy(
             isValidationError = true,
             isPhotoValidationError = true,
+            isOutOfRangeError = true,
         )
 
         val result = with(reducer) {
@@ -103,6 +110,7 @@ class ChecklistReducerTest {
 
         assertFalse(result.isValidationError)
         assertFalse(result.isPhotoValidationError)
+        assertFalse(result.isOutOfRangeError)
     }
 
     @Test
