@@ -17,7 +17,7 @@ import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 
 @Composable
 internal fun SelectChecklistItem(
-    item: UiChecklistItem.Select,
+    item: UiChecklistItem.SelectItem,
     onSelectOption: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {

@@ -41,7 +41,7 @@ class ChecklistReducerTest {
     @Test
     fun `SetItems replaces items list and stops loading`() {
         val items = listOf(
-            DomainChecklistItem.Number(
+            DomainChecklistItem.NumberItem(
                 id = "i1",
                 title = "Pump pressure",
                 description = null,

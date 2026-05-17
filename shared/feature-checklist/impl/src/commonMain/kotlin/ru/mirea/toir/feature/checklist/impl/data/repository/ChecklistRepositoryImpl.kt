@@ -216,7 +216,7 @@ internal class ChecklistRepositoryImpl(
         val requiresPhotoBool = requiresPhoto == 1L
         val resultIdOrNull = result?.id
         return when (answerType.lowercase()) {
-            ANSWER_TYPE_BOOLEAN -> DomainChecklistItem.Boolean(
+            ANSWER_TYPE_BOOLEAN -> DomainChecklistItem.BooleanItem(
                 id = id,
                 title = title,
                 description = description,
@@ -227,7 +227,7 @@ internal class ChecklistRepositoryImpl(
                 value = result?.valueBoolean?.let { it == 1L },
             )
 
-            ANSWER_TYPE_NUMBER -> DomainChecklistItem.Number(
+            ANSWER_TYPE_NUMBER -> DomainChecklistItem.NumberItem(
                 id = id,
                 title = title,
                 description = description,
@@ -240,7 +240,7 @@ internal class ChecklistRepositoryImpl(
                 max = numericMax,
             )
 
-            ANSWER_TYPE_SELECT -> DomainChecklistItem.Select(
+            ANSWER_TYPE_SELECT -> DomainChecklistItem.SelectItem(
                 id = id,
                 title = title,
                 description = description,
@@ -252,7 +252,7 @@ internal class ChecklistRepositoryImpl(
                 options = parseSelectOptions(selectOptions),
             )
 
-            ANSWER_TYPE_CONFIRMATION -> DomainChecklistItem.Confirm(
+            ANSWER_TYPE_CONFIRMATION -> DomainChecklistItem.ConfirmItem(
                 id = id,
                 title = title,
                 description = description,
@@ -263,7 +263,7 @@ internal class ChecklistRepositoryImpl(
                 isConfirmed = result?.valueBoolean == 1L,
             )
 
-            ANSWER_TYPE_TEXT -> DomainChecklistItem.Text(
+            ANSWER_TYPE_TEXT -> DomainChecklistItem.TextItem(
                 id = id,
                 title = title,
                 description = description,
@@ -274,7 +274,7 @@ internal class ChecklistRepositoryImpl(
                 value = result?.valueText,
             )
 
-            else -> DomainChecklistItem.Text(
+            else -> DomainChecklistItem.TextItem(
                 id = id,
                 title = title,
                 description = description,

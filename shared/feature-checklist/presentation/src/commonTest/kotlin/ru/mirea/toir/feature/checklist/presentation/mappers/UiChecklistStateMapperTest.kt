@@ -20,7 +20,7 @@ class UiChecklistStateMapperTest {
         id: String = "i1",
         isRequired: Boolean = true,
         value: Boolean? = null,
-    ) = DomainChecklistItem.Boolean(
+    ) = DomainChecklistItem.BooleanItem(
         id = id,
         title = "Q",
         description = null,
@@ -35,7 +35,7 @@ class UiChecklistStateMapperTest {
         id: String = "i1",
         isRequired: Boolean = true,
         value: String? = null,
-    ) = DomainChecklistItem.Text(
+    ) = DomainChecklistItem.TextItem(
         id = id,
         title = "Q",
         description = null,
@@ -51,7 +51,7 @@ class UiChecklistStateMapperTest {
         isRequired: Boolean = true,
         value: String? = null,
         options: List<String> = listOf("a", "b"),
-    ) = DomainChecklistItem.Select(
+    ) = DomainChecklistItem.SelectItem(
         id = id,
         title = "Q",
         description = null,
@@ -67,7 +67,7 @@ class UiChecklistStateMapperTest {
         id: String = "i1",
         isRequired: Boolean = true,
         isConfirmed: Boolean = false,
-    ) = DomainChecklistItem.Confirm(
+    ) = DomainChecklistItem.ConfirmItem(
         id = id,
         title = "Q",
         description = null,
@@ -179,9 +179,9 @@ class UiChecklistStateMapperTest {
             ),
         )
         val ui = mapper.map(state)
-        assertTrue(ui.items[0] is UiChecklistItem.Boolean)
-        assertTrue(ui.items[1] is UiChecklistItem.Text)
-        assertTrue(ui.items[2] is UiChecklistItem.Select)
-        assertTrue(ui.items[3] is UiChecklistItem.Confirm)
+        assertTrue(ui.items[0] is UiChecklistItem.BooleanItem)
+        assertTrue(ui.items[1] is UiChecklistItem.TextItem)
+        assertTrue(ui.items[2] is UiChecklistItem.SelectItem)
+        assertTrue(ui.items[3] is UiChecklistItem.ConfirmItem)
     }
 }

@@ -17,7 +17,7 @@ import ru.mirea.toir.res.MR
 
 @Composable
 internal fun BooleanChecklistItem(
-    item: UiChecklistItem.Boolean,
+    item: UiChecklistItem.BooleanItem,
     onValueChange: (kotlin.Boolean?) -> Unit,
     modifier: Modifier = Modifier,
 ) {

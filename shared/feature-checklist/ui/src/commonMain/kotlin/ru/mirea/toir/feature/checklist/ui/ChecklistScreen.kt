@@ -269,27 +269,27 @@ private fun ChecklistItemRow(
         verticalArrangement = Arrangement.spacedBy(space = 8.dp),
     ) {
         when (item) {
-            is UiChecklistItem.Boolean -> BooleanChecklistItem(
+            is UiChecklistItem.BooleanItem -> BooleanChecklistItem(
                 item = item,
                 onValueChange = { value -> onBooleanAnswer(item.id, value) },
             )
 
-            is UiChecklistItem.Number -> NumberChecklistItem(
+            is UiChecklistItem.NumberItem -> NumberChecklistItem(
                 item = item,
                 onValueChange = { value -> onNumberAnswer(item.id, value) },
             )
 
-            is UiChecklistItem.Text -> TextChecklistItem(
+            is UiChecklistItem.TextItem -> TextChecklistItem(
                 item = item,
                 onValueChange = { value -> onTextAnswer(item.id, value) },
             )
 
-            is UiChecklistItem.Select -> SelectChecklistItem(
+            is UiChecklistItem.SelectItem -> SelectChecklistItem(
                 item = item,
                 onSelectOption = { value -> onSelectAnswer(item.id, value) },
             )
 
-            is UiChecklistItem.Confirm -> ConfirmChecklistItem(
+            is UiChecklistItem.ConfirmItem -> ConfirmChecklistItem(
                 item = item,
                 onConfirmChange = { value -> onConfirm(item.id, value) },
             )

@@ -29,7 +29,7 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
     private fun DomainChecklistItem.toUi(showValidationErrors: Boolean): UiChecklistItem {
         val showValidationError = showValidationErrors && isRequired && !isAnswered
         return when (this) {
-            is DomainChecklistItem.Boolean -> UiChecklistItem.Boolean(
+            is DomainChecklistItem.BooleanItem -> UiChecklistItem.BooleanItem(
                 id = id,
                 title = title,
                 description = description,
@@ -40,7 +40,7 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                 value = value,
             )
 
-            is DomainChecklistItem.Number -> {
+            is DomainChecklistItem.NumberItem -> {
                 val minValue = min
                 val maxValue = max
                 val rangeHint: StringDesc? = when {
@@ -59,7 +59,7 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                     )
                     else -> null
                 }
-                UiChecklistItem.Number(
+                UiChecklistItem.NumberItem(
                     id = id,
                     title = title,
                     description = description,
@@ -73,7 +73,7 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                 )
             }
 
-            is DomainChecklistItem.Text -> UiChecklistItem.Text(
+            is DomainChecklistItem.TextItem -> UiChecklistItem.TextItem(
                 id = id,
                 title = title,
                 description = description,
@@ -84,7 +84,7 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                 value = value.orEmpty(),
             )
 
-            is DomainChecklistItem.Select -> UiChecklistItem.Select(
+            is DomainChecklistItem.SelectItem -> UiChecklistItem.SelectItem(
                 id = id,
                 title = title,
                 description = description,
@@ -96,7 +96,7 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                 options = options.toImmutableList(),
             )
 
-            is DomainChecklistItem.Confirm -> UiChecklistItem.Confirm(
+            is DomainChecklistItem.ConfirmItem -> UiChecklistItem.ConfirmItem(
                 id = id,
                 title = title,
                 description = description,

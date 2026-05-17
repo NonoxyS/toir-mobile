@@ -15,7 +15,7 @@ import ru.mirea.toir.res.MR
 
 @Composable
 internal fun ConfirmChecklistItem(
-    item: UiChecklistItem.Confirm,
+    item: UiChecklistItem.ConfirmItem,
     onConfirmChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {

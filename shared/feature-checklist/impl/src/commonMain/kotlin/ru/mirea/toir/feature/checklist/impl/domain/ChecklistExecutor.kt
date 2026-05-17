@@ -84,7 +84,7 @@ internal class ChecklistExecutor(
             return
         }
         val hasOutOfRange = items.any { item ->
-            item is DomainChecklistItem.Number && item.isOutOfRange
+            item is DomainChecklistItem.NumberItem && item.isOutOfRange
         }
         if (hasOutOfRange) {
             dispatch(Message.SetValidationOutOfRangeError)

@@ -14,7 +14,7 @@ import ru.mirea.toir.res.MR
 
 @Composable
 internal fun TextChecklistItem(
-    item: UiChecklistItem.Text,
+    item: UiChecklistItem.TextItem,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {

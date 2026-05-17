@@ -14,7 +14,7 @@ import ru.mirea.toir.res.MR
 
 @Composable
 internal fun NumberChecklistItem(
-    item: UiChecklistItem.Number,
+    item: UiChecklistItem.NumberItem,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
