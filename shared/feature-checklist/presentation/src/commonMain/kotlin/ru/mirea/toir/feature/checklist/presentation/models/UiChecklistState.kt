@@ -12,5 +12,6 @@ data class UiChecklistState(
     val isValidationError: Boolean = false,
     val isPhotoValidationError: Boolean = false,
     val isOutOfRangeError: Boolean = false,
+    val isInvalidNumberError: Boolean = false,
     val isCompleted: Boolean = false,
 )

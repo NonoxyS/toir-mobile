@@ -11,11 +11,13 @@ interface ChecklistStore : Store<Intent, State, Label> {
     data class State(
         val equipmentResultId: String = "",
         val items: List<DomainChecklistItem> = emptyList(),
+        val invalidNumberInputs: Map<String, String> = emptyMap(),
         val isLoading: Boolean = true,
         val isError: Boolean = false,
         val isValidationError: Boolean = false,
         val isPhotoValidationError: Boolean = false,
         val isOutOfRangeError: Boolean = false,
+        val isInvalidNumberError: Boolean = false,
         val isCompleted: Boolean = false,
     )
 

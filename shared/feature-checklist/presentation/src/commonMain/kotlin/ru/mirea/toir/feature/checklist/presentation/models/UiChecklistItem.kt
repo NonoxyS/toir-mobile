@@ -34,6 +34,7 @@ sealed interface UiChecklistItem {
         val value: String,
         val rangeHint: StringDesc?,
         val isOutOfRange: Boolean,
+        val isInvalidNumber: Boolean,
     ) : UiChecklistItem
 
     data class TextItem(

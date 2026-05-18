@@ -37,8 +37,27 @@ internal class ChecklistExecutor(
             }
 
             is Intent.OnNumberAnswer -> {
-                val number = intent.value.replace(',', '.').toDoubleOrNull() ?: return
-                repository.saveNumberAnswer(state().equipmentResultId, intent.itemId, number)
+                val raw = intent.value
+                if (raw.isEmpty()) {
+                    dispatch(Message.ClearNumberInvalid(intent.itemId))
+                    repository.saveNumberAnswer(
+                        equipmentResultId = state().equipmentResultId,
+                        itemId = intent.itemId,
+                        value = null,
+                    )
+                } else {
+                    val parsed = raw.replace(',', '.').toDoubleOrNull()
+                    if (parsed == null) {
+                        dispatch(Message.SetNumberInvalid(intent.itemId, raw))
+                    } else {
+                        dispatch(Message.ClearNumberInvalid(intent.itemId))
+                        repository.saveNumberAnswer(
+                            equipmentResultId = state().equipmentResultId,
+                            itemId = intent.itemId,
+                            value = parsed,
+                        )
+                    }
+                }
             }
 
             is Intent.OnTextAnswer -> {
@@ -78,6 +97,10 @@ internal class ChecklistExecutor(
     private suspend fun finishChecklist() {
         val currentState = state()
         val items = currentState.items
+        if (currentState.invalidNumberInputs.isNotEmpty()) {
+            dispatch(Message.SetValidationInvalidNumberError)
+            return
+        }
         val missingRequired = items.any { item -> item.isRequired && !item.isAnswered }
         if (missingRequired) {
             dispatch(Message.SetValidationRequiredError)

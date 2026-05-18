@@ -16,17 +16,26 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
 
     override fun map(item: ChecklistStore.State): UiChecklistState = UiChecklistState(
         items = item.items
-            .map { it.toUi(showValidationErrors = item.isValidationError) }
+            .map {
+                it.toUi(
+                    showValidationErrors = item.isValidationError,
+                    invalidNumberInputs = item.invalidNumberInputs,
+                )
+            }
             .toImmutableList(),
         isLoading = item.isLoading,
         isError = item.isError,
         isValidationError = item.isValidationError,
         isPhotoValidationError = item.isPhotoValidationError,
         isOutOfRangeError = item.isOutOfRangeError,
+        isInvalidNumberError = item.isInvalidNumberError,
         isCompleted = item.isCompleted,
     )
 
-    private fun DomainChecklistItem.toUi(showValidationErrors: Boolean): UiChecklistItem {
+    private fun DomainChecklistItem.toUi(
+        showValidationErrors: Boolean,
+        invalidNumberInputs: Map<String, String>,
+    ): UiChecklistItem {
         val showValidationError = showValidationErrors && isRequired && !isAnswered
         return when (this) {
             is DomainChecklistItem.BooleanItem -> UiChecklistItem.BooleanItem(
@@ -59,6 +68,7 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                     )
                     else -> null
                 }
+                val invalidRaw = invalidNumberInputs[id]
                 UiChecklistItem.NumberItem(
                     id = id,
                     title = title,
@@ -67,9 +77,10 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
                     requiresPhoto = requiresPhoto,
                     photoCount = photoCount,
                     showValidationError = showValidationError,
-                    value = value?.formatNumber().orEmpty(),
+                    value = invalidRaw ?: value?.formatNumber().orEmpty(),
                     rangeHint = rangeHint,
                     isOutOfRange = isOutOfRange,
+                    isInvalidNumber = invalidRaw != null,
                 )
             }
 

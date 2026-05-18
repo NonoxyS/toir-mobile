@@ -89,7 +89,11 @@
     <string name="checklist_number_hint_min">Допустимо: не меньше %1$s</string>
     <string name="checklist_number_hint_max">Допустимо: не больше %1$s</string>
     <string name="checklist_number_error_out_of_range">Значение вне допустимого диапазона</string>
+    <string name="checklist_number_error_invalid">Введите число</string>
     <string name="checklist_validation_error_out_of_range">Исправьте числа вне допустимого диапазона</string>
+    <string name="checklist_validation_error_invalid_number">Исправьте некорректные числовые поля</string>
+    <string name="checklist_description_dismiss">Понятно</string>
+    <string name="checklist_description_open_content_description">Открыть описание</string>
     <string name="checklist_back_content_description">Назад</string>
 
     <!-- Bootstrap -->

@@ -97,7 +97,7 @@ internal class ChecklistRepositoryImpl(
     override suspend fun saveNumberAnswer(
         equipmentResultId: String,
         itemId: String,
-        value: Double,
+        value: Double?,
     ): Result<Unit> = saveAnswer(
         equipmentResultId = equipmentResultId,
         itemId = itemId,

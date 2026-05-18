@@ -29,28 +29,47 @@ internal class ChecklistReducer : Reducer<State, Message> {
             items = items.map { item -> if (item.id == msg.item.id) msg.item else item },
         )
 
+        is Message.SetNumberInvalid -> copy(
+            invalidNumberInputs = invalidNumberInputs + (msg.itemId to msg.raw),
+        )
+
+        is Message.ClearNumberInvalid -> copy(
+            invalidNumberInputs = invalidNumberInputs - msg.itemId,
+        )
+
         Message.SetValidationRequiredError -> copy(
             isValidationError = true,
             isPhotoValidationError = false,
             isOutOfRangeError = false,
+            isInvalidNumberError = false,
         )
 
         Message.SetValidationPhotoError -> copy(
             isValidationError = false,
             isPhotoValidationError = true,
             isOutOfRangeError = false,
+            isInvalidNumberError = false,
         )
 
         Message.SetValidationOutOfRangeError -> copy(
             isValidationError = false,
             isPhotoValidationError = false,
             isOutOfRangeError = true,
+            isInvalidNumberError = false,
+        )
+
+        Message.SetValidationInvalidNumberError -> copy(
+            isValidationError = false,
+            isPhotoValidationError = false,
+            isOutOfRangeError = false,
+            isInvalidNumberError = true,
         )
 
         Message.ClearValidationError -> copy(
             isValidationError = false,
             isPhotoValidationError = false,
             isOutOfRangeError = false,
+            isInvalidNumberError = false,
         )
 
         Message.SetCompleted -> copy(
@@ -58,6 +77,7 @@ internal class ChecklistReducer : Reducer<State, Message> {
             isValidationError = false,
             isPhotoValidationError = false,
             isOutOfRangeError = false,
+            isInvalidNumberError = false,
         )
     }
 }

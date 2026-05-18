@@ -16,6 +16,7 @@ import ru.mirea.toir.res.MR
 internal fun TextChecklistItem(
     item: UiChecklistItem.TextItem,
     onValueChange: (String) -> Unit,
+    onOpenDescription: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // Локальный input — источник истины. Ключ только по item.id, чтобы эхо
@@ -39,5 +40,10 @@ internal fun TextChecklistItem(
             null
         },
         singleLine = true,
+        labelTrailingContent = if (item.description != null) {
+            { ChecklistInfoIconButton(onClick = onOpenDescription) }
+        } else {
+            null
+        },
     )
 }

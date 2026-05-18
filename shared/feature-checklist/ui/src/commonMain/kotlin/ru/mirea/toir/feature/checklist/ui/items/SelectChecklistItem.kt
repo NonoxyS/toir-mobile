@@ -19,21 +19,14 @@ import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 internal fun SelectChecklistItem(
     item: UiChecklistItem.SelectItem,
     onSelectOption: (String) -> Unit,
+    onOpenDescription: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(space = 4.dp),
     ) {
-        Text(
-            text = item.titleWithRequiredMarker(),
-            style = ToirTheme.typography.bodyLarge,
-            color = if (item.showValidationError) {
-                ToirTheme.colors.error
-            } else {
-                ToirTheme.colors.textPrimary
-            },
-        )
+        ChecklistItemTitle(item = item, onOpenDescription = onOpenDescription)
         item.options.forEach { option ->
             val selected = item.value == option
             Row(

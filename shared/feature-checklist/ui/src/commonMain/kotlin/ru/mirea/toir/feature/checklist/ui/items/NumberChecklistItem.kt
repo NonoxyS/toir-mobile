@@ -20,17 +20,17 @@ import ru.mirea.toir.res.MR
 internal fun NumberChecklistItem(
     item: UiChecklistItem.NumberItem,
     onValueChange: (String) -> Unit,
+    onOpenDescription: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Локальный input — источник истины для TextField. Без него ломались два сценария:
-    // 1) ввод дробных чисел — executor сохраняет "1." как 1.0, mapper форматирует
-    //    обратно в "1", из-за чего точка тут же исчезала и нельзя было дописать "1.5";
-    // 2) очистка поля — executor возвращается ранним return на пустой строке,
-    //    item.value остаётся прежним → TextField перерисовывал старое число,
-    //    то есть последний символ "не удалялся" при удалении ввода.
-    // Ключ только по item.id, чтобы эхо из store не сбрасывало буфер во время ввода.
+    // Локальный input — источник истины для TextField, чтобы отрисовка не дожидалась
+    // round-trip executor → store → mapper. Подсветка ошибки (item.isInvalidNumber,
+    // item.isOutOfRange) приходит из store: парсинг и решение «валидно / OOR» делает
+    // executor, UI только рендерит. Ключ remember только по item.id — иначе эхо
+    // переформатированного значения сбрасывало бы буфер во время быстрого ввода.
     var input by remember(item.id) { mutableStateOf(item.value) }
     val supportingText = when {
+        item.isInvalidNumber -> stringResource(MR.strings.checklist_number_error_invalid)
         item.isOutOfRange -> stringResource(MR.strings.checklist_number_error_out_of_range)
         item.showValidationError -> stringResource(MR.strings.checklist_validation_error_required)
         else -> when (val hint = item.rangeHint) {
@@ -38,7 +38,7 @@ internal fun NumberChecklistItem(
             else -> null
         }
     }
-    val isError = item.isOutOfRange || item.showValidationError
+    val isError = item.isInvalidNumber || item.isOutOfRange || item.showValidationError
 
     ToirOutlinedTextField(
         value = input,
@@ -54,6 +54,11 @@ internal fun NumberChecklistItem(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         inputFilter = NumberInputFilter,
         singleLine = true,
+        labelTrailingContent = if (item.description != null) {
+            { ChecklistInfoIconButton(onClick = onOpenDescription) }
+        } else {
+            null
+        },
     )
 }
 
