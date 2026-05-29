@@ -24,6 +24,7 @@ import ru.mirea.toir.sync.fixtures.TestData.seedLocation
 import ru.mirea.toir.sync.fixtures.TestData.seedPendingInspection
 import ru.mirea.toir.sync.fixtures.TestData.seedRoute
 import ru.mirea.toir.sync.fixtures.TestDatabase
+import ru.mirea.toir.sync.fixtures.TestFileReader
 import ru.mirea.toir.sync.fixtures.TestPhotoFileWriter
 import ru.mirea.toir.sync.fixtures.TestSyncApi
 import ru.mirea.toir.sync.fixtures.TestTokenStorage
@@ -54,6 +55,7 @@ class SyncRepositoryObserveTest {
             transactionRunner = TransactionRunnerImpl(db),
         ),
         photoFileWriter = TestPhotoFileWriter(),
+        fileReader = TestFileReader(),
         transactionRunner = TransactionRunnerImpl(db),
         coroutineDispatchers = dispatchers,
     )

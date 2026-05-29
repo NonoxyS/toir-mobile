@@ -17,6 +17,7 @@ androidMainDependencies {
 commonMainDependencies {
     implementations(
         libs.coil.compose,
+        libs.zoomable,
         libs.kotlin.immutableCollections,
         libs.moko.permissions.core,
         libs.moko.permissions.camera,

@@ -7,8 +7,8 @@ import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
+import androidx.compose.animation.SharedTransitionScope.PlaceholderSize
+import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.ContentSize
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.Spring.StiffnessMediumLow
@@ -28,11 +28,38 @@ val LocalSharedTransitionScope = staticCompositionLocalOf<SharedTransitionScope>
     error("CompositionLocal LocalSharedTransitionScope was not provided")
 }
 
+@Suppress("CompositionLocalAllowlist")
+val LocalAnimatedVisibilityScope = staticCompositionLocalOf<AnimatedVisibilityScope> {
+    error("CompositionLocal LocalAnimatedVisibilityScope was not provided")
+}
+
+fun Modifier.toirSharedElement(
+    sharedContentState: SharedContentState,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    boundsTransform: BoundsTransform = DefaultBoundsTransform,
+    placeholderSize: PlaceholderSize = ContentSize,
+    renderInOverlayDuringTransition: Boolean = true,
+    zIndexInOverlay: Float = 0f,
+    clipInOverlayDuringTransition: OverlayClip = ParentClip,
+): Modifier = with(sharedTransitionScope) {
+    this@toirSharedElement
+        .sharedElement(
+            sharedContentState = sharedContentState,
+            animatedVisibilityScope = animatedVisibilityScope,
+            boundsTransform = boundsTransform,
+            placeholderSize = placeholderSize,
+            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+            zIndexInOverlay = zIndexInOverlay,
+            clipInOverlayDuringTransition = clipInOverlayDuringTransition
+        )
+}
+
 fun Modifier.toirSharedElement(
     sharedContentState: SharedContentState,
     animatedVisibilityScope: AnimatedVisibilityScope,
     boundsTransform: BoundsTransform = DefaultBoundsTransform,
-    placeHolderSize: PlaceHolderSize = contentSize,
+    placeholderSize: PlaceholderSize = ContentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = ParentClip,
@@ -43,7 +70,29 @@ fun Modifier.toirSharedElement(
                 sharedContentState = sharedContentState,
                 animatedVisibilityScope = animatedVisibilityScope,
                 boundsTransform = boundsTransform,
-                placeHolderSize = placeHolderSize,
+                placeholderSize = placeholderSize,
+                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                zIndexInOverlay = zIndexInOverlay,
+                clipInOverlayDuringTransition = clipInOverlayDuringTransition
+            )
+    }
+}
+
+fun Modifier.toirSharedElement(
+    sharedContentState: SharedContentState,
+    boundsTransform: BoundsTransform = DefaultBoundsTransform,
+    placeholderSize: PlaceholderSize = ContentSize,
+    renderInOverlayDuringTransition: Boolean = true,
+    zIndexInOverlay: Float = 0f,
+    clipInOverlayDuringTransition: OverlayClip = ParentClip,
+): Modifier = composed {
+    with(LocalSharedTransitionScope.current) {
+        this@toirSharedElement
+            .sharedElement(
+                sharedContentState = sharedContentState,
+                animatedVisibilityScope = LocalAnimatedVisibilityScope.current,
+                boundsTransform = boundsTransform,
+                placeholderSize = placeholderSize,
                 renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                 zIndexInOverlay = zIndexInOverlay,
                 clipInOverlayDuringTransition = clipInOverlayDuringTransition

@@ -29,6 +29,7 @@ import ru.mirea.toir.sync.fixtures.TestData
 import ru.mirea.toir.sync.fixtures.TestData.seedFullPendingScenario
 import ru.mirea.toir.sync.fixtures.TestData.seedPendingPhoto
 import ru.mirea.toir.sync.fixtures.TestDatabase
+import ru.mirea.toir.sync.fixtures.TestFileReader
 import ru.mirea.toir.sync.fixtures.TestPhotoFileWriter
 import ru.mirea.toir.sync.fixtures.TestSyncApi
 import ru.mirea.toir.sync.fixtures.TestSyncApi.Companion.respondJson
@@ -45,12 +46,14 @@ class SyncRepositoryPhotoTest {
     private val syncApi = TestSyncApi()
     private val dispatchers = testDispatchers()
     private val photoFileWriter = TestPhotoFileWriter()
+    private val fileReader = TestFileReader()
 
-    // writeFakeFile returns a filesystem path; readFileBytes uses NSURL(string=), so we need
-    // a "file://" URI. NSTemporaryDirectory returns a path like "/private/var/folders/.../",
-    // so we prefix with "file://" to form a valid file URI.
+    // writeFakeFile keeps a real on-disk file around so tests stay close to the production
+    // shape (a URI tied to actual bytes), but the upload pipeline reads bytes through
+    // [fileReader] — the test seeds it with the same payload in setUp.
     private lateinit var photoPath: String
     private lateinit var photoFileUri: String
+    private val photoBytes: ByteArray = ByteArray(100) { it.toByte() }
 
     private val repo: SyncRepository = SyncRepositoryImpl(
         syncApiClient = syncApi.build(),
@@ -69,14 +72,16 @@ class SyncRepositoryPhotoTest {
             transactionRunner = TransactionRunnerImpl(db),
         ),
         photoFileWriter = photoFileWriter,
+        fileReader = fileReader,
         transactionRunner = TransactionRunnerImpl(db),
         coroutineDispatchers = dispatchers,
     )
 
     @BeforeTest
     fun setUp() {
-        photoPath = writeFakeFile(ByteArray(100) { it.toByte() }, "test-photo-${TestData.PHOTO_ID}.jpg")
+        photoPath = writeFakeFile(photoBytes, "test-photo-${TestData.PHOTO_ID}.jpg")
         photoFileUri = "file://$photoPath"
+        fileReader.putContent(photoFileUri, photoBytes)
     }
 
     @AfterTest
@@ -130,6 +135,29 @@ class SyncRepositoryPhotoTest {
         val photo = db.photoQueries.selectByChecklistItemResultId(TestData.CHECKLIST_ITEM_RESULT_ID).executeAsOne()
         assertEquals(LocalSyncStatus.PENDING, photo.sync_status)
         assertEquals(1L, photo.sync_attempt_count)
+    }
+
+    @Test
+    fun `uploadPendingPhotos - local read failure - photo retried and cycle continues`() = runTest {
+        db.seedFullPendingScenario()
+        db.seedPendingPhoto(fileUri = photoFileUri)
+        // Simulate a missing-file / wrong-URI read failure. Before the fix this aborted
+        // the whole sync cycle and the user saw "no connection"; now the photo is marked
+        // for retry and the upload step still completes successfully.
+        fileReader.throwForUri(
+            photoFileUri,
+            IllegalStateException("simulated read failure (e.g. ENOENT)"),
+        )
+
+        val result = repo.uploadPendingPhotos()
+
+        assertTrue(result.isSuccess, "Expected success(0) but was $result")
+        assertEquals(0L, result.getOrThrow())
+
+        val photo = db.photoQueries.selectByChecklistItemResultId(TestData.CHECKLIST_ITEM_RESULT_ID).executeAsOne()
+        assertEquals(LocalSyncStatus.PENDING, photo.sync_status)
+        assertEquals(1L, photo.sync_attempt_count)
+        assertEquals("UNKNOWN", photo.sync_last_error)
     }
 
     // ---------------- downloadMissingPhotos ----------------

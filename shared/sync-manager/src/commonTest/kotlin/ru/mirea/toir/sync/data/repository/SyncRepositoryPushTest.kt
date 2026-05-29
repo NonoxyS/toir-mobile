@@ -22,6 +22,7 @@ import ru.mirea.toir.sync.domain.repository.SyncRepository
 import ru.mirea.toir.sync.fixtures.TestData
 import ru.mirea.toir.sync.fixtures.TestData.seedFullPendingScenario
 import ru.mirea.toir.sync.fixtures.TestDatabase
+import ru.mirea.toir.sync.fixtures.TestFileReader
 import ru.mirea.toir.sync.fixtures.TestPhotoFileWriter
 import ru.mirea.toir.sync.fixtures.TestSyncApi
 import ru.mirea.toir.sync.fixtures.TestSyncApi.Companion.respondJson
@@ -53,6 +54,7 @@ class SyncRepositoryPushTest {
             transactionRunner = TransactionRunnerImpl(db),
         ),
         photoFileWriter = TestPhotoFileWriter(),
+        fileReader = TestFileReader(),
         transactionRunner = TransactionRunnerImpl(db),
         coroutineDispatchers = dispatchers,
     )

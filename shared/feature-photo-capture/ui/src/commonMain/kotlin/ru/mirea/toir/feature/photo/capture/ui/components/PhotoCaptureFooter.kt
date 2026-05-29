@@ -4,7 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +26,7 @@ internal fun PhotoCaptureFooter(
     canTake: Boolean,
     canConfirm: Boolean,
     isLimitReached: Boolean,
+    isLoading: Boolean,
     onTakePhoto: () -> Unit,
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
@@ -32,7 +36,8 @@ internal fun PhotoCaptureFooter(
         modifier = modifier
             .fillMaxWidth()
             .background(colors.background)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         ToirSecondaryButton(
@@ -41,11 +46,19 @@ internal fun PhotoCaptureFooter(
             modifier = Modifier.fillMaxWidth(),
             enabled = canTake,
             leadingIcon = {
-                Icon(
-                    painter = painterResource(MR.images.ic_camera_alt),
-                    contentDescription = null,
-                    tint = ToirTheme.colors.textPrimary,
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(TAKE_BUTTON_ICON_SIZE),
+                        color = ToirTheme.colors.textPrimary,
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(MR.images.ic_camera_alt),
+                        contentDescription = null,
+                        tint = ToirTheme.colors.textPrimary,
+                    )
+                }
             },
         )
         if (isLimitReached) {
@@ -74,3 +87,5 @@ internal fun PhotoCaptureFooter(
         }
     }
 }
+
+private val TAKE_BUTTON_ICON_SIZE = 20.dp

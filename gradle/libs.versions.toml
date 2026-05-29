@@ -1,27 +1,27 @@
 [versions]
 # Build
-agp = "9.0.0"
+agp = "9.1.0"
 javaVersion = "17"
 
 # Kotlin
-kotlin = "2.3.10"
-kotlin-coroutines = "1.10.2"
-kotlin-serialization = "1.10.0"
+kotlin = "2.3.21"
+kotlin-coroutines = "1.11.0"
+kotlin-serialization = "1.11.0"
 kotlin-datetime = "0.7.1"
 kotlin-immutableCollections = "0.4.0"
 
 # Android
-android-compileSdk = "36"
+android-compileSdk = "37"
 android-minSdk = "26"
-android-targetSdk = "36"
+android-targetSdk = "37"
 
 # AppVersion
 appVersion-major = "1"
 appVersion-minor = "0"
 
 # Compose Multiplatform
-compose-multiplatform = "1.10.3"
-compose-multiplatform-material3 = "1.9.0"
+compose-multiplatform = "1.12.0-alpha01"
+compose-multiplatform-material3 = "1.12.0-alpha01"
 compose-multiplatform-navigation = "2.9.2"
 
 # AndroidX
@@ -49,12 +49,12 @@ detekt-compose-kode = "1.4.0"
 detekt-compose-twitter = "0.0.26"
 
 # Moko
-moko-resources = "0.26.1"
+moko-resources = "0.26.4"
 moko-mvvm = "0.16.1"
 moko-permissions = "0.20.1"
 
 # MVIKotlin
-mvikotlin = "4.3.0"
+mvikotlin = "4.4.0"
 
 # SQLDelight
 sqldelight = "2.3.2"
@@ -64,7 +64,8 @@ sqlite-android = "3.49.0"
 
 # Logging
 napier = "2.7.1"
-coil = "3.0.4"
+coil = "3.2.0"
+zoomable = "2.12.0"
 
 [libraries]
 
@@ -168,6 +169,7 @@ detekt-libraries = { group = "io.gitlab.arturbosch.detekt", name = "detekt-rules
 detekt-compose-kode = { module = "ru.kode:detekt-rules-compose", version.ref = "detekt-compose-kode" }
 detekt-compose-twitter = { module = "com.twitter.compose.rules:detekt", version.ref = "detekt-compose-twitter" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+zoomable = { module = "net.engawapg.lib:zoomable", version.ref = "zoomable" }
 
 [plugins]
 # Convention plugins

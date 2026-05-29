@@ -189,7 +189,7 @@ private fun ChecklistFinishBar(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(space = 8.dp),
         ) {
             if (isInvalidNumberError) {

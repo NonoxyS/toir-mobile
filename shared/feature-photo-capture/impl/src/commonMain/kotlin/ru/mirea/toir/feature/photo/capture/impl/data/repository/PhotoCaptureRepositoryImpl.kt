@@ -1,6 +1,8 @@
 package ru.mirea.toir.feature.photo.capture.impl.data.repository
 
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -52,25 +54,16 @@ internal class PhotoCaptureRepositoryImpl(
             )
         }
 
-    override suspend fun getPhotos(
+    // Reactive read: SQLDelight asFlow re-emits on every photos-table change, so
+    // file_uri NULL → URL transitions from sync manager light up the UI without
+    // re-navigation. Errors propagate to the collector (rare for local SQLite reads).
+    override fun observePhotos(
         checklistItemResultId: String,
-    ): Result<List<PhotoCaptureStore.PhotoEntry>> =
-        withContext(coroutineDispatchers.io) {
-            coRunCatching(
-                tryBlock = {
-                    // Include rows with file_uri == null: those are server-restored photos
-                    // whose file is being fetched by the sync manager. The UI renders them
-                    // as placeholders (see PhotoCaptureStore.PhotoEntry).
-                    photoStorage.selectByChecklistItemResultId(checklistItemResultId)
-                        .map { PhotoCaptureStore.PhotoEntry(id = it.id, fileUri = it.fileUri) }
-                        .wrapResultSuccess()
-                },
-                catchBlock = { throwable ->
-                    Napier.e(message = "getPhotos failed", throwable = throwable)
-                    throwable.wrapResultFailure()
-                },
-            )
-        }
+    ): Flow<List<PhotoCaptureStore.PhotoEntry>> =
+        photoStorage.observePhotosByChecklistItemResultId(checklistItemResultId)
+            .map { list ->
+                list.map { PhotoCaptureStore.PhotoEntry(id = it.id, fileUri = it.fileUri) }
+            }
 
     override suspend fun deletePhoto(
         checklistItemResultId: String,

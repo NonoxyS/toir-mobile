@@ -6,7 +6,6 @@ import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.ResponseException
 import io.ktor.http.HttpStatusCode
 import io.ktor.util.network.UnresolvedAddressException
-import kotlinx.io.IOException
 
 internal fun Throwable.toSyncFailureReason(): SyncFailureReason = when {
     this is ResponseException && response.status == HttpStatusCode.Unauthorized -> SyncFailureReason.AUTH
@@ -15,6 +14,14 @@ internal fun Throwable.toSyncFailureReason(): SyncFailureReason = when {
     this is ConnectTimeoutException -> SyncFailureReason.NETWORK
     this is SocketTimeoutException -> SyncFailureReason.NETWORK
     this is HttpRequestTimeoutException -> SyncFailureReason.NETWORK
-    this is IOException -> SyncFailureReason.NETWORK
-    else -> SyncFailureReason.UNKNOWN
+    else -> platformClassifyFailure(this)
 }
+
+/**
+ * Platform fallback so we can keep classifying real network errors (`SocketException`,
+ * `UnknownHostException`, …) on the JVM while not lumping local IO errors like
+ * `FileNotFoundException` into NETWORK — both inherit from `IOException`, which is why
+ * the previous blanket `IOException -> NETWORK` rule produced the "no connection"
+ * message for a missing-photo upload.
+ */
+internal expect fun platformClassifyFailure(throwable: Throwable): SyncFailureReason

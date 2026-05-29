@@ -1,4 +1,5 @@
 import extensions.androidLibraryConfig
+import extensions.androidMainDependencies
 import extensions.commonMainDependencies
 import extensions.implementations
 import plugins.composeBundle
@@ -30,5 +31,11 @@ commonMainDependencies {
         *composeBundle,
         libs.moko.resources.compose,
         libs.kotlin.immutableCollections,
+    )
+}
+
+androidMainDependencies {
+    implementations(
+        libs.androidx.activity.compose,
     )
 }

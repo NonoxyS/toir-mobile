@@ -129,13 +129,10 @@
     <!-- Photo Capture — dialogs -->
     <string name="photo_delete_title">Удалить фото?</string>
     <string name="photo_delete_message">Это действие нельзя отменить.</string>
-    <string name="photo_exit_title">Отменить фотофиксацию?</string>
-    <string name="photo_exit_message">Снятые фото будут удалены и не привяжутся к пункту чек-листа.</string>
 
     <!-- Common buttons -->
     <string name="common_button_cancel">Отмена</string>
     <string name="common_button_delete">Удалить</string>
-    <string name="common_button_continue_capture">Продолжить съёмку</string>
 
     <!-- Sync status (App Bar indicator + bottom sheet) -->
     <string name="sync_indicator_content_description">Статус синхронизации</string>

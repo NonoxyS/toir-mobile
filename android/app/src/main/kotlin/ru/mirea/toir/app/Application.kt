@@ -15,9 +15,9 @@ class Application : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        setupLogging()
         setupKoin()
         setupSyncWorker()
-        setupLogging()
     }
 
     private fun setupLogging() {

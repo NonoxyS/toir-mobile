@@ -250,7 +250,7 @@ private fun RoutePointsFinishButton(
         modifier = modifier
             .fillMaxWidth()
             .background(colors.background)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
         ToirPrimaryButton(
             onClick = onClick,
