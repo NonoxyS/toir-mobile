@@ -9,6 +9,8 @@ data class UiPhotoCaptureState(
     val photos: ImmutableList<UiPhotoEntry> = persistentListOf(),
     val maxPhotos: Int? = null,
     val isLoading: Boolean = false,
+    val isLimitReached: Boolean = false,
+    val canTakePhoto: Boolean = false,
 )
 
 /**

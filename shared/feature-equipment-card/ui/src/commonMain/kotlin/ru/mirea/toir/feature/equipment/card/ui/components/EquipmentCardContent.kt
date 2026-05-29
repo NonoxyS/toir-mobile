@@ -37,10 +37,6 @@ internal fun EquipmentCardContent(
             label = stringResource(MR.strings.equipment_card_name),
             value = state.name,
         )
-        EquipmentCardField(
-            label = stringResource(MR.strings.equipment_card_type),
-            value = state.type,
-        )
         if (state.locationName.isNotEmpty()) {
             EquipmentCardField(
                 label = stringResource(MR.strings.equipment_card_location),

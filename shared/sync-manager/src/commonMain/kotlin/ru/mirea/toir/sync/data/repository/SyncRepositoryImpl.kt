@@ -34,8 +34,8 @@ import ru.mirea.toir.sync.data.network.models.RemoteSyncInspection
 import ru.mirea.toir.sync.data.network.models.RemoteSyncPushRequest
 import ru.mirea.toir.sync.data.network.models.RemoteSyncRejected
 import ru.mirea.toir.sync.data.network.models.RemoteSyncRejectedEntityType
+import ru.mirea.toir.sync.data.FileReader
 import ru.mirea.toir.sync.data.PhotoFileWriter
-import ru.mirea.toir.sync.data.readFileBytes
 import ru.mirea.toir.sync.domain.DomainPendingInspection
 import ru.mirea.toir.sync.domain.SyncFailureReason
 import ru.mirea.toir.sync.domain.models.SyncResult
@@ -60,6 +60,7 @@ internal class SyncRepositoryImpl(
     private val tokenStorage: TokenStorage,
     private val configChangesApplier: ConfigChangesApplier,
     private val photoFileWriter: PhotoFileWriter,
+    private val fileReader: FileReader,
     private val transactionRunner: TransactionRunner,
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : SyncRepository {
@@ -169,7 +170,24 @@ internal class SyncRepositoryImpl(
                             Napier.w(message = "Pending photo without fileUri skipped: id=${photo.id}")
                             return@forEach
                         }
-                        val bytes = readFileBytes(fileUri)
+                        // Reading the local file can fail independently of the network (file
+                        // removed by user/system, wrong URI scheme, …). Isolate the failure
+                        // to this photo: mark it for retry and continue, so one broken file
+                        // does not abort push/delta/download for the rest of the cycle.
+                        val bytes = runCatching { fileReader.read(fileUri) }.getOrElse { throwable ->
+                            Napier.e(
+                                message = "readPhotoBytes failed for id=${photo.id}",
+                                throwable = throwable,
+                            )
+                            val newAttempt = photo.syncAttemptCount + 1
+                            photoStorage.markPhotoRetryScheduled(
+                                id = photo.id,
+                                attemptCount = newAttempt,
+                                nextAttemptAt = nextAttemptIso(now, newAttempt),
+                                lastError = throwable.toSyncFailureReason().name,
+                            )
+                            return@forEach
+                        }
                         syncApiClient.uploadPhoto(
                             photoId = photo.id,
                             checklistItemResultId = photo.checklistItemResultId,

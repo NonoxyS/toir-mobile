@@ -5,6 +5,7 @@ import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.PhotoEntr
 import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.State
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PhotoCaptureReducerTest {
@@ -14,18 +15,16 @@ class PhotoCaptureReducerTest {
     private fun entry(uri: String) = PhotoEntry(id = uri, fileUri = uri)
 
     @Test
-    fun `AddPhoto appends to photos list`() {
-        val result = with(reducer) {
-            initial.reduce(PhotoCaptureStoreFactory.Message.AddPhoto(entry("file:///test.jpg")))
-        }
-        assertEquals(1, result.photos.size)
-        assertEquals(entry("file:///test.jpg"), result.photos.first())
-    }
-
-    @Test
     fun `SetLoading sets isLoading`() {
         val result = with(reducer) { initial.reduce(PhotoCaptureStoreFactory.Message.SetLoading(true)) }
         assertTrue(result.isLoading)
+    }
+
+    @Test
+    fun `SetLoading false clears isLoading`() {
+        val loading = initial.copy(isLoading = true)
+        val result = with(reducer) { loading.reduce(PhotoCaptureStoreFactory.Message.SetLoading(false)) }
+        assertFalse(result.isLoading)
     }
 
     @Test
@@ -39,34 +38,24 @@ class PhotoCaptureReducerTest {
     }
 
     @Test
-    fun `PhotoRemoved drops the matching uri`() {
-        val withPhotos = initial.copy(photos = listOf(entry("a"), entry("b"), entry("c")))
+    fun `SetPhotos with mixed placeholder and real entries preserves order`() {
+        // Reactive flow contract: SQLDelight emits the full list on every change, so the
+        // reducer trusts it as the source of truth — no merging with prior state.
+        val placeholder = PhotoEntry(id = "restored-1", fileUri = null)
+        val real = entry("file:///a.jpg")
         val result = with(reducer) {
-            withPhotos.reduce(PhotoCaptureStoreFactory.Message.PhotoRemoved("b"))
+            initial.reduce(PhotoCaptureStoreFactory.Message.SetPhotos(listOf(placeholder, real)))
         }
-        assertEquals(listOf(entry("a"), entry("c")), result.photos)
+        assertEquals(listOf(placeholder, real), result.photos)
     }
 
     @Test
-    fun `PhotoRemoved with non-existing uri leaves photos unchanged`() {
+    fun `SetPhotos with empty list clears photos`() {
         val withPhotos = initial.copy(photos = listOf(entry("a"), entry("b")))
         val result = with(reducer) {
-            withPhotos.reduce(PhotoCaptureStoreFactory.Message.PhotoRemoved("nope"))
+            withPhotos.reduce(PhotoCaptureStoreFactory.Message.SetPhotos(emptyList()))
         }
-        assertEquals(listOf(entry("a"), entry("b")), result.photos)
-    }
-
-    @Test
-    fun `PhotoRemoved keeps placeholder entries with null fileUri`() {
-        // Restored-but-not-yet-downloaded photo: fileUri == null, id is the photo UUID.
-        // Tap-to-delete only goes through tiles that have a fileUri, so PhotoRemoved
-        // should not touch placeholder rows.
-        val placeholder = PhotoEntry(id = "restored-1", fileUri = null)
-        val withPhotos = initial.copy(photos = listOf(placeholder, entry("a")))
-        val result = with(reducer) {
-            withPhotos.reduce(PhotoCaptureStoreFactory.Message.PhotoRemoved("a"))
-        }
-        assertEquals(listOf(placeholder), result.photos)
+        assertTrue(result.photos.isEmpty())
     }
 
     @Test

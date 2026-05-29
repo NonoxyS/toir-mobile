@@ -15,6 +15,5 @@ commonMainDependencies {
     implementations(
         projects.shared.coreDatabase,
         libs.kotlin.datetime,
-        libs.kotlin.immutableCollections,
     )
 }

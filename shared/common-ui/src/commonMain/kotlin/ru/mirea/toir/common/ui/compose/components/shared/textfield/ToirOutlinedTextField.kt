@@ -1,10 +1,13 @@
 package ru.mirea.toir.common.ui.compose.components.shared.textfield
 
+import ru.mirea.toir.common.ui.compose.components.shared.textfield.filters.InputFilter
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
@@ -14,6 +17,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -52,11 +56,17 @@ fun ToirOutlinedTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    inputFilter: InputFilter? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
+    labelTrailingContent: (@Composable () -> Unit)? = null,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (label != null) {
-            Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
                 Text(
                     text = label,
                     style = ToirTheme.typography.bodyMedium,
@@ -69,11 +79,18 @@ fun ToirOutlinedTextField(
                         color = ToirTheme.colors.error,
                     )
                 }
+                if (labelTrailingContent != null) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    labelTrailingContent()
+                }
             }
         }
         OutlinedTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { newValue ->
+                val processed = inputFilter?.apply(newValue) ?: newValue
+                onValueChange(processed)
+            },
             modifier = modifier,
             enabled = enabled,
             textStyle = ToirTheme.typography.bodyLarge,

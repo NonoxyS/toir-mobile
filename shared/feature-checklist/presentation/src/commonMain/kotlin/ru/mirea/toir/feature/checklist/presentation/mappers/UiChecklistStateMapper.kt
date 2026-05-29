@@ -1,13 +1,14 @@
 package ru.mirea.toir.feature.checklist.presentation.mappers
 
+import dev.icerock.moko.resources.desc.ResourceFormatted
+import dev.icerock.moko.resources.desc.StringDesc
 import kotlinx.collections.immutable.toImmutableList
 import ru.mirea.toir.common.mappers.Mapper
-import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore
-import ru.mirea.toir.feature.checklist.presentation.models.UiAnswerType
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistState
+import ru.mirea.toir.res.MR
 
 interface UiChecklistStateMapper : Mapper<ChecklistStore.State, UiChecklistState>
 
@@ -15,51 +16,108 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
 
     override fun map(item: ChecklistStore.State): UiChecklistState = UiChecklistState(
         items = item.items
-            .map { it.toUi(showValidationErrors = item.isValidationError) }
+            .map {
+                it.toUi(
+                    showValidationErrors = item.isValidationError,
+                    invalidNumberInputs = item.invalidNumberInputs,
+                )
+            }
             .toImmutableList(),
         isLoading = item.isLoading,
         isError = item.isError,
         isValidationError = item.isValidationError,
         isPhotoValidationError = item.isPhotoValidationError,
+        isOutOfRangeError = item.isOutOfRangeError,
+        isInvalidNumberError = item.isInvalidNumberError,
         isCompleted = item.isCompleted,
     )
 
-    private fun DomainChecklistItem.toUi(showValidationErrors: Boolean): UiChecklistItem {
-        val showValidationError = showValidationErrors && isRequired && !isAnswered()
-        return UiChecklistItem(
-            id = id,
-            title = title,
-            description = description,
-            answerType = answerType.toUi(),
-            isRequired = isRequired,
-            requiresPhoto = requiresPhoto,
-            resultId = resultId,
-            valueBoolean = valueBoolean,
-            valueNumber = valueNumber?.formatNumber().orEmpty(),
-            valueText = valueText.orEmpty(),
-            valueSelect = valueSelect,
-            isConfirmed = isConfirmed,
-            photoCount = photoCount,
-            numericMin = numericMin?.formatNumber(),
-            numericMax = numericMax?.formatNumber(),
-            showValidationError = showValidationError,
-        )
-    }
+    private fun DomainChecklistItem.toUi(
+        showValidationErrors: Boolean,
+        invalidNumberInputs: Map<String, String>,
+    ): UiChecklistItem {
+        val showValidationError = showValidationErrors && isRequired && !isAnswered
+        return when (this) {
+            is DomainChecklistItem.BooleanItem -> UiChecklistItem.BooleanItem(
+                id = id,
+                title = title,
+                description = description,
+                isRequired = isRequired,
+                requiresPhoto = requiresPhoto,
+                photoCount = photoCount,
+                showValidationError = showValidationError,
+                value = value,
+            )
 
-    private fun DomainChecklistItem.isAnswered(): Boolean = when (answerType) {
-        DomainAnswerType.Boolean -> valueBoolean != null
-        DomainAnswerType.Number -> valueNumber != null
-        DomainAnswerType.Text -> !valueText.isNullOrBlank()
-        is DomainAnswerType.Select -> !valueSelect.isNullOrBlank()
-        DomainAnswerType.Confirm -> isConfirmed
-    }
+            is DomainChecklistItem.NumberItem -> {
+                val minValue = min
+                val maxValue = max
+                val rangeHint: StringDesc? = when {
+                    minValue != null && maxValue != null -> StringDesc.ResourceFormatted(
+                        MR.strings.checklist_number_hint_range,
+                        minValue.formatNumber(),
+                        maxValue.formatNumber(),
+                    )
+                    minValue != null -> StringDesc.ResourceFormatted(
+                        MR.strings.checklist_number_hint_min,
+                        minValue.formatNumber(),
+                    )
+                    maxValue != null -> StringDesc.ResourceFormatted(
+                        MR.strings.checklist_number_hint_max,
+                        maxValue.formatNumber(),
+                    )
+                    else -> null
+                }
+                val invalidRaw = invalidNumberInputs[id]
+                UiChecklistItem.NumberItem(
+                    id = id,
+                    title = title,
+                    description = description,
+                    isRequired = isRequired,
+                    requiresPhoto = requiresPhoto,
+                    photoCount = photoCount,
+                    showValidationError = showValidationError,
+                    value = invalidRaw ?: value?.formatNumber().orEmpty(),
+                    rangeHint = rangeHint,
+                    isOutOfRange = isOutOfRange,
+                    isInvalidNumber = invalidRaw != null,
+                )
+            }
 
-    private fun DomainAnswerType.toUi(): UiAnswerType = when (this) {
-        DomainAnswerType.Boolean -> UiAnswerType.Boolean
-        DomainAnswerType.Number -> UiAnswerType.Number
-        DomainAnswerType.Text -> UiAnswerType.Text
-        is DomainAnswerType.Select -> UiAnswerType.Select(options.toImmutableList())
-        DomainAnswerType.Confirm -> UiAnswerType.Confirm
+            is DomainChecklistItem.TextItem -> UiChecklistItem.TextItem(
+                id = id,
+                title = title,
+                description = description,
+                isRequired = isRequired,
+                requiresPhoto = requiresPhoto,
+                photoCount = photoCount,
+                showValidationError = showValidationError,
+                value = value.orEmpty(),
+            )
+
+            is DomainChecklistItem.SelectItem -> UiChecklistItem.SelectItem(
+                id = id,
+                title = title,
+                description = description,
+                isRequired = isRequired,
+                requiresPhoto = requiresPhoto,
+                photoCount = photoCount,
+                showValidationError = showValidationError,
+                value = value,
+                options = options.toImmutableList(),
+            )
+
+            is DomainChecklistItem.ConfirmItem -> UiChecklistItem.ConfirmItem(
+                id = id,
+                title = title,
+                description = description,
+                isRequired = isRequired,
+                requiresPhoto = requiresPhoto,
+                photoCount = photoCount,
+                showValidationError = showValidationError,
+                value = isConfirmed,
+            )
+        }
     }
 
     private fun Double.formatNumber(): String =

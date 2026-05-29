@@ -5,13 +5,11 @@ import ru.mirea.toir.common.mappers.Mapper
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.RouteAssignmentStatus
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspection
-import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspectionStatus
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListRejectionReason
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncFailure
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncIndicator
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore
 import ru.mirea.toir.feature.routes.list.presentation.models.UiPendingInspection
-import ru.mirea.toir.feature.routes.list.presentation.models.UiPendingInspectionStatus
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRejectionReason
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteAssignment
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteStatus
@@ -65,17 +63,8 @@ internal class UiRoutesListStateMapperImpl : UiRoutesListStateMapper {
         UiPendingInspection(
             inspectionId = inspectionId,
             routeName = routeName,
-            completedAt = completedAt,
-            status = status.toUi(),
-            attemptCount = attemptCount,
             rejectionReason = rejectionReason?.toUi(),
         )
-
-    private fun RoutesListPendingInspectionStatus.toUi(): UiPendingInspectionStatus = when (this) {
-        RoutesListPendingInspectionStatus.COMPLETED -> UiPendingInspectionStatus.COMPLETED
-        RoutesListPendingInspectionStatus.PARTIALLY_COMPLETED -> UiPendingInspectionStatus.PARTIALLY_COMPLETED
-        RoutesListPendingInspectionStatus.CANCELLED -> UiPendingInspectionStatus.CANCELLED
-    }
 
     private fun RoutesListRejectionReason.toUi(): UiRejectionReason = when (this) {
         RoutesListRejectionReason.INVALID_ASSIGNMENT_ID -> UiRejectionReason.INVALID_ASSIGNMENT_ID

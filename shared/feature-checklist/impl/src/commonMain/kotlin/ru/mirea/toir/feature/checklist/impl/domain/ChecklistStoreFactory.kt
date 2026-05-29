@@ -3,7 +3,6 @@ package ru.mirea.toir.feature.checklist.impl.domain
 import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore
@@ -36,10 +35,14 @@ internal class ChecklistStoreFactory(
     internal sealed interface Message {
         data object SetLoading : Message
         data object SetError : Message
-        data class SetItems(val items: ImmutableList<DomainChecklistItem>) : Message
+        data class SetItems(val items: List<DomainChecklistItem>) : Message
         data class UpdateItem(val item: DomainChecklistItem) : Message
+        data class SetNumberInvalid(val itemId: String, val raw: String) : Message
+        data class ClearNumberInvalid(val itemId: String) : Message
         data object SetValidationRequiredError : Message
         data object SetValidationPhotoError : Message
+        data object SetValidationOutOfRangeError : Message
+        data object SetValidationInvalidNumberError : Message
         data object ClearValidationError : Message
         data object SetCompleted : Message
     }

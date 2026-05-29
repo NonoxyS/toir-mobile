@@ -15,7 +15,7 @@ internal interface ChecklistRepository {
     suspend fun saveNumberAnswer(
         equipmentResultId: String,
         itemId: String,
-        value: Double,
+        value: Double?,
     ): Result<Unit>
 
     suspend fun saveTextAnswer(

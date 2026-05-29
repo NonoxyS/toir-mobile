@@ -14,11 +14,16 @@ import ru.mirea.toir.res.MR
 
 @Composable
 internal fun TextChecklistItem(
-    item: UiChecklistItem,
+    item: UiChecklistItem.TextItem,
     onValueChange: (String) -> Unit,
+    onOpenDescription: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var input by remember(item.id, item.valueText) { mutableStateOf(item.valueText) }
+    // Локальный input — источник истины. Ключ только по item.id, чтобы эхо
+    // из store (saveTextAnswer → observe → новый State) не перезаписывало текст,
+    // который пользователь ещё печатает (race при быстром вводе/удалении).
+    var input by remember(item.id) { mutableStateOf(item.value) }
+
     ToirOutlinedTextField(
         value = input,
         onValueChange = { newValue ->
@@ -35,5 +40,10 @@ internal fun TextChecklistItem(
             null
         },
         singleLine = true,
+        labelTrailingContent = if (item.description != null) {
+            { ChecklistInfoIconButton(onClick = onOpenDescription) }
+        } else {
+            null
+        },
     )
 }

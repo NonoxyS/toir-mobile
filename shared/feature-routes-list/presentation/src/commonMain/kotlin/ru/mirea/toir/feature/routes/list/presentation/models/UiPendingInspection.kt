@@ -1,19 +1,10 @@
 package ru.mirea.toir.feature.routes.list.presentation.models
 
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
-
-@OptIn(ExperimentalTime::class)
 data class UiPendingInspection(
     val inspectionId: String,
     val routeName: String?,
-    val completedAt: Instant?,
-    val status: UiPendingInspectionStatus,
-    val attemptCount: Int,
     val rejectionReason: UiRejectionReason?,
 )
-
-enum class UiPendingInspectionStatus { COMPLETED, PARTIALLY_COMPLETED, CANCELLED }
 
 enum class UiRejectionReason {
     INVALID_ASSIGNMENT_ID,

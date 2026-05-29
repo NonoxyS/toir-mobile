@@ -10,30 +10,35 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import dev.icerock.moko.resources.compose.stringResource
+import dev.icerock.moko.resources.desc.ResourceFormattedStringDesc
 import ru.mirea.toir.common.ui.compose.components.shared.textfield.ToirOutlinedTextField
+import ru.mirea.toir.common.ui.compose.components.shared.textfield.filters.NumberInputFilter
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 import ru.mirea.toir.res.MR
 
 @Composable
 internal fun NumberChecklistItem(
-    item: UiChecklistItem,
+    item: UiChecklistItem.NumberItem,
     onValueChange: (String) -> Unit,
+    onOpenDescription: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var input by remember(item.id, item.valueNumber) { mutableStateOf(item.valueNumber) }
-    val parsed = input.replace(',', '.').toDoubleOrNull()
-    val min = item.numericMin?.replace(',', '.')?.toDoubleOrNull()
-    val max = item.numericMax?.replace(',', '.')?.toDoubleOrNull()
-    val isOutOfRange = parsed != null &&
-        ((min != null && parsed < min) || (max != null && parsed > max))
-    val isInvalid = isOutOfRange || item.showValidationError
-    val rangeHint = rangeHint(item.numericMin, item.numericMax)
+    // Локальный input — источник истины для TextField, чтобы отрисовка не дожидалась
+    // round-trip executor → store → mapper. Подсветка ошибки (item.isInvalidNumber,
+    // item.isOutOfRange) приходит из store: парсинг и решение «валидно / OOR» делает
+    // executor, UI только рендерит. Ключ remember только по item.id — иначе эхо
+    // переформатированного значения сбрасывало бы буфер во время быстрого ввода.
+    var input by remember(item.id) { mutableStateOf(item.value) }
     val supportingText = when {
-        isOutOfRange -> stringResource(MR.strings.checklist_number_error_out_of_range)
+        item.isInvalidNumber -> stringResource(MR.strings.checklist_number_error_invalid)
+        item.isOutOfRange -> stringResource(MR.strings.checklist_number_error_out_of_range)
         item.showValidationError -> stringResource(MR.strings.checklist_validation_error_required)
-        rangeHint != null -> rangeHint
-        else -> null
+        else -> when (val hint = item.rangeHint) {
+            is ResourceFormattedStringDesc -> stringResource(hint.stringRes, *hint.args.toTypedArray())
+            else -> null
+        }
     }
+    val isError = item.isInvalidNumber || item.isOutOfRange || item.showValidationError
 
     ToirOutlinedTextField(
         value = input,
@@ -44,17 +49,15 @@ internal fun NumberChecklistItem(
         modifier = modifier.fillMaxWidth(),
         label = item.title,
         isRequired = item.isRequired,
-        isError = isInvalid,
+        isError = isError,
         supportingText = supportingText,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        inputFilter = NumberInputFilter,
         singleLine = true,
+        labelTrailingContent = if (item.description != null) {
+            { ChecklistInfoIconButton(onClick = onOpenDescription) }
+        } else {
+            null
+        },
     )
-}
-
-@Composable
-private fun rangeHint(min: String?, max: String?): String? = when {
-    min != null && max != null -> stringResource(MR.strings.checklist_number_hint_range, min, max)
-    min != null -> stringResource(MR.strings.checklist_number_hint_min, min)
-    max != null -> stringResource(MR.strings.checklist_number_hint_max, max)
-    else -> null
 }

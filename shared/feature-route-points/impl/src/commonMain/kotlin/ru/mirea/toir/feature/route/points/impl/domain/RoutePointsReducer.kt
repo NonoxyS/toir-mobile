@@ -1,7 +1,7 @@
 package ru.mirea.toir.feature.route.points.impl.domain
 
 import com.arkivanov.mvikotlin.core.store.Reducer
-import ru.mirea.toir.feature.route.points.api.models.EquipmentResultStatus
+import ru.mirea.toir.core.domain.models.EquipmentResultStatus
 import ru.mirea.toir.feature.route.points.api.store.RoutePointsStore
 import ru.mirea.toir.feature.route.points.impl.domain.RoutePointsStoreFactory.Message
 

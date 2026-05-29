@@ -56,8 +56,10 @@ internal fun SyncStatusBottomSheet(
             )
             Spacer16()
             LastSyncCard(indicator = indicator, lastSuccessAt = lastSuccessAt, lastFailedAt = lastFailedAt)
-            Spacer12()
-            PendingInspectionsSection(indicator = indicator)
+            if (indicator.hasPending || indicator.pendingInspections.isNotEmpty()) {
+                Spacer12()
+                PendingInspectionsSection(indicator = indicator)
+            }
             Spacer16()
             ToirPrimaryButton(
                 onClick = onSyncNow,

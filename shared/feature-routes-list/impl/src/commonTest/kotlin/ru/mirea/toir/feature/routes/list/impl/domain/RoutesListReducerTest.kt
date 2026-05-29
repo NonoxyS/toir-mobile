@@ -1,7 +1,6 @@
 package ru.mirea.toir.feature.routes.list.impl.domain
 
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspection
-import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspectionStatus
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncFailure
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListSyncIndicator
 import ru.mirea.toir.feature.routes.list.api.store.RoutesListStore
@@ -45,9 +44,6 @@ class RoutesListReducerTest {
         val pending = RoutesListPendingInspection(
             inspectionId = "ins-1",
             routeName = "КО-1",
-            completedAt = null,
-            status = RoutesListPendingInspectionStatus.COMPLETED,
-            attemptCount = 0,
             rejectionReason = null,
         )
         val indicator = RoutesListSyncIndicator(

@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
@@ -29,7 +28,6 @@ import ru.mirea.toir.core.database.storage.inspection.models.LocalChecklistItemR
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.photo.PhotoStorage
 import ru.mirea.toir.core.database.storage.route.RouteStorage
-import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.impl.domain.repository.ChecklistRepository
 
@@ -99,7 +97,7 @@ internal class ChecklistRepositoryImpl(
     override suspend fun saveNumberAnswer(
         equipmentResultId: String,
         itemId: String,
-        value: Double,
+        value: Double?,
     ): Result<Unit> = saveAnswer(
         equipmentResultId = equipmentResultId,
         itemId = itemId,
@@ -214,36 +212,80 @@ internal class ChecklistRepositoryImpl(
         result: LocalChecklistItemResult?,
         photoCount: Int,
     ): DomainChecklistItem {
-        val type = answerType.toDomainAnswerType(parseSelectOptions(selectOptions))
-        val isConfirmed = type == DomainAnswerType.Confirm && (result?.valueBoolean == 1L)
-        return DomainChecklistItem(
-            id = id,
-            title = title,
-            description = description,
-            answerType = type,
-            isRequired = isRequired == 1L,
-            requiresPhoto = requiresPhoto == 1L,
-            resultId = result?.id,
-            valueBoolean = result?.valueBoolean?.let { it == 1L },
-            valueNumber = result?.valueNumber,
-            valueText = result?.valueText,
-            valueSelect = result?.selectedOption,
-            isConfirmed = isConfirmed,
-            photoCount = photoCount,
-            numericMin = numericMin,
-            numericMax = numericMax,
-        )
-    }
+        val isRequiredBool = isRequired == 1L
+        val requiresPhotoBool = requiresPhoto == 1L
+        val resultIdOrNull = result?.id
+        return when (answerType.lowercase()) {
+            ANSWER_TYPE_BOOLEAN -> DomainChecklistItem.BooleanItem(
+                id = id,
+                title = title,
+                description = description,
+                isRequired = isRequiredBool,
+                requiresPhoto = requiresPhotoBool,
+                resultId = resultIdOrNull,
+                photoCount = photoCount,
+                value = result?.valueBoolean?.let { it == 1L },
+            )
 
-    private fun String.toDomainAnswerType(options: List<String>): DomainAnswerType =
-        when (lowercase()) {
-            ANSWER_TYPE_BOOLEAN -> DomainAnswerType.Boolean
-            ANSWER_TYPE_NUMBER -> DomainAnswerType.Number
-            ANSWER_TYPE_TEXT -> DomainAnswerType.Text
-            ANSWER_TYPE_SELECT -> DomainAnswerType.Select(options.toImmutableList())
-            ANSWER_TYPE_CONFIRMATION -> DomainAnswerType.Confirm
-            else -> DomainAnswerType.Text
+            ANSWER_TYPE_NUMBER -> DomainChecklistItem.NumberItem(
+                id = id,
+                title = title,
+                description = description,
+                isRequired = isRequiredBool,
+                requiresPhoto = requiresPhotoBool,
+                resultId = resultIdOrNull,
+                photoCount = photoCount,
+                value = result?.valueNumber,
+                min = numericMin,
+                max = numericMax,
+            )
+
+            ANSWER_TYPE_SELECT -> DomainChecklistItem.SelectItem(
+                id = id,
+                title = title,
+                description = description,
+                isRequired = isRequiredBool,
+                requiresPhoto = requiresPhotoBool,
+                resultId = resultIdOrNull,
+                photoCount = photoCount,
+                value = result?.selectedOption,
+                options = parseSelectOptions(selectOptions),
+            )
+
+            ANSWER_TYPE_CONFIRMATION -> DomainChecklistItem.ConfirmItem(
+                id = id,
+                title = title,
+                description = description,
+                isRequired = isRequiredBool,
+                requiresPhoto = requiresPhotoBool,
+                resultId = resultIdOrNull,
+                photoCount = photoCount,
+                isConfirmed = result?.valueBoolean == 1L,
+            )
+
+            ANSWER_TYPE_TEXT -> DomainChecklistItem.TextItem(
+                id = id,
+                title = title,
+                description = description,
+                isRequired = isRequiredBool,
+                requiresPhoto = requiresPhotoBool,
+                resultId = resultIdOrNull,
+                photoCount = photoCount,
+                value = result?.valueText,
+            )
+
+            else -> DomainChecklistItem.TextItem(
+                id = id,
+                title = title,
+                description = description,
+                isRequired = isRequiredBool,
+                requiresPhoto = requiresPhotoBool,
+                resultId = resultIdOrNull,
+                photoCount = photoCount,
+                value = result?.valueText,
+            )
         }
+    }
 
     private fun parseSelectOptions(raw: String?): List<String> {
         if (raw.isNullOrBlank()) return emptyList()

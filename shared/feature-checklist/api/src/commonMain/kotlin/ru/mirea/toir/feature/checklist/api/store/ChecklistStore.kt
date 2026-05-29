@@ -1,8 +1,6 @@
 package ru.mirea.toir.feature.checklist.api.store
 
 import com.arkivanov.mvikotlin.core.store.Store
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.Intent
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.Label
@@ -12,11 +10,14 @@ interface ChecklistStore : Store<Intent, State, Label> {
 
     data class State(
         val equipmentResultId: String = "",
-        val items: ImmutableList<DomainChecklistItem> = persistentListOf(),
+        val items: List<DomainChecklistItem> = emptyList(),
+        val invalidNumberInputs: Map<String, String> = emptyMap(),
         val isLoading: Boolean = true,
         val isError: Boolean = false,
         val isValidationError: Boolean = false,
         val isPhotoValidationError: Boolean = false,
+        val isOutOfRangeError: Boolean = false,
+        val isInvalidNumberError: Boolean = false,
         val isCompleted: Boolean = false,
     )
 

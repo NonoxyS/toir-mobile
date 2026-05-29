@@ -1,10 +1,11 @@
 package ru.mirea.toir.feature.photo.capture.impl.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
 import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.Intent
 import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.Label
-import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.PhotoEntry
 import ru.mirea.toir.feature.photo.capture.api.store.PhotoCaptureStore.State
 import ru.mirea.toir.feature.photo.capture.impl.domain.PhotoCaptureStoreFactory.Action
 import ru.mirea.toir.feature.photo.capture.impl.domain.PhotoCaptureStoreFactory.Message
@@ -18,7 +19,7 @@ internal class PhotoCaptureExecutor(
 ) {
     override suspend fun suspendExecuteAction(action: Action) {
         when (action) {
-            Action.Load -> loadPhotos()
+            Action.Load -> subscribeToPhotos()
         }
     }
 
@@ -30,35 +31,25 @@ internal class PhotoCaptureExecutor(
         }
     }
 
-    private suspend fun loadPhotos() {
-        val checklistItemResultId = state().checklistItemResultId
-        repository.getPhotos(checklistItemResultId).fold(
-            onSuccess = { entries -> dispatch(Message.SetPhotos(entries)) },
-            onFailure = { /* silent */ },
-        )
+    // Subscribe once on bootstrap; SQLDelight re-emits on every photos-table change so
+    // the placeholder tile flips to the real image as soon as sync fills file_uri. The
+    // photos list flows through this single channel — no manual AddPhoto/PhotoRemoved.
+    private fun subscribeToPhotos() {
+        val id = state().checklistItemResultId
+        repository.observePhotos(id)
+            .onEach { entries -> dispatch(Message.SetPhotos(entries)) }
+            .launchIn(scope)
     }
 
     private suspend fun savePhoto(fileUri: String) {
         val resultId = state().checklistItemResultId
         dispatch(Message.SetLoading(true))
-        repository.savePhoto(resultId, fileUri).fold(
-            onSuccess = {
-                // Freshly captured photo: id is unknown to the executor (the repository
-                // generates it). For UI rendering we only need a stable key — we use the
-                // fileUri itself as the id, since it's unique per shot (UUID-based) and
-                // pending photos never have null fileUri.
-                dispatch(Message.AddPhoto(PhotoEntry(id = fileUri, fileUri = fileUri)))
-                dispatch(Message.SetLoading(false))
-            },
-            onFailure = { dispatch(Message.SetLoading(false)) },
-        )
+        repository.savePhoto(resultId, fileUri)
+        dispatch(Message.SetLoading(false))
     }
 
     private suspend fun deletePhoto(fileUri: String) {
         val resultId = state().checklistItemResultId
-        repository.deletePhoto(resultId, fileUri).fold(
-            onSuccess = { dispatch(Message.PhotoRemoved(fileUri)) },
-            onFailure = { /* keep state unchanged so UI doesn't lie; logged in repo */ },
-        )
+        repository.deletePhoto(resultId, fileUri)
     }
 }

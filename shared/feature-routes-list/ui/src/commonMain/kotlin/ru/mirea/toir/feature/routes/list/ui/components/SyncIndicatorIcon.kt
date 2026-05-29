@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import dev.icerock.moko.resources.ImageResource
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
@@ -28,7 +30,7 @@ internal fun SyncIndicatorIcon(
     modifier: Modifier = Modifier,
 ) {
     val (icon, tint) = resolveIconAndTint(indicator)
-    val rotation = if (indicator.isRunning) rememberSpinRotation() else 0f
+    val rotationAngle by animateSpinRotation()
 
     IconButton(
         onClick = onClick,
@@ -40,13 +42,13 @@ internal fun SyncIndicatorIcon(
             tint = tint,
             modifier = Modifier
                 .size(24.dp)
-                .let { if (indicator.isRunning) it.rotate(rotation) else it },
+                .graphicsLayer { rotationZ = if (indicator.isRunning) rotationAngle else 0F }
         )
     }
 }
 
 @Composable
-private fun resolveIconAndTint(indicator: UiSyncIndicator): Pair<dev.icerock.moko.resources.ImageResource, Color> {
+private fun resolveIconAndTint(indicator: UiSyncIndicator): Pair<ImageResource, Color> {
     val colors = ToirTheme.colors
     return when {
         indicator.isRunning -> MR.images.ic_sync_alt to colors.textPrimary
@@ -57,9 +59,9 @@ private fun resolveIconAndTint(indicator: UiSyncIndicator): Pair<dev.icerock.mok
 }
 
 @Composable
-private fun rememberSpinRotation(): Float {
+private fun animateSpinRotation(): State<Float> {
     val transition = rememberInfiniteTransition(label = "sync_spin")
-    val angle by transition.animateFloat(
+    return transition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
@@ -68,5 +70,4 @@ private fun rememberSpinRotation(): Float {
         ),
         label = "sync_spin_angle",
     )
-    return angle
 }

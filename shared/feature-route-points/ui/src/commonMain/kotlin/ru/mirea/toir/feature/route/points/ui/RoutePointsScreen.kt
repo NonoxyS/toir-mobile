@@ -76,7 +76,10 @@ internal fun RoutePointsScreen(
         topBar = { RoutePointsTopBar(state = state, onNavigateBack = onNavigateBack) },
         bottomBar = {
             if (state.canFinish && !state.isError) {
-                RoutePointsFinishButton(onClick = viewModel::onFinishInspection)
+                RoutePointsFinishButton(
+                    onClick = viewModel::onFinishInspection,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
             }
         },
     ) { paddingValues ->
@@ -167,6 +170,7 @@ private fun RoutePointsProgressHeader(state: UiRoutePointsState) {
                 .clip(ToirTheme.shapes.pill),
             color = colors.success,
             trackColor = colors.border,
+            drawStopIndicator = {},
         )
     }
 }
@@ -237,13 +241,16 @@ private fun RoutePointsError(onRetry: () -> Unit) {
 }
 
 @Composable
-private fun RoutePointsFinishButton(onClick: () -> Unit) {
+private fun RoutePointsFinishButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val colors = ToirTheme.colors
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(colors.background)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
         ToirPrimaryButton(
             onClick = onClick,

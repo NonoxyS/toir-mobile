@@ -22,6 +22,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -36,11 +39,11 @@ import ru.mirea.toir.common.ui.compose.components.shared.button.ToirSecondaryBut
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
 import ru.mirea.toir.feature.checklist.presentation.ChecklistViewModel
-import ru.mirea.toir.feature.checklist.presentation.models.UiAnswerType
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistLabel
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistState
 import ru.mirea.toir.feature.checklist.ui.items.BooleanChecklistItem
+import ru.mirea.toir.feature.checklist.ui.items.ChecklistDescriptionBottomSheet
 import ru.mirea.toir.feature.checklist.ui.items.ConfirmChecklistItem
 import ru.mirea.toir.feature.checklist.ui.items.NumberChecklistItem
 import ru.mirea.toir.feature.checklist.ui.items.SelectChecklistItem
@@ -91,6 +94,20 @@ private fun ChecklistScreenContent(
     onFinishChecklist: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
+    // Один bottom sheet на экран. Хранит id пункта, чей description открыт.
+    // Item composables просто прокидывают свой id через onOpenDescription.
+    var openDescriptionItemId by remember { mutableStateOf<String?>(null) }
+    val openDescriptionItem = openDescriptionItemId?.let { id ->
+        state.items.firstOrNull { it.id == id }
+    }
+    if (openDescriptionItem != null && openDescriptionItem.description != null) {
+        ChecklistDescriptionBottomSheet(
+            title = openDescriptionItem.title,
+            description = openDescriptionItem.description!!,
+            onDismiss = { openDescriptionItemId = null },
+        )
+    }
+
     Scaffold(
         modifier = Modifier.imePadding(),
         containerColor = ToirTheme.colors.background,
@@ -125,7 +142,10 @@ private fun ChecklistScreenContent(
                 ChecklistFinishBar(
                     isValidationError = state.isValidationError,
                     isPhotoValidationError = state.isPhotoValidationError,
+                    isOutOfRangeError = state.isOutOfRangeError,
+                    isInvalidNumberError = state.isInvalidNumberError,
                     onFinishChecklist = onFinishChecklist,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
             }
         },
@@ -146,6 +166,7 @@ private fun ChecklistScreenContent(
                     onSelectAnswer = onSelectAnswer,
                     onConfirm = onConfirm,
                     onAddPhoto = onAddPhoto,
+                    onOpenDescription = { id -> openDescriptionItemId = id },
                 )
             }
         }
@@ -156,6 +177,8 @@ private fun ChecklistScreenContent(
 private fun ChecklistFinishBar(
     isValidationError: Boolean,
     isPhotoValidationError: Boolean,
+    isOutOfRangeError: Boolean,
+    isInvalidNumberError: Boolean,
     onFinishChecklist: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -166,9 +189,16 @@ private fun ChecklistFinishBar(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(space = 8.dp),
         ) {
+            if (isInvalidNumberError) {
+                Text(
+                    text = stringResource(MR.strings.checklist_validation_error_invalid_number),
+                    style = ToirTheme.typography.bodyMedium,
+                    color = ToirTheme.colors.error,
+                )
+            }
             if (isValidationError) {
                 Text(
                     text = stringResource(MR.strings.checklist_validation_error_required),
@@ -179,6 +209,13 @@ private fun ChecklistFinishBar(
             if (isPhotoValidationError) {
                 Text(
                     text = stringResource(MR.strings.checklist_validation_error_photo),
+                    style = ToirTheme.typography.bodyMedium,
+                    color = ToirTheme.colors.error,
+                )
+            }
+            if (isOutOfRangeError) {
+                Text(
+                    text = stringResource(MR.strings.checklist_validation_error_out_of_range),
                     style = ToirTheme.typography.bodyMedium,
                     color = ToirTheme.colors.error,
                 )
@@ -225,6 +262,7 @@ private fun ChecklistList(
     onSelectAnswer: (String, String) -> Unit,
     onConfirm: (String, Boolean) -> Unit,
     onAddPhoto: (String) -> Unit,
+    onOpenDescription: (String) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -240,6 +278,7 @@ private fun ChecklistList(
                 onSelectAnswer = onSelectAnswer,
                 onConfirm = onConfirm,
                 onAddPhoto = onAddPhoto,
+                onOpenDescription = onOpenDescription,
             )
         }
     }
@@ -254,35 +293,42 @@ private fun ChecklistItemRow(
     onSelectAnswer: (String, String) -> Unit,
     onConfirm: (String, Boolean) -> Unit,
     onAddPhoto: (String) -> Unit,
+    onOpenDescription: (String) -> Unit,
 ) {
+    val openDescription = { onOpenDescription(item.id) }
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(space = 8.dp),
     ) {
-        when (item.answerType) {
-            is UiAnswerType.Boolean -> BooleanChecklistItem(
+        when (item) {
+            is UiChecklistItem.BooleanItem -> BooleanChecklistItem(
                 item = item,
                 onValueChange = { value -> onBooleanAnswer(item.id, value) },
+                onOpenDescription = openDescription,
             )
 
-            is UiAnswerType.Number -> NumberChecklistItem(
+            is UiChecklistItem.NumberItem -> NumberChecklistItem(
                 item = item,
                 onValueChange = { value -> onNumberAnswer(item.id, value) },
+                onOpenDescription = openDescription,
             )
 
-            is UiAnswerType.Text -> TextChecklistItem(
+            is UiChecklistItem.TextItem -> TextChecklistItem(
                 item = item,
                 onValueChange = { value -> onTextAnswer(item.id, value) },
+                onOpenDescription = openDescription,
             )
 
-            is UiAnswerType.Select -> SelectChecklistItem(
+            is UiChecklistItem.SelectItem -> SelectChecklistItem(
                 item = item,
                 onSelectOption = { value -> onSelectAnswer(item.id, value) },
+                onOpenDescription = openDescription,
             )
 
-            is UiAnswerType.Confirm -> ConfirmChecklistItem(
+            is UiChecklistItem.ConfirmItem -> ConfirmChecklistItem(
                 item = item,
                 onConfirmChange = { value -> onConfirm(item.id, value) },
+                onOpenDescription = openDescription,
             )
         }
 
@@ -307,7 +353,6 @@ private fun ChecklistPhotoSection(
         ToirSecondaryButton(
             onClick = { onAddPhoto(item.id) },
             text = stringResource(MR.strings.checklist_button_add_photo),
-            enabled = item.resultId != null,
             modifier = Modifier.fillMaxWidth(),
         )
         if (item.photoCount > 0) {

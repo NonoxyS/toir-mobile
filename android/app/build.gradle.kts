@@ -110,8 +110,8 @@ dependencies {
     implementation(libs.koin.android.workmanager)
     implementation(libs.napier)
 
-    debugImplementation(compose.uiTooling)
-    implementation(compose.preview)
+    debugImplementation(libs.compose.multiplatform.uiTooling)
+    implementation(libs.compose.multiplatform.uiToolingPreview)
     implementation(libs.androidx.activity.compose)
 }
 

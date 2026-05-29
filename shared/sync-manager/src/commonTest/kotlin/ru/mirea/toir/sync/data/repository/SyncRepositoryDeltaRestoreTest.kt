@@ -36,6 +36,7 @@ import ru.mirea.toir.sync.fixtures.TestData.seedPendingInspection
 import ru.mirea.toir.sync.fixtures.TestData.seedRoute
 import ru.mirea.toir.sync.fixtures.TestData.seedRoutePoint
 import ru.mirea.toir.sync.fixtures.TestDatabase
+import ru.mirea.toir.sync.fixtures.TestFileReader
 import ru.mirea.toir.sync.fixtures.TestPhotoFileWriter
 import ru.mirea.toir.sync.fixtures.TestSyncApi
 import ru.mirea.toir.sync.fixtures.TestSyncApi.Companion.respondJson
@@ -79,6 +80,7 @@ class SyncRepositoryDeltaRestoreTest {
             transactionRunner = TransactionRunnerImpl(db),
         ),
         photoFileWriter = photoFileWriter,
+        fileReader = TestFileReader(),
         transactionRunner = TransactionRunnerImpl(db),
         coroutineDispatchers = dispatchers,
     )

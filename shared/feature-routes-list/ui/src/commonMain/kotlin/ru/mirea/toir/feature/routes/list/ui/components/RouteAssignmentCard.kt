@@ -151,6 +151,7 @@ private fun RouteCardProgress(
             .clip(ToirTheme.shapes.pill),
         color = progressColor,
         trackColor = colors.border,
+        drawStopIndicator = {},
     )
 }
 

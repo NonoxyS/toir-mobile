@@ -13,9 +13,12 @@ import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.res.MR
 
 @Composable
-internal fun EquipmentCardOpenChecklistButton(onClick: () -> Unit) {
+internal fun EquipmentCardOpenChecklistButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(ToirTheme.colors.background)
             .padding(horizontal = 16.dp, vertical = 16.dp),

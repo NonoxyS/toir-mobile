@@ -74,7 +74,6 @@ class KmpLibraryPlugin : Plugin<Project> {
 
     private fun Project.configureIos() {
         kotlinMultiplatformConfig {
-            iosX64()
             iosArm64()
             iosSimulatorArm64()
         }

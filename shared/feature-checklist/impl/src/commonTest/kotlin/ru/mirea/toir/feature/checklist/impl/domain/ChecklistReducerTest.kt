@@ -1,7 +1,5 @@
 package ru.mirea.toir.feature.checklist.impl.domain
 
-import kotlinx.collections.immutable.persistentListOf
-import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.State
 import kotlin.test.Test
@@ -42,23 +40,18 @@ class ChecklistReducerTest {
 
     @Test
     fun `SetItems replaces items list and stops loading`() {
-        val items = persistentListOf(
-            DomainChecklistItem(
+        val items = listOf(
+            DomainChecklistItem.NumberItem(
                 id = "i1",
                 title = "Pump pressure",
                 description = null,
-                answerType = DomainAnswerType.Number,
                 isRequired = true,
                 requiresPhoto = false,
                 resultId = null,
-                valueBoolean = null,
-                valueNumber = null,
-                valueText = null,
-                valueSelect = null,
-                isConfirmed = false,
                 photoCount = 0,
-                numericMin = null,
-                numericMax = null,
+                value = null,
+                min = null,
+                max = null,
             ),
         )
 
@@ -91,10 +84,24 @@ class ChecklistReducerTest {
     }
 
     @Test
-    fun `ClearValidationError clears both validation flags`() {
+    fun `SetValidationOutOfRangeError sets isOutOfRangeError and clears others`() {
+        val withErrors = initial.copy(isValidationError = true, isPhotoValidationError = true)
+
+        val result = with(reducer) {
+            withErrors.reduce(ChecklistStoreFactory.Message.SetValidationOutOfRangeError)
+        }
+
+        assertTrue(result.isOutOfRangeError)
+        assertFalse(result.isValidationError)
+        assertFalse(result.isPhotoValidationError)
+    }
+
+    @Test
+    fun `ClearValidationError clears all validation flags including isOutOfRangeError`() {
         val withErrors = initial.copy(
             isValidationError = true,
             isPhotoValidationError = true,
+            isOutOfRangeError = true,
         )
 
         val result = with(reducer) {
@@ -103,6 +110,7 @@ class ChecklistReducerTest {
 
         assertFalse(result.isValidationError)
         assertFalse(result.isPhotoValidationError)
+        assertFalse(result.isOutOfRangeError)
     }
 
     @Test
@@ -110,5 +118,95 @@ class ChecklistReducerTest {
         val result = with(reducer) { initial.reduce(ChecklistStoreFactory.Message.SetCompleted) }
 
         assertTrue(result.isCompleted)
+    }
+
+    @Test
+    fun `SetNumberInvalid adds raw input to invalidNumberInputs by itemId`() {
+        val result = with(reducer) {
+            initial.reduce(ChecklistStoreFactory.Message.SetNumberInvalid("i1", ","))
+        }
+
+        assertEquals(mapOf("i1" to ","), result.invalidNumberInputs)
+    }
+
+    @Test
+    fun `SetNumberInvalid overrides existing raw for same itemId`() {
+        val withInvalid = initial.copy(invalidNumberInputs = mapOf("i1" to ","))
+
+        val result = with(reducer) {
+            withInvalid.reduce(ChecklistStoreFactory.Message.SetNumberInvalid("i1", "1."))
+        }
+
+        assertEquals(mapOf("i1" to "1."), result.invalidNumberInputs)
+    }
+
+    @Test
+    fun `SetNumberInvalid keeps other invalid entries`() {
+        val withInvalid = initial.copy(invalidNumberInputs = mapOf("i1" to ","))
+
+        val result = with(reducer) {
+            withInvalid.reduce(ChecklistStoreFactory.Message.SetNumberInvalid("i2", "abc"))
+        }
+
+        assertEquals(mapOf("i1" to ",", "i2" to "abc"), result.invalidNumberInputs)
+    }
+
+    @Test
+    fun `ClearNumberInvalid removes only the given itemId`() {
+        val withInvalid = initial.copy(invalidNumberInputs = mapOf("i1" to ",", "i2" to "abc"))
+
+        val result = with(reducer) {
+            withInvalid.reduce(ChecklistStoreFactory.Message.ClearNumberInvalid("i1"))
+        }
+
+        assertEquals(mapOf("i2" to "abc"), result.invalidNumberInputs)
+    }
+
+    @Test
+    fun `ClearNumberInvalid is no-op for unknown itemId`() {
+        val withInvalid = initial.copy(invalidNumberInputs = mapOf("i1" to ","))
+
+        val result = with(reducer) {
+            withInvalid.reduce(ChecklistStoreFactory.Message.ClearNumberInvalid("unknown"))
+        }
+
+        assertEquals(mapOf("i1" to ","), result.invalidNumberInputs)
+    }
+
+    @Test
+    fun `SetValidationInvalidNumberError sets flag and clears others`() {
+        val withErrors = initial.copy(
+            isValidationError = true,
+            isPhotoValidationError = true,
+            isOutOfRangeError = true,
+        )
+
+        val result = with(reducer) {
+            withErrors.reduce(ChecklistStoreFactory.Message.SetValidationInvalidNumberError)
+        }
+
+        assertTrue(result.isInvalidNumberError)
+        assertFalse(result.isValidationError)
+        assertFalse(result.isPhotoValidationError)
+        assertFalse(result.isOutOfRangeError)
+    }
+
+    @Test
+    fun `ClearValidationError also clears isInvalidNumberError`() {
+        val withErrors = initial.copy(
+            isValidationError = true,
+            isPhotoValidationError = true,
+            isOutOfRangeError = true,
+            isInvalidNumberError = true,
+        )
+
+        val result = with(reducer) {
+            withErrors.reduce(ChecklistStoreFactory.Message.ClearValidationError)
+        }
+
+        assertFalse(result.isInvalidNumberError)
+        assertFalse(result.isValidationError)
+        assertFalse(result.isPhotoValidationError)
+        assertFalse(result.isOutOfRangeError)
     }
 }

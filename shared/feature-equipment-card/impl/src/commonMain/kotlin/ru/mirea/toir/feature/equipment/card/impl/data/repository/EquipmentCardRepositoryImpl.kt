@@ -25,7 +25,7 @@ import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResul
 import ru.mirea.toir.core.database.storage.location.LocationStorage
 import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.feature.equipment.card.api.models.DomainEquipmentCard
-import ru.mirea.toir.feature.equipment.card.api.models.EquipmentResultStatus
+import ru.mirea.toir.core.domain.models.EquipmentResultStatus
 import ru.mirea.toir.feature.equipment.card.impl.domain.repository.EquipmentCardRepository
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -104,8 +104,6 @@ internal class EquipmentCardRepositoryImpl(
                 val locationName = safeEquipment.locationId
                     ?.let { locationStorage.selectById(it)?.name }
                     .orEmpty()
-                val statusName = result?.status?.name
-                    ?: LocalEquipmentResultStatus.NOT_STARTED.name
                 DomainEquipmentCard(
                     equipmentId = safeEquipment.id,
                     code = safeEquipment.code,
@@ -113,9 +111,17 @@ internal class EquipmentCardRepositoryImpl(
                     type = safeEquipment.type,
                     locationName = locationName,
                     equipmentResultId = result?.id.orEmpty(),
-                    inspectionStatus = EquipmentResultStatus.fromString(statusName),
+                    inspectionStatus = result?.status?.toDomain()
+                        ?: EquipmentResultStatus.NOT_STARTED,
                 )
             }
         )
     }.flowOn(coroutineDispatchers.io)
+}
+
+private fun LocalEquipmentResultStatus.toDomain(): EquipmentResultStatus = when (this) {
+    LocalEquipmentResultStatus.NOT_STARTED -> EquipmentResultStatus.NOT_STARTED
+    LocalEquipmentResultStatus.IN_PROGRESS -> EquipmentResultStatus.IN_PROGRESS
+    LocalEquipmentResultStatus.COMPLETED -> EquipmentResultStatus.COMPLETED
+    LocalEquipmentResultStatus.SKIPPED -> EquipmentResultStatus.SKIPPED
 }

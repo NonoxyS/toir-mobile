@@ -14,6 +14,10 @@ interface PhotoStorage {
 
     fun selectByChecklistItemResultId(checklistItemResultId: String): List<LocalPhoto>
 
+    fun observePhotosByChecklistItemResultId(
+        checklistItemResultId: String,
+    ): Flow<List<LocalPhoto>>
+
     fun observePhotosByEquipmentResultId(
         equipmentResultId: String,
     ): Flow<List<LocalPhoto>>

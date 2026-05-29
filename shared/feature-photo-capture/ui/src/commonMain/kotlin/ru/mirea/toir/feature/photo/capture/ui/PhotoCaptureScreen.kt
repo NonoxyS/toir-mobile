@@ -1,16 +1,16 @@
 package ru.mirea.toir.feature.photo.capture.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,16 +39,15 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.CollectFlow
+import ru.mirea.toir.core.navigation.LocalAnimatedVisibilityScope
+import ru.mirea.toir.core.navigation.LocalSharedTransitionScope
 import ru.mirea.toir.feature.photo.capture.presentation.PhotoCaptureViewModel
 import ru.mirea.toir.feature.photo.capture.presentation.models.UiPhotoCaptureLabel
 import ru.mirea.toir.feature.photo.capture.ui.components.PhotoCaptureContent
 import ru.mirea.toir.feature.photo.capture.ui.components.PhotoCaptureFooter
 import ru.mirea.toir.feature.photo.capture.ui.components.PhotoDeleteConfirmDialog
-import ru.mirea.toir.feature.photo.capture.ui.components.PhotoExitConfirmDialog
 import ru.mirea.toir.feature.photo.capture.ui.preview.PhotoPreviewScreen
 import ru.mirea.toir.res.MR
-
-private const val PREVIEW_TRANSITION_MS = 250
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -89,77 +89,70 @@ internal fun PhotoCaptureScreen(
 
     var pendingDeleteUri by remember { mutableStateOf<String?>(null) }
     var previewUri by remember { mutableStateOf<String?>(null) }
-    var showExitDialog by remember { mutableStateOf(false) }
+    val sharedTransitionUri = rememberSharedTransitionUri(previewUri)
+    val gridState = rememberLazyGridState()
 
-    val handleBack: () -> Unit = {
-        if (state.photos.isNotEmpty()) showExitDialog = true else onNavigateBack()
-    }
-
-    BackHandler(enabled = state.photos.isNotEmpty() && previewUri == null) {
-        showExitDialog = true
-    }
     BackHandler(enabled = previewUri != null) {
         previewUri = null
     }
 
     SharedTransitionLayout {
-        AnimatedContent(
-            targetState = previewUri,
-            transitionSpec = {
-                fadeIn(tween(PREVIEW_TRANSITION_MS)) togetherWith
-                    fadeOut(tween(PREVIEW_TRANSITION_MS))
-            },
-            label = "photo-preview-content",
-        ) { currentPreview ->
-            if (currentPreview == null) {
-                Scaffold(
-                    containerColor = ToirTheme.colors.background,
-                    topBar = {
-                        PhotoCaptureTopBar(
-                            photoCount = state.photos.size,
-                            maxPhotos = state.maxPhotos,
-                            onBack = handleBack,
+        CompositionLocalProvider(
+            LocalSharedTransitionScope provides this@SharedTransitionLayout,
+            LocalPhotoSharedTransitionUri provides sharedTransitionUri,
+        ) {
+            AnimatedContent(
+                targetState = previewUri,
+                transitionSpec = {
+                    EnterTransition.None togetherWith ExitTransition.None
+                },
+                label = "photo-preview-content",
+            ) { currentPreview ->
+                CompositionLocalProvider(LocalAnimatedVisibilityScope provides this@AnimatedContent) {
+                    if (currentPreview == null) {
+                        Scaffold(
+                            containerColor = ToirTheme.colors.background,
+                            topBar = {
+                                PhotoCaptureTopBar(
+                                    photoCount = state.photos.size,
+                                    maxPhotos = state.maxPhotos,
+                                    onBack = onNavigateBack,
+                                )
+                            },
+                            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+                            bottomBar = {
+                                PhotoCaptureFooter(
+                                    canTake = state.canTakePhoto,
+                                    canConfirm = state.photos.isNotEmpty(),
+                                    isLimitReached = state.isLimitReached,
+                                    isLoading = state.isLoading,
+                                    onTakePhoto = cameraLauncher,
+                                    onConfirm = viewModel::onConfirm,
+                                )
+                            },
+                        ) { paddingValues ->
+                            PhotoCaptureContent(
+                                photos = state.photos,
+                                gridState = gridState,
+                                onPhotoTap = { uri -> previewUri = uri },
+                                onPhotoLongPress = { uri -> pendingDeleteUri = uri },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(paddingValues),
+                            )
+                        }
+                    } else {
+                        val index = state.photos
+                            .indexOfFirst { it.fileUri == currentPreview }
+                            .takeIf { it >= 0 } ?: 0
+                        PhotoPreviewScreen(
+                            photoUri = currentPreview,
+                            photoIndex = index + 1,
+                            totalCount = state.photos.size,
+                            onClose = { previewUri = null },
                         )
-                    },
-                    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-                    bottomBar = {
-                        val isLimitReached = state.maxPhotos
-                            ?.let { state.photos.size >= it }
-                            ?: false
-                        PhotoCaptureFooter(
-                            canTake = !state.isLoading && !isLimitReached,
-                            canConfirm = state.photos.isNotEmpty(),
-                            isLimitReached = isLimitReached,
-                            onTakePhoto = cameraLauncher,
-                            onConfirm = viewModel::onConfirm,
-                        )
-                    },
-                ) { paddingValues ->
-                    PhotoCaptureContent(
-                        photos = state.photos,
-                        sharedTransitionScope = this@SharedTransitionLayout,
-                        animatedVisibilityScope = this@AnimatedContent,
-                        onPhotoTap = { uri -> previewUri = uri },
-                        onPhotoLongPress = { uri -> pendingDeleteUri = uri },
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues),
-                    )
+                    }
                 }
-            } else {
-                // Preview is only opened for tiles with a non-null fileUri (placeholder tiles
-                // ignore taps), so we look up by matching fileUri to compute the index.
-                val index = state.photos
-                    .indexOfFirst { it.fileUri == currentPreview }
-                    .takeIf { it >= 0 } ?: 0
-                PhotoPreviewScreen(
-                    photoUri = currentPreview,
-                    photoIndex = index + 1,
-                    totalCount = state.photos.size,
-                    sharedTransitionScope = this@SharedTransitionLayout,
-                    animatedVisibilityScope = this@AnimatedContent,
-                    onClose = { previewUri = null },
-                )
             }
         }
     }
@@ -170,16 +163,6 @@ internal fun PhotoCaptureScreen(
             onConfirm = {
                 viewModel.onPhotoDeleted(uri)
                 pendingDeleteUri = null
-            },
-        )
-    }
-
-    if (showExitDialog) {
-        PhotoExitConfirmDialog(
-            onContinueCapture = { showExitDialog = false },
-            onDiscard = {
-                showExitDialog = false
-                onNavigateBack()
             },
         )
     }

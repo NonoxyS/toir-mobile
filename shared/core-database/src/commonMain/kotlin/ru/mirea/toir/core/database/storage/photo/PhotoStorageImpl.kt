@@ -39,6 +39,14 @@ internal class PhotoStorageImpl(
             .executeAsList()
             .map { it.toLocal() }
 
+    override fun observePhotosByChecklistItemResultId(
+        checklistItemResultId: String,
+    ): Flow<List<LocalPhoto>> =
+        queries.selectByChecklistItemResultId(checklistItemResultId)
+            .asFlow()
+            .mapToList(dispatchers.io)
+            .map { list -> list.map { it.toLocal() } }
+
     override fun observePhotosByEquipmentResultId(
         equipmentResultId: String,
     ): Flow<List<LocalPhoto>> =

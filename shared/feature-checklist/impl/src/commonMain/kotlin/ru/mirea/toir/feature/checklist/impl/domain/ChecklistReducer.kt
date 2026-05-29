@@ -1,7 +1,6 @@
 package ru.mirea.toir.feature.checklist.impl.domain
 
 import com.arkivanov.mvikotlin.core.store.Reducer
-import kotlinx.collections.immutable.toImmutableList
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.State
 import ru.mirea.toir.feature.checklist.impl.domain.ChecklistStoreFactory.Message
 
@@ -27,30 +26,58 @@ internal class ChecklistReducer : Reducer<State, Message> {
         )
 
         is Message.UpdateItem -> copy(
-            items = items
-                .map { item -> if (item.id == msg.item.id) msg.item else item }
-                .toImmutableList(),
+            items = items.map { item -> if (item.id == msg.item.id) msg.item else item },
+        )
+
+        is Message.SetNumberInvalid -> copy(
+            invalidNumberInputs = invalidNumberInputs + (msg.itemId to msg.raw),
+        )
+
+        is Message.ClearNumberInvalid -> copy(
+            invalidNumberInputs = invalidNumberInputs - msg.itemId,
         )
 
         Message.SetValidationRequiredError -> copy(
             isValidationError = true,
             isPhotoValidationError = false,
+            isOutOfRangeError = false,
+            isInvalidNumberError = false,
         )
 
         Message.SetValidationPhotoError -> copy(
             isValidationError = false,
             isPhotoValidationError = true,
+            isOutOfRangeError = false,
+            isInvalidNumberError = false,
+        )
+
+        Message.SetValidationOutOfRangeError -> copy(
+            isValidationError = false,
+            isPhotoValidationError = false,
+            isOutOfRangeError = true,
+            isInvalidNumberError = false,
+        )
+
+        Message.SetValidationInvalidNumberError -> copy(
+            isValidationError = false,
+            isPhotoValidationError = false,
+            isOutOfRangeError = false,
+            isInvalidNumberError = true,
         )
 
         Message.ClearValidationError -> copy(
             isValidationError = false,
             isPhotoValidationError = false,
+            isOutOfRangeError = false,
+            isInvalidNumberError = false,
         )
 
         Message.SetCompleted -> copy(
             isCompleted = true,
             isValidationError = false,
             isPhotoValidationError = false,
+            isOutOfRangeError = false,
+            isInvalidNumberError = false,
         )
     }
 }

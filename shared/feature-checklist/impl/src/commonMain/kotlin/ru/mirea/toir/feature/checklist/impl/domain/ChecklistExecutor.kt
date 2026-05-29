@@ -1,15 +1,13 @@
 package ru.mirea.toir.feature.checklist.impl.domain
 
 import io.github.aakira.napier.Napier
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import ru.mirea.toir.common.extensions.safeCatch
 import ru.mirea.toir.core.mvikotlin.BaseExecutor
-import ru.mirea.toir.feature.checklist.api.models.DomainAnswerType
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.Intent
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore.Label
@@ -39,12 +37,27 @@ internal class ChecklistExecutor(
             }
 
             is Intent.OnNumberAnswer -> {
-                val number = intent.value.replace(',', '.').toDoubleOrNull() ?: return
-                val item = state().items.firstOrNull { it.id == intent.itemId } ?: return
-                val min = item.numericMin
-                val max = item.numericMax
-                if ((min != null && number < min) || (max != null && number > max)) return
-                repository.saveNumberAnswer(state().equipmentResultId, intent.itemId, number)
+                val raw = intent.value
+                if (raw.isEmpty()) {
+                    dispatch(Message.ClearNumberInvalid(intent.itemId))
+                    repository.saveNumberAnswer(
+                        equipmentResultId = state().equipmentResultId,
+                        itemId = intent.itemId,
+                        value = null,
+                    )
+                } else {
+                    val parsed = raw.replace(',', '.').toDoubleOrNull()
+                    if (parsed == null) {
+                        dispatch(Message.SetNumberInvalid(intent.itemId, raw))
+                    } else {
+                        dispatch(Message.ClearNumberInvalid(intent.itemId))
+                        repository.saveNumberAnswer(
+                            equipmentResultId = state().equipmentResultId,
+                            itemId = intent.itemId,
+                            value = parsed,
+                        )
+                    }
+                }
             }
 
             is Intent.OnTextAnswer -> {
@@ -73,8 +86,8 @@ internal class ChecklistExecutor(
         subscriptionJob?.cancel()
         subscriptionJob = repository.observeChecklistItems(equipmentResultId)
             .onStart { dispatch(Message.SetLoading) }
-            .onEach { items -> dispatch(Message.SetItems(items.toImmutableList())) }
-            .catch { throwable ->
+            .onEach { items -> dispatch(Message.SetItems(items)) }
+            .safeCatch { throwable ->
                 Napier.e(message = "observeChecklistItems failed", throwable = throwable)
                 dispatch(Message.SetError)
             }
@@ -84,13 +97,24 @@ internal class ChecklistExecutor(
     private suspend fun finishChecklist() {
         val currentState = state()
         val items = currentState.items
-        val missingRequired = items.any { item -> item.isRequired && !item.isAnswered() }
+        if (currentState.invalidNumberInputs.isNotEmpty()) {
+            dispatch(Message.SetValidationInvalidNumberError)
+            return
+        }
+        val missingRequired = items.any { item -> item.isRequired && !item.isAnswered }
         if (missingRequired) {
             dispatch(Message.SetValidationRequiredError)
             return
         }
+        val hasOutOfRange = items.any { item ->
+            item is DomainChecklistItem.NumberItem && item.isOutOfRange
+        }
+        if (hasOutOfRange) {
+            dispatch(Message.SetValidationOutOfRangeError)
+            return
+        }
         val missingPhoto = items.any { item ->
-            item.requiresPhoto && item.photoCount == 0 && item.isAnswered()
+            item.requiresPhoto && item.photoCount == 0 && item.isAnswered
         }
         if (missingPhoto) {
             dispatch(Message.SetValidationPhotoError)
@@ -106,13 +130,5 @@ internal class ChecklistExecutor(
                 dispatch(Message.SetError)
             },
         )
-    }
-
-    private fun DomainChecklistItem.isAnswered(): Boolean = when (answerType) {
-        DomainAnswerType.Boolean -> valueBoolean != null
-        DomainAnswerType.Number -> valueNumber != null
-        DomainAnswerType.Text -> !valueText.isNullOrBlank()
-        is DomainAnswerType.Select -> !valueSelect.isNullOrBlank()
-        DomainAnswerType.Confirm -> isConfirmed
     }
 }
