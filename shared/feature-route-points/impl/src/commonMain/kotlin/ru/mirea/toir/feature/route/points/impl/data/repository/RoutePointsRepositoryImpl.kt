@@ -135,4 +135,3 @@ private fun LocalEquipmentResultStatus.toDomain(): EquipmentResultStatus = when 
     LocalEquipmentResultStatus.COMPLETED -> EquipmentResultStatus.COMPLETED
     LocalEquipmentResultStatus.SKIPPED -> EquipmentResultStatus.SKIPPED
 }
-

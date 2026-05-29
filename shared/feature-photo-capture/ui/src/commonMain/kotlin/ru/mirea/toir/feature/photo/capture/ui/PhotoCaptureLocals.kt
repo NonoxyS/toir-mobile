@@ -17,6 +17,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
  * gate, every tile would animate Crop<->Fit on each preview open/close because they all
  * share the parent AnimatedContent's transition.
  */
+@Suppress("CompositionLocalAllowlist")
 internal val LocalPhotoSharedTransitionUri = staticCompositionLocalOf<String?> { null }
 
 @Composable

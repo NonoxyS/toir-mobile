@@ -43,7 +43,6 @@ import ru.mirea.toir.feature.photo.capture.ui.preview.PreviewBoundsTransform
 import ru.mirea.toir.feature.photo.capture.ui.preview.animateContentScale
 import ru.mirea.toir.res.MR
 
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun PhotoCapturePhotoItem(
@@ -52,35 +51,56 @@ internal fun PhotoCapturePhotoItem(
     onTap: () -> Unit = {},
     onLongPress: () -> Unit = {},
 ) {
-    val isInSharedTransition = entry.fileUri != null &&
-        entry.fileUri == LocalPhotoSharedTransitionUri.current
-    val colors = ToirTheme.colors
     val fileUri = entry.fileUri
-    val tileShape = ToirTheme.shapes.md
-    val baseModifier = modifier
-        .aspectRatio(1f)
-        .clip(tileShape)
-        .background(colors.surface2)
-        .border(width = 1.dp, color = colors.borderSubtle, shape = tileShape)
-
     if (fileUri == null) {
-        val description = stringResource(MR.strings.photo_capture_not_downloaded_content_description)
-        Box(
-            modifier = baseModifier.semantics { contentDescription = description },
-            contentAlignment = Alignment.Center,
-        ) {
-            Image(
-                painter = painterResource(MR.images.ic_cloud_off),
-                contentDescription = null,
-                modifier = Modifier.size(PLACEHOLDER_ICON_SIZE),
-                colorFilter = ColorFilter.tint(colors.textDisabled),
-            )
-        }
-        return
+        PhotoTilePlaceholder(modifier = modifier)
+    } else {
+        PhotoTile(
+            fileUri = fileUri,
+            isInSharedTransition = fileUri == LocalPhotoSharedTransitionUri.current,
+            onTap = onTap,
+            modifier = modifier,
+            onLongPress = onLongPress,
+        )
     }
+}
 
-    var painterState by remember { mutableStateOf<AsyncImagePainter.State?>(null) }
+@Composable
+private fun PhotoTilePlaceholder(modifier: Modifier = Modifier) {
+    val colors = ToirTheme.colors
+    val tileShape = ToirTheme.shapes.md
+    val description = stringResource(MR.strings.photo_capture_not_downloaded_content_description)
+    Box(
+        modifier = modifier
+            .aspectRatio(1f)
+            .clip(tileShape)
+            .background(colors.surface2)
+            .border(width = 1.dp, color = colors.borderSubtle, shape = tileShape)
+            .semantics { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) {
+        Image(
+            painter = painterResource(MR.images.ic_cloud_off),
+            contentDescription = null,
+            modifier = Modifier.size(PLACEHOLDER_ICON_SIZE),
+            colorFilter = ColorFilter.tint(colors.textDisabled),
+        )
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun PhotoTile(
+    fileUri: String,
+    isInSharedTransition: Boolean,
+    onTap: () -> Unit,
+    modifier: Modifier = Modifier,
+    onLongPress: () -> Unit,
+) {
+    val colors = ToirTheme.colors
+    val tileShape = ToirTheme.shapes.md
     val haptic = LocalHapticFeedback.current
+    var painterState by remember { mutableStateOf<AsyncImagePainter.State?>(null) }
     val contentScale = if (isInSharedTransition) {
         LocalAnimatedVisibilityScope.current.animateContentScale(
             visible = ContentScale.Crop,
@@ -91,7 +111,11 @@ internal fun PhotoCapturePhotoItem(
         ContentScale.Crop
     }
     Box(
-        modifier = baseModifier
+        modifier = modifier
+            .aspectRatio(1f)
+            .clip(tileShape)
+            .background(colors.surface2)
+            .border(width = 1.dp, color = colors.borderSubtle, shape = tileShape)
             .toirSharedElement(
                 sharedContentState = rememberSharedContentState(key = "photo-$fileUri"),
                 boundsTransform = PreviewBoundsTransform,

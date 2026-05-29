@@ -23,23 +23,22 @@ internal fun PendingInspectionsSection(
     modifier: Modifier = Modifier,
 ) {
     val colors = ToirTheme.colors
-    if (indicator.pendingInspections.isEmpty()) {
-        Text(
-            text = stringResource(MR.strings.sync_status_pending_in_background),
-            style = ToirTheme.typography.bodyMedium,
-            color = colors.textSecondary,
-            modifier = modifier,
-        )
-        return
-    }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = stringResource(MR.strings.sync_status_pending_list_title),
-            style = ToirTheme.typography.bodyLarge,
-            color = colors.textPrimary,
-        )
-        indicator.pendingInspections.forEach { item ->
-            PendingInspectionCard(item)
+        if (indicator.pendingInspections.isEmpty()) {
+            Text(
+                text = stringResource(MR.strings.sync_status_pending_in_background),
+                style = ToirTheme.typography.bodyMedium,
+                color = colors.textSecondary,
+            )
+        } else {
+            Text(
+                text = stringResource(MR.strings.sync_status_pending_list_title),
+                style = ToirTheme.typography.bodyLarge,
+                color = colors.textPrimary,
+            )
+            indicator.pendingInspections.forEach { item ->
+                PendingInspectionCard(item)
+            }
         }
     }
 }
