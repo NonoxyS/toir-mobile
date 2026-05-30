@@ -10,20 +10,18 @@ import ru.mirea.toir.feature.bootstrap.impl.data.repository.BootstrapRepositoryI
 import ru.mirea.toir.feature.bootstrap.impl.domain.BootstrapStoreFactory
 import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapRepository
 import ru.mirea.toir.sync.domain.SyncManager
-import ru.mirea.toir.sync.domain.SyncTrigger
 
 val featureBootstrapImplModule = module {
     factory<BootstrapApiClient> { new(::BootstrapApiClientImpl) }
     factory<BootstrapRepository> { new(::BootstrapRepositoryImpl) }
 
     factory<BootstrapStore> {
-        val syncManager = get<SyncManager>()
         BootstrapStoreFactory(
             storeFactory = get(),
             mainDispatcher = get<CoroutineDispatchers>().main,
             bootstrapRepository = get(),
             authRepository = get(),
-            triggerBackgroundSync = { syncManager.syncNow(SyncTrigger.Bootstrap) },
+            syncRunner = get<SyncManager>(),
         ).create()
     }
 }

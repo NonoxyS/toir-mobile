@@ -27,7 +27,7 @@ internal class FakeAuthRepository(
     override suspend fun logout(): Result<Unit> {
         logoutCallCount++
         if (logoutShouldThrow) {
-            throw RuntimeException("simulated logout failure")
+            return Result.failure(RuntimeException("simulated logout failure"))
         }
         tokens = null
         return Result.success(Unit)
