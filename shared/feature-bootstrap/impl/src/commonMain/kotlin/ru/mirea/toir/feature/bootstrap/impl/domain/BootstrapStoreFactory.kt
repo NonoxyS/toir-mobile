@@ -10,12 +10,13 @@ import ru.mirea.toir.feature.bootstrap.api.store.BootstrapStore.Intent
 import ru.mirea.toir.feature.bootstrap.api.store.BootstrapStore.Label
 import ru.mirea.toir.feature.bootstrap.api.store.BootstrapStore.State
 import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapRepository
+import ru.mirea.toir.sync.domain.SyncRunner
 
 internal class BootstrapStoreFactory(
     private val storeFactory: StoreFactory,
     private val bootstrapRepository: BootstrapRepository,
     private val authRepository: AuthRepository,
-    private val triggerBackgroundSync: () -> Unit,
+    private val syncRunner: SyncRunner,
     private val mainDispatcher: CoroutineDispatcher,
 ) {
     fun create(): BootstrapStore =
@@ -29,7 +30,7 @@ internal class BootstrapStoreFactory(
                     BootstrapExecutor(
                         bootstrapRepository = bootstrapRepository,
                         authRepository = authRepository,
-                        triggerBackgroundSync = triggerBackgroundSync,
+                        syncRunner = syncRunner,
                         mainDispatcher = mainDispatcher,
                     )
                 },
@@ -39,6 +40,5 @@ internal class BootstrapStoreFactory(
     internal sealed interface Message {
         data object SetLoading : Message
         data object SetError : Message
-        data object ClearLoading : Message
     }
 }

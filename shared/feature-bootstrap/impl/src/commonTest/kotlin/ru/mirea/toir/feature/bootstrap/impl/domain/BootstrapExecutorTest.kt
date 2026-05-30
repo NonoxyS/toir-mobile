@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import ru.mirea.toir.feature.bootstrap.api.store.BootstrapStore.Label
 import ru.mirea.toir.feature.bootstrap.impl.domain.repository.BootstrapResult
+import ru.mirea.toir.sync.domain.SyncTrigger
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,14 +24,14 @@ internal class BootstrapExecutorTest {
         runTest {
             val repository = FakeBootstrapRepository(nextResult = BootstrapResult.Unauthorized)
             val authRepository = FakeAuthRepository()
+            val syncRunner = FakeSyncRunner()
             val labels = mutableListOf<Label>()
-            var syncTriggered = 0
 
             val store = BootstrapStoreFactory(
                 storeFactory = TestStoreFactory(),
                 bootstrapRepository = repository,
                 authRepository = authRepository,
-                triggerBackgroundSync = { syncTriggered++ },
+                syncRunner = syncRunner,
                 mainDispatcher = Dispatchers.Unconfined,
             ).create()
 
@@ -40,7 +41,7 @@ internal class BootstrapExecutorTest {
 
                 assertEquals(listOf<Label>(Label.NavigateToLogin), labels)
                 assertEquals(1, authRepository.logoutCallCount)
-                assertEquals(0, syncTriggered)
+                assertEquals(0, syncRunner.callCount)
             } finally {
                 store.dispose()
             }
@@ -50,14 +51,14 @@ internal class BootstrapExecutorTest {
     fun `when bootstrap returns Success — publishes NavigateToRoutesList and triggers sync`() = runTest {
         val repository = FakeBootstrapRepository(nextResult = BootstrapResult.Success)
         val authRepository = FakeAuthRepository()
+        val syncRunner = FakeSyncRunner()
         val labels = mutableListOf<Label>()
-        var syncTriggered = 0
 
         val store = BootstrapStoreFactory(
             storeFactory = TestStoreFactory(),
             bootstrapRepository = repository,
             authRepository = authRepository,
-            triggerBackgroundSync = { syncTriggered++ },
+            syncRunner = syncRunner,
             mainDispatcher = Dispatchers.Unconfined,
         ).create()
 
@@ -66,7 +67,8 @@ internal class BootstrapExecutorTest {
             store.init()
 
             assertEquals(listOf<Label>(Label.NavigateToRoutesList), labels)
-            assertEquals(1, syncTriggered)
+            assertEquals(1, syncRunner.callCount)
+            assertEquals(SyncTrigger.Bootstrap, syncRunner.lastTrigger)
         } finally {
             store.dispose()
         }
@@ -78,14 +80,14 @@ internal class BootstrapExecutorTest {
             nextResult = BootstrapResult.Failure(RuntimeException("boom")),
         )
         val authRepository = FakeAuthRepository()
+        val syncRunner = FakeSyncRunner()
         val labels = mutableListOf<Label>()
-        var syncTriggered = 0
 
         val store = BootstrapStoreFactory(
             storeFactory = TestStoreFactory(),
             bootstrapRepository = repository,
             authRepository = authRepository,
-            triggerBackgroundSync = { syncTriggered++ },
+            syncRunner = syncRunner,
             mainDispatcher = Dispatchers.Unconfined,
         ).create()
 
@@ -96,7 +98,7 @@ internal class BootstrapExecutorTest {
             assertTrue(store.state.isError)
             assertEquals(false, store.state.isLoading)
             assertEquals(emptyList<Label>(), labels)
-            assertEquals(0, syncTriggered)
+            assertEquals(0, syncRunner.callCount)
         } finally {
             store.dispose()
         }
@@ -107,14 +109,14 @@ internal class BootstrapExecutorTest {
         runTest {
             val repository = FakeBootstrapRepository(nextResult = BootstrapResult.Unauthorized)
             val authRepository = FakeAuthRepository(logoutShouldThrow = true)
+            val syncRunner = FakeSyncRunner()
             val labels = mutableListOf<Label>()
-            var syncTriggered = 0
 
             val store = BootstrapStoreFactory(
                 storeFactory = TestStoreFactory(),
                 bootstrapRepository = repository,
                 authRepository = authRepository,
-                triggerBackgroundSync = { syncTriggered++ },
+                syncRunner = syncRunner,
                 mainDispatcher = Dispatchers.Unconfined,
             ).create()
 
@@ -124,8 +126,8 @@ internal class BootstrapExecutorTest {
 
                 assertEquals(listOf<Label>(Label.NavigateToLogin), labels)
                 assertEquals(1, authRepository.logoutCallCount)
-                assertEquals(false, store.state.isLoading)
-                assertEquals(0, syncTriggered)
+                assertTrue(store.state.isLoading)
+                assertEquals(0, syncRunner.callCount)
             } finally {
                 store.dispose()
             }

@@ -8,6 +8,5 @@ internal class BootstrapReducer : Reducer<State, Message> {
     override fun State.reduce(msg: Message): State = when (msg) {
         Message.SetLoading -> copy(isLoading = true, isError = false)
         Message.SetError -> copy(isLoading = false, isError = true)
-        Message.ClearLoading -> copy(isLoading = false)
     }
 }

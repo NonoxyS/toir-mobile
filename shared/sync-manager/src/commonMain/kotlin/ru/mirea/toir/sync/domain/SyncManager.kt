@@ -32,7 +32,7 @@ class SyncManager internal constructor(
     private val actionLogger: ActionLogger,
     private val networkMonitor: NetworkMonitor,
     coroutineDispatchers: CoroutineDispatchers,
-) {
+) : SyncRunner {
     private val scope = CoroutineScope(coroutineDispatchers.io + SupervisorJob())
     private val mutex = Mutex()
 
@@ -54,7 +54,7 @@ class SyncManager internal constructor(
             .launchIn(scope)
     }
 
-    fun syncNow(trigger: SyncTrigger): Job = scope.launch {
+    override fun syncNow(trigger: SyncTrigger): Job = scope.launch {
         runOnce(trigger)
     }
 

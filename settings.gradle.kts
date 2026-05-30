@@ -95,3 +95,10 @@ include(":shared:feature-checklist:presentation")
 include(":shared:feature-checklist:ui")
 
 include(":shared:sync-manager")
+
+if (System.getenv("IS_CI") == null) {
+    providers.exec {
+        commandLine("git", "config", "core.hooksPath", ".githooks")
+        workingDir = rootDir
+    }.result.get()
+}

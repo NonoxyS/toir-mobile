@@ -5,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -54,6 +54,11 @@ internal fun BootstrapScreen(
     BootstrapContent(state = state, onRetry = viewModel::onRetry)
 }
 
+private enum class BootstrapRenderMode { Loading, Error }
+
+private fun UiBootstrapState.toRenderMode(): BootstrapRenderMode =
+    if (isError) BootstrapRenderMode.Error else BootstrapRenderMode.Loading
+
 @Composable
 private fun BootstrapContent(
     state: UiBootstrapState,
@@ -62,34 +67,43 @@ private fun BootstrapContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(ToirTheme.colors.background),
+            .background(ToirTheme.colors.background)
+            .statusBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween,
     ) {
-        Spacer(Modifier.height(48.dp)) // spacing.xxl от safe area
-        BootstrapHeader()
-        Spacer(Modifier.height(48.dp)) // spacing.xxl до состояния
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.TopCenter,
-        ) {
-            Crossfade(
-                targetState = state,
-                animationSpec = tween(durationMillis = 200),
-                label = "bootstrap-state-crossfade",
-            ) { current ->
-                when {
-                    current.isError -> BootstrapError(onRetry = onRetry)
-                    current.isLoading -> BootstrapLoading()
-                    else -> Spacer(Modifier.size(0.dp)) // success: no UI
+        BootstrapHeader(modifier = Modifier.padding(top = 48.dp))
+
+        Crossfade(
+            targetState = state.toRenderMode(),
+            animationSpec = tween(durationMillis = 200),
+            label = "bootstrap-render-mode",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+        ) { mode ->
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                when (mode) {
+                    BootstrapRenderMode.Loading -> BootstrapLoading()
+                    BootstrapRenderMode.Error -> BootstrapError(onRetry = onRetry)
                 }
             }
         }
+
+        Spacer(Modifier.height(48.dp))
     }
 }
 
 @Composable
-private fun BootstrapHeader() {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun BootstrapHeader(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
         Text(
             text = stringResource(MR.strings.bootstrap_title),
             style = ToirTheme.typography.displayLarge,
@@ -100,7 +114,6 @@ private fun BootstrapHeader() {
             style = ToirTheme.typography.bodyMedium,
             color = ToirTheme.colors.textSecondary,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 4.dp),
         )
     }
 }
@@ -128,7 +141,6 @@ private fun BootstrapError(onRetry: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp),
-        modifier = Modifier.padding(horizontal = 16.dp),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
