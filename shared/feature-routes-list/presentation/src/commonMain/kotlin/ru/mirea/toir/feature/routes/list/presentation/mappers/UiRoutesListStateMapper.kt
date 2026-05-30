@@ -33,7 +33,7 @@ internal class UiRoutesListStateMapperImpl : UiRoutesListStateMapper {
     private fun DomainRouteAssignment.toUi(): UiRouteAssignment = UiRouteAssignment(
         assignmentId = assignmentId,
         routeName = routeName,
-        routeNumber = assignmentId.take(8).uppercase(),
+        routeNumber = routeCode,
         status = status.toUiStatus(),
         completedPoints = completedPoints,
         totalPoints = totalPoints,

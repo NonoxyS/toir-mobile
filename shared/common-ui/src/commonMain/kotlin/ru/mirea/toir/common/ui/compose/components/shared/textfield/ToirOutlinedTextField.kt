@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
@@ -20,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -53,6 +53,8 @@ fun ToirOutlinedTextField(
     isRequired: Boolean = false,
     enabled: Boolean = true,
     singleLine: Boolean = true,
+    minLines: Int = 1,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
@@ -60,27 +62,35 @@ fun ToirOutlinedTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     labelTrailingContent: (@Composable () -> Unit)? = null,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         if (label != null) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Text(
-                    text = label,
-                    style = ToirTheme.typography.bodyMedium,
-                    color = ToirTheme.colors.textSecondary,
-                )
-                if (isRequired) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
                     Text(
-                        text = "*",
+                        text = label,
                         style = ToirTheme.typography.bodyMedium,
-                        color = ToirTheme.colors.error,
+                        color = ToirTheme.colors.textSecondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
                     )
+                    if (isRequired) {
+                        Text(
+                            text = "*",
+                            style = ToirTheme.typography.bodyMedium,
+                            color = ToirTheme.colors.error,
+                        )
+                    }
                 }
                 if (labelTrailingContent != null) {
-                    Spacer(modifier = Modifier.weight(1f))
                     labelTrailingContent()
                 }
             }
@@ -105,6 +115,8 @@ fun ToirOutlinedTextField(
             keyboardActions = keyboardActions,
             visualTransformation = visualTransformation,
             singleLine = singleLine,
+            minLines = minLines,
+            maxLines = maxLines,
             shape = ToirTheme.shapes.sm,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = ToirTheme.colors.surface2,

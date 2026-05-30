@@ -12,14 +12,10 @@ import androidx.compose.ui.unit.dp
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 
-internal fun UiChecklistItem.titleWithRequiredMarker(): String =
-    if (isRequired) "$title *" else title
-
 /**
- * Заголовок пункта чеклиста с опциональной info-иконкой справа. Иконка появляется
- * только если у пункта есть description — тогда тап на ней открывает bottom sheet
- * с полным текстом описания. По умолчанию description не отображается прямо в
- * списке, чтобы не перегружать его шумом для опытных обходчиков.
+ * Заголовок пункта чеклиста с info-иконкой справа (если у пункта есть description)
+ * и звёздочкой обязательности отдельным Text красным цветом — сигнал обязательности
+ * не зависит от состояния ошибки.
  */
 @Composable
 internal fun ChecklistItemTitle(
@@ -32,18 +28,31 @@ internal fun ChecklistItemTitle(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(
-            text = item.titleWithRequiredMarker(),
-            style = ToirTheme.typography.bodyLarge,
-            color = if (item.showValidationError) {
-                ToirTheme.colors.error
-            } else {
-                ToirTheme.colors.textPrimary
-            },
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
+        Row(
             modifier = Modifier.weight(1f),
-        )
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = item.title,
+                style = ToirTheme.typography.bodyLarge,
+                color = if (item.showValidationError) {
+                    ToirTheme.colors.error
+                } else {
+                    ToirTheme.colors.textPrimary
+                },
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            if (item.isRequired) {
+                Text(
+                    text = "*",
+                    style = ToirTheme.typography.bodyLarge,
+                    color = ToirTheme.colors.error,
+                )
+            }
+        }
         if (item.description != null) {
             ChecklistInfoIconButton(onClick = onOpenDescription)
         }

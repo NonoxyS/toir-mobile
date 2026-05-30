@@ -17,6 +17,7 @@ internal class RouteAssignmentMapper {
     ): DomainRouteAssignment = DomainRouteAssignment(
         assignmentId = assignment.id,
         routeId = assignment.routeId,
+        routeCode = route?.code.orEmpty(),
         routeName = route?.name.orEmpty(),
         status = status,
         assignedAt = assignment.assignedAt,

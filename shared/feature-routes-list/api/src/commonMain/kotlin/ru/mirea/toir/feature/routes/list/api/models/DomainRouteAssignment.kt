@@ -3,6 +3,7 @@ package ru.mirea.toir.feature.routes.list.api.models
 data class DomainRouteAssignment(
     val assignmentId: String,
     val routeId: String,
+    val routeCode: String,
     val routeName: String,
     val status: RouteAssignmentStatus,
     val assignedAt: String,

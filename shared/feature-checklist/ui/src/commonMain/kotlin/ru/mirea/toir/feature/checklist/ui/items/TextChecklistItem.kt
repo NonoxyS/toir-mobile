@@ -19,9 +19,6 @@ internal fun TextChecklistItem(
     onOpenDescription: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Локальный input — источник истины. Ключ только по item.id, чтобы эхо
-    // из store (saveTextAnswer → observe → новый State) не перезаписывало текст,
-    // который пользователь ещё печатает (race при быстром вводе/удалении).
     var input by remember(item.id) { mutableStateOf(item.value) }
 
     ToirOutlinedTextField(
@@ -39,7 +36,9 @@ internal fun TextChecklistItem(
         } else {
             null
         },
-        singleLine = true,
+        singleLine = false,
+        minLines = 1,
+        maxLines = 5,
         labelTrailingContent = if (item.description != null) {
             { ChecklistInfoIconButton(onClick = onOpenDescription) }
         } else {
