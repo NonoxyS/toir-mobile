@@ -12,5 +12,8 @@ androidLibraryConfig {
 }
 
 commonMainDependencies {
-    implementations(libs.kotlin.immutableCollections)
+    implementations(
+        libs.kotlin.immutableCollections,
+        libs.kotlin.datetime,
+    )
 }

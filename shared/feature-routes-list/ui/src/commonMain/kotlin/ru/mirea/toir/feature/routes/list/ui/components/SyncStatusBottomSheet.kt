@@ -18,6 +18,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import ru.mirea.toir.common.ui.compose.components.shared.button.ToirPrimaryButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.Spacer12
@@ -122,6 +125,7 @@ private fun LastSyncCard(
                             timeText.orEmpty(),
                             stringResource(indicator.lastError!!.toMessageRes()),
                         )
+
                         else -> stringResource(
                             MR.strings.sync_status_last_success_full,
                             timeText.orEmpty(),
@@ -143,9 +147,10 @@ private fun UiSyncFailure.toMessageRes() = when (this) {
     UiSyncFailure.UNKNOWN -> MR.strings.sync_error_unknown
 }
 
-/** Берёт `HH:MM` из ISO-Instant строки вида `2026-05-12T15:32:01.123Z`. */
-private fun formatInstant(iso: String): String {
-    val t = iso.indexOf('T')
-    if (t < 0 || t + 6 > iso.length) return iso
-    return iso.substring(t + 1, t + 6)
-}
+/** Конвертирует ISO-Instant (UTC) в локальное `HH:MM` по таймзоне устройства. */
+private fun formatInstant(iso: String): String = runCatching {
+    val local = Instant.parse(iso).toLocalDateTime(TimeZone.currentSystemDefault())
+    val hh = local.hour.toString().padStart(2, '0')
+    val mm = local.minute.toString().padStart(2, '0')
+    "$hh:$mm"
+}.getOrElse { iso }
