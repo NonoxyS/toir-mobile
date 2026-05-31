@@ -19,6 +19,7 @@ interface ChecklistStore : Store<Intent, State, Label> {
         val isOutOfRangeError: Boolean = false,
         val isInvalidNumberError: Boolean = false,
         val isCompleted: Boolean = false,
+        val openDescriptionItemId: String? = null,
     )
 
     sealed interface Intent {
@@ -28,6 +29,8 @@ interface ChecklistStore : Store<Intent, State, Label> {
         data class OnSelectAnswer(val itemId: String, val value: String) : Intent
         data class OnConfirm(val itemId: String, val value: Boolean) : Intent
         data class OnAddPhoto(val itemId: String) : Intent
+        data class OnOpenDescription(val itemId: String) : Intent
+        data object OnCloseDescription : Intent
         data object OnFinishChecklist : Intent
     }
 

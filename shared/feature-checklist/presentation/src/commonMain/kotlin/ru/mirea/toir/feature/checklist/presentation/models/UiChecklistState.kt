@@ -14,4 +14,5 @@ data class UiChecklistState(
     val isOutOfRangeError: Boolean = false,
     val isInvalidNumberError: Boolean = false,
     val isCompleted: Boolean = false,
+    val openDescription: UiChecklistDescription? = null,
 )

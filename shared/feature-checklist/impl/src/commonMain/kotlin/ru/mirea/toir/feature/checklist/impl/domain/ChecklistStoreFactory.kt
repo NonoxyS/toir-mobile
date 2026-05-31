@@ -45,5 +45,6 @@ internal class ChecklistStoreFactory(
         data object SetValidationInvalidNumberError : Message
         data object ClearValidationError : Message
         data object SetCompleted : Message
+        data class SetDescriptionOpen(val itemId: String?) : Message
     }
 }

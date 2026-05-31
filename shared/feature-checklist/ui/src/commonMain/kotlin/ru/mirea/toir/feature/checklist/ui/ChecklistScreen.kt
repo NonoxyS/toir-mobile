@@ -22,9 +22,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -76,6 +73,8 @@ internal fun ChecklistScreen(
         onSelectAnswer = viewModel::onSelectAnswer,
         onConfirm = viewModel::onConfirm,
         onAddPhoto = viewModel::onAddPhoto,
+        onOpenDescription = viewModel::onOpenDescription,
+        onCloseDescription = viewModel::onCloseDescription,
         onFinishChecklist = viewModel::onFinishChecklist,
         onNavigateBack = onNavigateBack,
     )
@@ -91,20 +90,16 @@ private fun ChecklistScreenContent(
     onSelectAnswer: (String, String) -> Unit,
     onConfirm: (String, Boolean) -> Unit,
     onAddPhoto: (String) -> Unit,
+    onOpenDescription: (String) -> Unit,
+    onCloseDescription: () -> Unit,
     onFinishChecklist: () -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    // Один bottom sheet на экран. Хранит id пункта, чей description открыт.
-    // Item composables просто прокидывают свой id через onOpenDescription.
-    var openDescriptionItemId by remember { mutableStateOf<String?>(null) }
-    val openDescriptionItem = openDescriptionItemId?.let { id ->
-        state.items.firstOrNull { it.id == id }
-    }
-    if (openDescriptionItem != null && openDescriptionItem.description != null) {
+    state.openDescription?.let { description ->
         ChecklistDescriptionBottomSheet(
-            title = openDescriptionItem.title,
-            description = openDescriptionItem.description!!,
-            onDismiss = { openDescriptionItemId = null },
+            title = description.title,
+            description = description.description,
+            onDismiss = onCloseDescription,
         )
     }
 
@@ -166,7 +161,7 @@ private fun ChecklistScreenContent(
                     onSelectAnswer = onSelectAnswer,
                     onConfirm = onConfirm,
                     onAddPhoto = onAddPhoto,
-                    onOpenDescription = { id -> openDescriptionItemId = id },
+                    onOpenDescription = onOpenDescription,
                 )
             }
         }

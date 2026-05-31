@@ -79,5 +79,7 @@ internal class ChecklistReducer : Reducer<State, Message> {
             isOutOfRangeError = false,
             isInvalidNumberError = false,
         )
+
+        is Message.SetDescriptionOpen -> copy(openDescriptionItemId = msg.itemId)
     }
 }

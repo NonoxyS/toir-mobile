@@ -40,6 +40,10 @@ class ChecklistViewModel internal constructor(
 
     fun onAddPhoto(itemId: String) = store.accept(Intent.OnAddPhoto(itemId))
 
+    fun onOpenDescription(itemId: String) = store.accept(Intent.OnOpenDescription(itemId))
+
+    fun onCloseDescription() = store.accept(Intent.OnCloseDescription)
+
     fun onFinishChecklist() = store.accept(Intent.OnFinishChecklist)
 
     override fun onCleared() {

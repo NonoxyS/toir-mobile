@@ -9,8 +9,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import dev.icerock.moko.resources.compose.localized
 import dev.icerock.moko.resources.compose.stringResource
-import dev.icerock.moko.resources.desc.ResourceFormattedStringDesc
 import ru.mirea.toir.common.ui.compose.components.shared.textfield.ToirOutlinedTextField
 import ru.mirea.toir.common.ui.compose.components.shared.textfield.filters.NumberInputFilter
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
@@ -33,10 +33,7 @@ internal fun NumberChecklistItem(
         item.isInvalidNumber -> stringResource(MR.strings.checklist_number_error_invalid)
         item.isOutOfRange -> stringResource(MR.strings.checklist_number_error_out_of_range)
         item.showValidationError -> stringResource(MR.strings.checklist_validation_error_required)
-        else -> when (val hint = item.rangeHint) {
-            is ResourceFormattedStringDesc -> stringResource(hint.stringRes, *hint.args.toTypedArray())
-            else -> null
-        }
+        else -> item.rangeHint?.localized()
     }
     val isError = item.isInvalidNumber || item.isOutOfRange || item.showValidationError
 
