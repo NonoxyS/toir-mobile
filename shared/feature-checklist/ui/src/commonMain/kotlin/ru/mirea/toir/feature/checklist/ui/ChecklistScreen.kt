@@ -348,8 +348,16 @@ private fun ChecklistPhotoSection(
         ToirSecondaryButton(
             onClick = { onAddPhoto(item.id) },
             text = stringResource(MR.strings.checklist_button_add_photo),
+            enabled = item.canAddPhoto,
             modifier = Modifier.fillMaxWidth(),
         )
+        if (!item.canAddPhoto) {
+            Text(
+                text = stringResource(MR.strings.checklist_photo_answer_first),
+                style = ToirTheme.typography.bodyMedium,
+                color = ToirTheme.colors.textSecondary,
+            )
+        }
         if (item.photoCount > 0) {
             Text(
                 text = stringResource(MR.strings.checklist_photo_count, item.photoCount),

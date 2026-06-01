@@ -9,6 +9,7 @@ sealed interface UiChecklistItem {
     val description: String?
     val isRequired: Boolean
     val requiresPhoto: Boolean
+    val canAddPhoto: Boolean
     val photoCount: Int
     val showValidationError: Boolean
 
@@ -18,6 +19,7 @@ sealed interface UiChecklistItem {
         override val description: String?,
         override val isRequired: Boolean,
         override val requiresPhoto: Boolean,
+        override val canAddPhoto: Boolean,
         override val photoCount: Int,
         override val showValidationError: Boolean,
         val value: Boolean?,
@@ -29,6 +31,7 @@ sealed interface UiChecklistItem {
         override val description: String?,
         override val isRequired: Boolean,
         override val requiresPhoto: Boolean,
+        override val canAddPhoto: Boolean,
         override val photoCount: Int,
         override val showValidationError: Boolean,
         val value: String,
@@ -43,6 +46,7 @@ sealed interface UiChecklistItem {
         override val description: String?,
         override val isRequired: Boolean,
         override val requiresPhoto: Boolean,
+        override val canAddPhoto: Boolean,
         override val photoCount: Int,
         override val showValidationError: Boolean,
         val value: String,
@@ -54,6 +58,7 @@ sealed interface UiChecklistItem {
         override val description: String?,
         override val isRequired: Boolean,
         override val requiresPhoto: Boolean,
+        override val canAddPhoto: Boolean,
         override val photoCount: Int,
         override val showValidationError: Boolean,
         val value: String?,
@@ -66,6 +71,7 @@ sealed interface UiChecklistItem {
         override val description: String?,
         override val isRequired: Boolean,
         override val requiresPhoto: Boolean,
+        override val canAddPhoto: Boolean,
         override val photoCount: Int,
         override val showValidationError: Boolean,
         val value: Boolean,
