@@ -18,6 +18,8 @@ fun ToirTheme(
         else -> getLightColorScheme()
     }
 
+    SystemBarsEffect(isDark = isDark)
+
     MaterialTheme {
         CompositionLocalProvider(
             LocalToirThemeColors provides colors,

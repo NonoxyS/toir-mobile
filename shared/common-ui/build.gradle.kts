@@ -37,5 +37,6 @@ commonMainDependencies {
 androidMainDependencies {
     implementations(
         libs.androidx.activity.compose,
+        libs.androidx.core.ktx,
     )
 }
