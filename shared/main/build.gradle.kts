@@ -24,6 +24,11 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
         }
+        iosTarget.binaries.all {
+            freeCompilerArgs += listOf(
+                "-Xoverride-konan-properties=osVersionMin.ios_arm64=17.0;osVersionMin.ios_simulator_arm64=17.0",
+            )
+        }
     }
 
     addCommonModules()

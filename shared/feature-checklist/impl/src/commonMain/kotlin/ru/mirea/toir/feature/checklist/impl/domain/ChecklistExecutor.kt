@@ -78,6 +78,14 @@ internal class ChecklistExecutor(
                 publish(Label.NavigateToPhotoCapture(resultId))
             }
 
+            is Intent.OnOpenDescription -> {
+                val item = state().items.firstOrNull { it.id == intent.itemId } ?: return
+                if (item.description.isNullOrBlank()) return
+                dispatch(Message.SetDescriptionOpen(intent.itemId))
+            }
+
+            Intent.OnCloseDescription -> dispatch(Message.SetDescriptionOpen(itemId = null))
+
             Intent.OnFinishChecklist -> finishChecklist()
         }
     }

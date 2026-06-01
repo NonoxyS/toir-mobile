@@ -6,6 +6,7 @@ import kotlinx.collections.immutable.toImmutableList
 import ru.mirea.toir.common.mappers.Mapper
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.api.store.ChecklistStore
+import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistDescription
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistItem
 import ru.mirea.toir.feature.checklist.presentation.models.UiChecklistState
 import ru.mirea.toir.res.MR
@@ -30,6 +31,15 @@ internal class UiChecklistStateMapperImpl : UiChecklistStateMapper {
         isOutOfRangeError = item.isOutOfRangeError,
         isInvalidNumberError = item.isInvalidNumberError,
         isCompleted = item.isCompleted,
+        openDescription = item.openDescriptionItemId
+            ?.let { id -> item.items.firstOrNull { it.id == id } }
+            ?.takeIf { !it.description.isNullOrBlank() }
+            ?.let { domainItem ->
+                UiChecklistDescription(
+                    title = domainItem.title,
+                    description = domainItem.description.orEmpty(),
+                )
+            },
     )
 
     private fun DomainChecklistItem.toUi(

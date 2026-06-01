@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
+import ru.mirea.toir.common.ui.compose.utils.navigationBarHeight
 import ru.mirea.toir.feature.routes.list.presentation.models.UiRouteAssignment
 
 @Composable
@@ -45,7 +46,12 @@ internal fun RoutesListItems(
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = 16.dp,
+            bottom = navigationBarHeight + 16.dp,
+        ),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier,
     ) {

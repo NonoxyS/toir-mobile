@@ -8,9 +8,11 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.icerock.moko.resources.compose.stringResource
+import kotlinx.coroutines.launch
 import ru.mirea.toir.common.ui.compose.components.shared.button.ToirPrimaryButton
 import ru.mirea.toir.common.ui.compose.theme.ToirTheme
 import ru.mirea.toir.common.ui.compose.utils.Spacer12
@@ -26,6 +28,13 @@ internal fun ChecklistDescriptionBottomSheet(
     modifier: Modifier = Modifier,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+    val dismissWithAnimation = {
+        scope.launch { sheetState.hide() }.invokeOnCompletion {
+            if (!sheetState.isVisible) onDismiss()
+        }
+        Unit
+    }
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -50,7 +59,7 @@ internal fun ChecklistDescriptionBottomSheet(
             )
             Spacer16()
             ToirPrimaryButton(
-                onClick = onDismiss,
+                onClick = dismissWithAnimation,
                 text = stringResource(MR.strings.checklist_description_dismiss),
                 modifier = Modifier.fillMaxWidth(),
             )
