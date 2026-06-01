@@ -1,0 +1,5 @@
+#include "Config.xcconfig"
+
+APP_ENVIRONMENT=dev
+PRODUCT_BUNDLE_IDENTIFIER=ru.mirea.toir.Toir$(TEAM_ID).dev
+BUNDLE_DISPLAY_NAME=Toir Dev
