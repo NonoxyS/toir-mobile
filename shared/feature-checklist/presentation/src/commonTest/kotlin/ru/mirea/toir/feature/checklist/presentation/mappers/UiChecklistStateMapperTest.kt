@@ -20,13 +20,14 @@ class UiChecklistStateMapperTest {
         id: String = "i1",
         isRequired: Boolean = true,
         value: Boolean? = null,
+        resultId: String? = null,
     ) = DomainChecklistItem.BooleanItem(
         id = id,
         title = "Q",
         description = null,
         isRequired = isRequired,
         requiresPhoto = false,
-        resultId = null,
+        resultId = resultId,
         photoCount = 0,
         value = value,
     )
@@ -156,6 +157,24 @@ class UiChecklistStateMapperTest {
         )
         val ui = mapper.map(state)
         assertFalse(ui.items[0].showValidationError)
+    }
+
+    @Test
+    fun `canAddPhoto is false when item has no resultId`() {
+        val state = ChecklistStore.State(
+            items = listOf(boolItem(resultId = null)),
+        )
+        val ui = mapper.map(state)
+        assertFalse(ui.items[0].canAddPhoto)
+    }
+
+    @Test
+    fun `canAddPhoto is true when item has a resultId`() {
+        val state = ChecklistStore.State(
+            items = listOf(boolItem(resultId = "r1")),
+        )
+        val ui = mapper.map(state)
+        assertTrue(ui.items[0].canAddPhoto)
     }
 
     @Test

@@ -79,6 +79,7 @@
     <string name="checklist_title">Чек-лист проверки</string>
     <string name="checklist_button_finish">Завершить проверку</string>
     <string name="checklist_button_add_photo">Добавить фото</string>
+    <string name="checklist_photo_answer_first">Сначала ответьте на пункт, чтобы добавить фото</string>
     <string name="checklist_button_done">Выполнено</string>
     <string name="checklist_button_yes">Да</string>
     <string name="checklist_button_no">Нет</string>
