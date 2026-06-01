@@ -36,7 +36,8 @@ fun <T> ToirSegmentedControl(
     enabled: Boolean = true,
     optionLabel: @Composable (T) -> String,
 ) {
-    val borderColor = if (isError) ToirTheme.colors.error else ToirTheme.colors.border
+    val inactiveBorder = if (isError) ToirTheme.colors.error else ToirTheme.colors.border
+    val accent = ToirTheme.colors.ctaPrimary
     SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
         options.forEachIndexed { index, option ->
             val isSelected = selected == option
@@ -47,15 +48,14 @@ fun <T> ToirSegmentedControl(
                 },
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
                 enabled = enabled,
-                border = SegmentedButtonDefaults.borderStroke(borderColor),
                 colors = SegmentedButtonDefaults.colors(
-                    activeContainerColor = ToirTheme.colors.surface2,
-                    activeContentColor = ToirTheme.colors.textPrimary,
-                    activeBorderColor = borderColor,
+                    activeContainerColor = accent,
+                    activeContentColor = ToirTheme.colors.textOnAccent,
+                    activeBorderColor = accent,
                     inactiveContainerColor = Color.Transparent,
                     inactiveContentColor = ToirTheme.colors.textSecondary,
-                    inactiveBorderColor = borderColor,
-                    disabledActiveContainerColor = ToirTheme.colors.surface,
+                    inactiveBorderColor = inactiveBorder,
+                    disabledActiveContainerColor = ToirTheme.colors.surface2,
                     disabledActiveContentColor = ToirTheme.colors.textDisabled,
                     disabledInactiveContainerColor = Color.Transparent,
                     disabledInactiveContentColor = ToirTheme.colors.textDisabled,

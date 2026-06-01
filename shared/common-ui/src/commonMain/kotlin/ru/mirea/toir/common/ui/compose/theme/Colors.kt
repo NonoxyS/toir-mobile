@@ -70,6 +70,33 @@ private val darkColorScheme = ToirColorScheme(
     selectedBackground = Color(0x1AD8DBE6),
 )
 
-internal fun getLightColorScheme(): ToirColorScheme = darkColorScheme
+private val lightColorScheme = ToirColorScheme(
+    background = Color(0xFFEDEFF2),
+    surface = Color(0xFFFFFFFF),
+    surface2 = Color(0xFFF6F7F9),
+    surfacePressed = Color(0xFFE4E7EC),
+    border = Color(0xFFC9CED8),
+    borderSubtle = Color(0xFFE3E6EC),
+    textPrimary = Color(0xFF1A1D22),
+    textSecondary = Color(0xFF5A6172),
+    textDisabled = Color(0xFF8F95A4),
+    textOnAccent = Color(0xFFFFFFFF),
+    ctaPrimary = Color(0xFF2A2F3C),
+    ctaSecondary = Color(0xFFEAECF1),
+    success = Color(0xFF27704D),
+    successSubtle = Color(0xFFE2F1EA),
+    warning = Color(0xFF8C5A12),
+    warningSubtle = Color(0xFFFBF0DC),
+    error = Color(0xFFB83232),
+    errorSubtle = Color(0xFFFBE6E4),
+    sync = Color(0xFF8A5614),
+    syncSubtle = Color(0xFFF7ECDA),
+    destructive = Color(0xFFB83232),
+    focusBorder = Color(0xFF3D4455),
+    pressedOverlay = Color(0x0F000000),
+    selectedBackground = Color(0x142A2F3C),
+)
+
+internal fun getLightColorScheme(): ToirColorScheme = lightColorScheme
 
 internal fun getDarkColorScheme(): ToirColorScheme = darkColorScheme
