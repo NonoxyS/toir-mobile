@@ -13,6 +13,7 @@ androidLibraryConfig {
 commonMainDependencies {
     implementations(
         projects.shared.coreDatabase,
+        projects.shared.coreDomain,
         projects.shared.syncManager,
         libs.kotlin.datetime,
     )

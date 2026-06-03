@@ -28,6 +28,7 @@ import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResul
 import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.core.database.storage.route.models.LocalRouteAssignment
 import ru.mirea.toir.core.database.storage.sync_meta.SyncMetaStorage
+import ru.mirea.toir.core.domain.id.DeterministicId
 import ru.mirea.toir.feature.routes.list.api.models.DomainRouteAssignment
 import ru.mirea.toir.feature.routes.list.api.models.RouteAssignmentStatus
 import ru.mirea.toir.feature.routes.list.api.models.RoutesListPendingInspection
@@ -42,8 +43,6 @@ import ru.mirea.toir.sync.domain.SyncFailureReason
 import ru.mirea.toir.sync.domain.SyncManager
 import ru.mirea.toir.sync.domain.SyncStatus
 import ru.mirea.toir.sync.domain.SyncTrigger
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 internal class RoutesListRepositoryImpl(
     private val routeStorage: RouteStorage,
@@ -108,7 +107,7 @@ internal class RoutesListRepositoryImpl(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
+    @OptIn(ExperimentalTime::class)
     override suspend fun startInspection(assignmentId: String): Result<String> =
         withContext(coroutineDispatchers.io) {
             coRunCatching(
@@ -119,7 +118,7 @@ internal class RoutesListRepositoryImpl(
                     val assignment = routeStorage.selectAssignmentById(assignmentId)
                         ?: error("Assignment not found: $assignmentId")
                     val now = Clock.System.now().toString()
-                    val inspectionId = Uuid.random().toString()
+                    val inspectionId = DeterministicId.forInspection(assignmentId)
                     inspectionStorage.insertInspection(
                         id = inspectionId,
                         assignmentId = assignmentId,

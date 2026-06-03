@@ -25,10 +25,9 @@ import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResul
 import ru.mirea.toir.core.database.storage.location.LocationStorage
 import ru.mirea.toir.core.database.storage.route.RouteStorage
 import ru.mirea.toir.feature.equipment.card.api.models.DomainEquipmentCard
+import ru.mirea.toir.core.domain.id.DeterministicId
 import ru.mirea.toir.core.domain.models.EquipmentResultStatus
 import ru.mirea.toir.feature.equipment.card.impl.domain.repository.EquipmentCardRepository
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 internal class EquipmentCardRepositoryImpl(
     private val inspectionStorage: InspectionStorage,
@@ -39,7 +38,7 @@ internal class EquipmentCardRepositoryImpl(
     private val coroutineDispatchers: CoroutineDispatchers,
 ) : EquipmentCardRepository {
 
-    @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
+    @OptIn(ExperimentalTime::class)
     override suspend fun ensureEquipmentResult(
         inspectionId: String,
         routePointId: String,
@@ -54,7 +53,7 @@ internal class EquipmentCardRepositoryImpl(
                     if (existing == null) {
                         val now = Clock.System.now().toString()
                         inspectionStorage.insertEquipmentResult(
-                            id = Uuid.random().toString(),
+                            id = DeterministicId.forEquipmentResult(inspectionId, routePointId),
                             inspectionId = inspectionId,
                             routePointId = routePointId,
                             equipmentId = routePoint.equipmentId,

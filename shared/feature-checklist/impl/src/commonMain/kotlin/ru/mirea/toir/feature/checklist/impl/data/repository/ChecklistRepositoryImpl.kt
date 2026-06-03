@@ -12,8 +12,6 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 import ru.mirea.toir.common.coroutines.CoroutineDispatchers
 import ru.mirea.toir.common.extensions.coRunCatching
 import ru.mirea.toir.common.extensions.wrapResultFailure
@@ -28,6 +26,7 @@ import ru.mirea.toir.core.database.storage.inspection.models.LocalChecklistItemR
 import ru.mirea.toir.core.database.storage.inspection.models.LocalEquipmentResultStatus
 import ru.mirea.toir.core.database.storage.photo.PhotoStorage
 import ru.mirea.toir.core.database.storage.route.RouteStorage
+import ru.mirea.toir.core.domain.id.DeterministicId
 import ru.mirea.toir.feature.checklist.api.models.DomainChecklistItem
 import ru.mirea.toir.feature.checklist.impl.domain.repository.ChecklistRepository
 
@@ -163,7 +162,7 @@ internal class ChecklistRepositoryImpl(
             )
         }
 
-    @OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
+    @OptIn(ExperimentalTime::class)
     @Suppress("LongParameterList")
     private suspend fun saveAnswer(
         equipmentResultId: String,
@@ -179,7 +178,8 @@ internal class ChecklistRepositoryImpl(
                     checklistItemId = itemId,
                     equipmentResultId = equipmentResultId,
                 )
-                val resultId = existing?.id ?: Uuid.random().toString()
+                val resultId = existing?.id
+                    ?: DeterministicId.forChecklistItemResult(equipmentResultId, itemId)
                 val now = Clock.System.now().toString()
                 val createdAt = existing?.createdAt ?: now
                 inspectionStorage.insertOrReplaceChecklistItemResult(
